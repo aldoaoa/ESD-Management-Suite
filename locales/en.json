@@ -1,1 +1,14 @@
-
+{
+    "login": {
+        "title": "Welcome to ESD Management Suite",
+        "email_ph": "Email address",
+        "pwd_ph": "Password",
+        "btn_submit": "Sign In",
+        "error_creds": "Invalid credentials or inactive account."
+    },
+    "sidebar": {
+        "menu": "Main Menu",
+        "dashboard": "Dashboard & Metrics",
+        "logout": "Sign Out"
+    }
+}
