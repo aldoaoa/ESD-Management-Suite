@@ -1,1 +1,14 @@
-
+{
+    "login": {
+        "title": "Bienvenido a ESD Management Suite",
+        "email_ph": "Correo electrónico",
+        "pwd_ph": "Contraseña",
+        "btn_submit": "Ingresar",
+        "error_creds": "Credenciales inválidas o cuenta inactiva."
+    },
+    "sidebar": {
+        "menu": "Menú Principal",
+        "dashboard": "Tablero y Métricas",
+        "logout": "Cerrar Sesión"
+    }
+}
