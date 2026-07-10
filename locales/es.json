@@ -47,6 +47,21 @@
         "msg_success": "¡Medición guardada y estatus actualizado exitosamente!",
         "msg_not_found": "El ID no se encontró en el registro de esta planta.",
         "waiting": "👈 Escanea o ingresa un código a la izquierda para comenzar."
+    },
+    {
+    "dashboard": {
+        "title": "📊 Tablero y Métricas",
+        "subtitle": "Visión general del estado de cumplimiento ESD",
+        "kpi_total": "Total de Activos",
+        "kpi_comp": "Cumplimiento Global",
+        "kpi_pass": "Vigentes / Aprobados",
+        "kpi_fail": "Vencidos / Fallos",
+        "chart_status": "Distribución de Estatus",
+        "chart_category": "Activos por Categoría",
+        "alerts_title": "🚨 Alertas Críticas (Requieren Atención)",
+        "col_asset": "ID Activo",
+        "col_category": "Categoría",
+        "col_date": "Fecha",
+        "col_status": "Estatus"
     }
-}
 }
