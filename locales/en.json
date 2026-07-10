@@ -26,5 +26,27 @@
         "menu": "Main Menu",
         "dashboard": "Dashboard & Metrics",
         "logout": "Sign Out"
+    },
+    {
+    "audit": {
+        "title": "📱 Fast Inspection & Audit",
+        "lbl_scan": "Point at the QR Code",
+        "lbl_manual": "Or enter ID manually:",
+        "btn_close": "❌ Close Scanner",
+        "asset_info": "📊 Asset Identity",
+        "loc": "Location",
+        "class": "Classification",
+        "status": "Current Status",
+        "history": "🕰️ Measurement History",
+        "new_record": "⚡ New Measurement Record",
+        "lbl_temp": "Temp (°C)",
+        "lbl_hum": "Humidity (%)",
+        "lbl_res": "Ground Resistance (Ω)",
+        "lbl_volts": "Static Field / Balance (V)",
+        "btn_save": "💾 Save Measurement",
+        "msg_success": "Measurement saved and status updated successfully!",
+        "msg_not_found": "ID not found in this site's registry.",
+        "waiting": "👈 Scan or enter a code on the left to begin."
     }
+}
 }
