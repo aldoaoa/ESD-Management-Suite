@@ -26,5 +26,27 @@
         "menu": "Menú Principal",
         "dashboard": "Tablero y Métricas",
         "logout": "Cerrar Sesión"
+    },
+    {
+    "audit": {
+        "title": "📱 Inspección y Auditoría Rápida",
+        "lbl_scan": "Apunta al Código QR",
+        "lbl_manual": "O ingresa el ID manual:",
+        "btn_close": "❌ Cerrar Escáner",
+        "asset_info": "📊 Identidad del Equipo",
+        "loc": "Ubicación",
+        "class": "Clasificación",
+        "status": "Estatus Actual",
+        "history": "🕰️ Historial de Mediciones",
+        "new_record": "⚡ Registro de Nueva Medición",
+        "lbl_temp": "Temp (°C)",
+        "lbl_hum": "Humedad (%)",
+        "lbl_res": "Resistencia a Tierra (Ω)",
+        "lbl_volts": "Campo Estático / Balance (V)",
+        "btn_save": "💾 Guardar Medición",
+        "msg_success": "¡Medición guardada y estatus actualizado exitosamente!",
+        "msg_not_found": "El ID no se encontró en el registro de esta planta.",
+        "waiting": "👈 Escanea o ingresa un código a la izquierda para comenzar."
     }
+}
 }
