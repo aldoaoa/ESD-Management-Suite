@@ -47,6 +47,21 @@
         "msg_success": "Measurement saved and status updated successfully!",
         "msg_not_found": "ID not found in this site's registry.",
         "waiting": "👈 Scan or enter a code on the left to begin."
+    },
+    {
+    "dashboard": {
+        "title": "📊 Dashboard & Metrics",
+        "subtitle": "Overview of ESD compliance status",
+        "kpi_total": "Total Assets",
+        "kpi_comp": "Overall Compliance",
+        "kpi_pass": "Active / Passed",
+        "kpi_fail": "Expired / Failed",
+        "chart_status": "Status Distribution",
+        "chart_category": "Assets by Category",
+        "alerts_title": "🚨 Critical Alerts (Action Required)",
+        "col_asset": "Asset ID",
+        "col_category": "Category",
+        "col_date": "Date",
+        "col_status": "Status"
     }
-}
 }
