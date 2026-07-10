@@ -1,4 +1,7 @@
 {
+    "auth": {
+        "login_required": "Please sign in to access this module."
+    },    
     "login": {
         "title": "Welcome to ESD Management Suite",
         "email_ph": "Email address",
