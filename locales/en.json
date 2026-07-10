@@ -1,7 +1,20 @@
 {
     "auth": {
         "login_required": "Please sign in to access this module."
-    },    
+    },
+    "inventory": {
+        "title": "📦 ESD Inventory Management",
+        "tab_dir": "📋 Asset Directory",
+        "tab_add": "➕ Register New",
+        "tab_retire": "🗑️ Retire Asset",
+        "lbl_id": "Asset ID (e.g., SMT-01)",
+        "lbl_category": "Category",
+        "lbl_class": "Classification (e.g., Table, Mat)",
+        "lbl_location": "Location / Line",
+        "btn_save": "Save Asset",
+        "msg_success": "Asset registered successfully!",
+        "msg_duplicate": "Error: Asset ID already exists in this site."
+    }
     "login": {
         "title": "Welcome to ESD Management Suite",
         "email_ph": "Email address",
