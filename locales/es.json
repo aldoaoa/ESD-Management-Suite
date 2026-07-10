@@ -2,6 +2,19 @@
     "auth": {
         "login_required": "Por favor inicia sesión para acceder a este módulo."
     }, 
+    "inventory": {
+        "title": "📦 Gestión de Inventario ESD",
+        "tab_dir": "📋 Directorio de Activos",
+        "tab_add": "➕ Registrar Nuevo",
+        "tab_retire": "🗑️ Dar de Baja",
+        "lbl_id": "ID del Activo (Ej: SMT-01)",
+        "lbl_category": "Categoría",
+        "lbl_class": "Clasificación (Ej: Mesa, Tapete)",
+        "lbl_location": "Ubicación / Línea",
+        "btn_save": "Guardar Activo",
+        "msg_success": "¡Activo registrado exitosamente!",
+        "msg_duplicate": "Error: El ID ya existe en esta planta."
+    },
     "login": {
         "title": "Bienvenido a ESD Management Suite",
         "email_ph": "Correo electrónico",
