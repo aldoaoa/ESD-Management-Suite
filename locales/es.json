@@ -58,7 +58,6 @@
         "dashboard": "Tablero y Métricas",
         "logout": "Cerrar Sesión"
     },
-    {
     "audit": {
         "title": "📱 Inspección y Auditoría Rápida",
         "lbl_scan": "Apunta al Código QR",
@@ -79,7 +78,6 @@
         "msg_not_found": "El ID no se encontró en el registro de esta planta.",
         "waiting": "👈 Escanea o ingresa un código a la izquierda para comenzar."
     },
-    {
     "dashboard": {
         "title": "📊 Tablero y Métricas",
         "subtitle": "Visión general del estado de cumplimiento ESD",
