@@ -15,6 +15,27 @@
         "msg_success": "¡Activo registrado exitosamente!",
         "msg_duplicate": "Error: El ID ya existe en esta planta."
     },
+    "infra": {
+        "title": "🌍 Infraestructura EPA",
+        "subtitle": "Control de Tierras, Piso y Conductores Aislados",
+        "tab_ground": "🔌 Tierras y Conexiones",
+        "tab_floor": "🗺️ Piso ESD",
+        "tab_iso": "⚡ Conductores Aislados",
+        "tab_checkers": "🛂 Checadores",
+        "gr_type": "Tipo de Punto",
+        "gr_loc": "Línea / Ubicación",
+        "gr_id": "ID del Punto",
+        "gr_ohms": "Resistencia (Ohms)",
+        "gr_save": "💾 Guardar Medición a Tierra",
+        "fl_room": "Cuarto / Área",
+        "fl_point": "Número de Punto",
+        "fl_save": "💾 Guardar Punto de Piso",
+        "iso_op": "Operación",
+        "iso_volt": "Voltaje Máximo (V)",
+        "iso_save": "💾 Guardar Conductor Aislado",
+        "msg_pass": "Medición Aprobada (PASS)",
+        "msg_fail": "Medición Rechazada (FAIL) - Excede los límites"
+    },
     "lab": {
         "title": "🧪 Laboratorio de Pruebas",
         "subtitle": "Análisis avanzado: Event Meter y Walking Test",
