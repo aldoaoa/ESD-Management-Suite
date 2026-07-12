@@ -15,6 +15,21 @@
         "msg_success": "¡Activo registrado exitosamente!",
         "msg_duplicate": "Error: El ID ya existe en esta planta."
     },
+    "lab": {
+        "title": "🧪 Laboratorio de Pruebas",
+        "subtitle": "Análisis avanzado: Event Meter y Walking Test",
+        "tab_event": "⚡ Event Meter",
+        "tab_walking": "🚶‍♂️ Walking Test",
+        "em_location": "Ubicación / Línea",
+        "em_operation": "ID Operación (Ej. OP-50)",
+        "em_contact": "Tipo de Contacto",
+        "em_events": "Cant. de Eventos",
+        "em_voltage": "Voltaje Máximo (V)",
+        "em_save": "💾 Guardar Event Meter",
+        "wt_upload": "📄 Subir PDF del Walking Test",
+        "wt_extracting": "Analizando imagen con OCR...",
+        "wt_save": "💾 Confirmar y Guardar Walking Test"
+    },
     "settings": {
         "title": "⚙️ Ajustes del Sistema",
         "subtitle": "Gestión de catálogos y accesos",
