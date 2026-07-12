@@ -22,6 +22,22 @@
         "btn_submit": "Sign In",
         "error_creds": "Invalid credentials or inactive account."
     },
+    "settings": {
+        "title": "⚙️ System Settings",
+        "subtitle": "Catalog and access management",
+        "tab_locations": "📍 Locations",
+        "tab_equipment": "🛠️ Measurement Equipment",
+        "tab_users": "🔐 Users",
+        "loc_add": "➕ Add New Location",
+        "loc_name": "Area or Line Name",
+        "btn_save": "Save",
+        "eq_add": "➕ Register Equipment",
+        "eq_id": "Equipment ID",
+        "eq_type": "Type (e.g., Megohmmeter)",
+        "eq_cal": "Next Calibration",
+        "us_title": "Access Management",
+        "us_warning": "Only administrators can manage users."
+    },
     "sidebar": {
         "menu": "Main Menu",
         "dashboard": "Dashboard & Metrics",
