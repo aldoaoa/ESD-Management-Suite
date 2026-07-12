@@ -30,6 +30,27 @@
         "wt_extracting": "Analyzing image with OCR...",
         "wt_save": "💾 Confirm and Save Walking Test"
     },
+    "infra": {
+        "title": "🌍 EPA Infrastructure",
+        "subtitle": "Grounding, Floor, and Isolated Conductors Control",
+        "tab_ground": "🔌 Grounding & Connections",
+        "tab_floor": "🗺️ ESD Floor",
+        "tab_iso": "⚡ Isolated Conductors",
+        "tab_checkers": "🛂 Entrance Checkers",
+        "gr_type": "Point Type",
+        "gr_loc": "Line / Location",
+        "gr_id": "Point ID",
+        "gr_ohms": "Resistance (Ohms)",
+        "gr_save": "💾 Save Ground Measurement",
+        "fl_room": "Room / Area",
+        "fl_point": "Point Number",
+        "fl_save": "💾 Save Floor Point",
+        "iso_op": "Operation",
+        "iso_volt": "Max Voltage (V)",
+        "iso_save": "💾 Save Isolated Conductor",
+        "msg_pass": "Measurement Passed (PASS)",
+        "msg_fail": "Measurement Failed (FAIL) - Exceeds limits"
+    },
     "login": {
         "title": "Welcome to ESD Management Suite",
         "email_ph": "Email address",
