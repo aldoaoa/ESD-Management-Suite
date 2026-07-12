@@ -15,6 +15,22 @@
         "msg_success": "¡Activo registrado exitosamente!",
         "msg_duplicate": "Error: El ID ya existe en esta planta."
     },
+    "settings": {
+        "title": "⚙️ Ajustes del Sistema",
+        "subtitle": "Gestión de catálogos y accesos",
+        "tab_locations": "📍 Ubicaciones",
+        "tab_equipment": "🛠️ Equipos de Medición",
+        "tab_users": "🔐 Usuarios",
+        "loc_add": "➕ Agregar Nueva Ubicación",
+        "loc_name": "Nombre del Área o Línea",
+        "btn_save": "Guardar",
+        "eq_add": "➕ Registrar Equipo",
+        "eq_id": "ID del Equipo",
+        "eq_type": "Tipo (Ej: Megóhmetro)",
+        "eq_cal": "Próxima Calibración",
+        "us_title": "Gestión de Accesos",
+        "us_warning": "Solo los administradores pueden gestionar usuarios."
+    },
     "login": {
         "title": "Bienvenido a ESD Management Suite",
         "email_ph": "Correo electrónico",
