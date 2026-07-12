@@ -14,7 +14,22 @@
         "btn_save": "Save Asset",
         "msg_success": "Asset registered successfully!",
         "msg_duplicate": "Error: Asset ID already exists in this site."
-    }
+    },
+    "lab": {
+        "title": "🧪 Testing Laboratory",
+        "subtitle": "Advanced Analysis: Event Meter & Walking Test",
+        "tab_event": "⚡ Event Meter",
+        "tab_walking": "🚶‍♂️ Walking Test",
+        "em_location": "Location / Line",
+        "em_operation": "Operation ID (e.g., OP-50)",
+        "em_contact": "Contact Type",
+        "em_events": "Event Count",
+        "em_voltage": "Max Voltage (V)",
+        "em_save": "💾 Save Event Meter",
+        "wt_upload": "📄 Upload Walking Test PDF",
+        "wt_extracting": "Analyzing image with OCR...",
+        "wt_save": "💾 Confirm and Save Walking Test"
+    },
     "login": {
         "title": "Welcome to ESD Management Suite",
         "email_ph": "Email address",
