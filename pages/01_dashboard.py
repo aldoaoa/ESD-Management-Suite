@@ -4,7 +4,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 from core.i18n import t
-from core.db import get_supabase_client
+from core.db import get_supabase_client, get_site_assets, get_site_measurements
 
 # ==========================================
 # 1. BARRERA DE SEGURIDAD MULTI-TENANT
@@ -26,14 +26,19 @@ st.caption(f"{t('dashboard', 'subtitle')} - **{st.session_state.site_name}**")
 # ==========================================
 # 2. EXTRACCIÃ“N DE DATOS
 # ==========================================
-with st.spinner("Procesando mÃ©tricas..."):
-    # Extraer todos los activos de la planta
-    resp_assets = supabase.table("assets").select("id, custom_id, category, status").eq("site_id", site_id).execute()
-    df_assets = pd.DataFrame(resp_assets.data)
+with st.spinner(t("common", "processing_metrics")):
+    # Use central DB wrappers (they handle empty results and errors)
+    try:
+        df_assets = pd.DataFrame(get_site_assets())
+    except Exception as e:
+        st.error("Datos de activos no disponibles.")
+        df_assets = pd.DataFrame()
 
-    # Extraer el historial de mediciones de la planta
-    resp_meas = supabase.table("measurements").select("asset_id, status_result, measured_at").eq("site_id", site_id).order("measured_at", desc=True).execute()
-    df_meas = pd.DataFrame(resp_meas.data)
+    try:
+        df_meas = pd.DataFrame(get_site_measurements())
+    except Exception as e:
+        st.error("Datos de mediciones no disponibles.")
+        df_meas = pd.DataFrame()
 
 # ==========================================
 # 3. CÃLCULO DE KPIs
