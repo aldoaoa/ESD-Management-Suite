@@ -72,7 +72,10 @@
         "email_ph": "Correo electrónico",
         "pwd_ph": "Contraseña",
         "btn_submit": "Ingresar",
-        "error_creds": "Credenciales inválidas o cuenta inactiva."
+        "error_creds": "Credenciales inválidas o cuenta inactiva.",
+        "invalid_email": "El formato de email no es válido.",
+        "weak_password": "La contraseña debe tener al menos 8 caracteres.",
+        "too_many_attempts": "Demasiados intentos fallidos. Intenta de nuevo en 15 minutos."
     },
     "sidebar": {
         "menu": "Menú Principal",

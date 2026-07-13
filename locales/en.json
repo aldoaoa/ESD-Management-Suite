@@ -56,7 +56,10 @@
         "email_ph": "Email address",
         "pwd_ph": "Password",
         "btn_submit": "Sign In",
-        "error_creds": "Invalid credentials or inactive account."
+        "error_creds": "Invalid credentials or inactive account.",
+        "invalid_email": "Email format is invalid.",
+        "weak_password": "Password must be at least 8 characters.",
+        "too_many_attempts": "Too many failed attempts. Try again in 15 minutes."
     },
     "settings": {
         "title": "⚙️ System Settings",

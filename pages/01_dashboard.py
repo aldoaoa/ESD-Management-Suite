@@ -9,9 +9,13 @@ from core.db import get_supabase_client
 # ==========================================
 # 1. BARRERA DE SEGURIDAD MULTI-TENANT
 # ==========================================
-if st.session_state.get("is_read_only", True):
-    st.warning(t("auth", "login_required"))
-    st.stop()
+from core.auth import requires_auth
+
+@requires_auth
+def __ensure_auth():
+    pass
+
+__ensure_auth()
 
 supabase = get_supabase_client()
 site_id = st.session_state.site_id
