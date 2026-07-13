@@ -79,7 +79,6 @@
         "dashboard": "Dashboard & Metrics",
         "logout": "Sign Out"
     },
-    {
     "audit": {
         "title": "📱 Fast Inspection & Audit",
         "lbl_scan": "Point at the QR Code",
@@ -98,9 +97,11 @@
         "btn_save": "💾 Save Measurement",
         "msg_success": "Measurement saved and status updated successfully!",
         "msg_not_found": "ID not found in this site's registry.",
-        "waiting": "👈 Scan or enter a code on the left to begin."
+        "waiting": "👈 Scan or enter a code on the left to begin.",
+        "mode_quick": "Quick Inspection (1 Point)",
+        "mode_integral": "S20.20 Comprehensive Validation",
+        "btn_save_integral": "💾 Save & Generate Report"
     },
-    {
     "dashboard": {
         "title": "📊 Dashboard & Metrics",
         "subtitle": "Overview of ESD compliance status",

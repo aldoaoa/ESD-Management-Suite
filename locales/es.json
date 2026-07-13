@@ -97,7 +97,10 @@
         "btn_save": "💾 Guardar Medición",
         "msg_success": "¡Medición guardada y estatus actualizado exitosamente!",
         "msg_not_found": "El ID no se encontró en el registro de esta planta.",
-        "waiting": "👈 Escanea o ingresa un código a la izquierda para comenzar."
+        "waiting": "👈 Escanea o ingresa un código a la izquierda para comenzar.",
+        "mode_quick": "Inspección Rápida (1 Punto)",
+        "mode_integral": "Validación Integral S20.20",
+        "btn_save_integral": "💾 Guardar y Generar Reporte"
     },
     "dashboard": {
         "title": "📊 Tablero y Métricas",

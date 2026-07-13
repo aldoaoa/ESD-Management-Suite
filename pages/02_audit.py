@@ -3,8 +3,10 @@
 import streamlit as st
 import pandas as pd
 import streamlit.components.v1 as components
+import json
 from core.i18n import t
 from core.db import get_supabase_client
+from components.reports import generate_esd_html_report
 
 # ==========================================
 # 1. BARRERA DE SEGURIDAD
@@ -167,55 +169,135 @@ with col_der:
             else:
                 st.write("No hay registros previos.")
 
-        # --- 2. FORMULARIO DE CAPTURA RÁPIDA ---
+        # --- 2. MODO DE INSPECCIÓN ---
         st.markdown(f"#### {t('audit', 'new_record')}")
-        with st.form("form_audit_capture", clear_on_submit=True):
-            
-            c_amb1, c_amb2 = st.columns(2)
-            temp = c_amb1.number_input(t("audit", "lbl_temp"), value=23.5, step=0.1)
-            hum = c_amb2.number_input(t("audit", "lbl_hum"), value=45.0, step=1.0)
-            
-            st.divider()
-            
-            c_val1, c_val2 = st.columns(2)
-            
-            # Dinámica del formulario: Ajustamos el placeholder según si es Ionizador o no
-            if asset_data.get("category", "").upper() == "IONIZADOR":
-                val_res = None
-                val_volts = c_val2.number_input(t("audit", "lbl_volts"), format="%.1f", placeholder="0.0")
-            else:
-                val_res = c_val1.number_input(t("audit", "lbl_res"), format="%.2e", min_value=0.0, placeholder="0.0e0")
-                val_volts = c_val2.number_input(t("audit", "lbl_volts"), format="%.1f", placeholder="0.0")
+        
+        # Obtenemos los strings traducidos con fallbacks por si no existen aún
+        str_quick = t("audit", "mode_quick") if t("audit", "mode_quick") != "[audit.mode_quick]" else "Inspección Rápida (1 Punto)"
+        str_integral = t("audit", "mode_integral") if t("audit", "mode_integral") != "[audit.mode_integral]" else "Validación Integral S20.20"
+        
+        modo_inspeccion = st.radio("Selecciona el modo:", [str_quick, str_integral], horizontal=True, label_visibility="collapsed")
+        
+        if modo_inspeccion == str_quick:
+            with st.form("form_audit_capture", clear_on_submit=True):
                 
-            obs = st.text_area("Observaciones")
-            
-            if st.form_submit_button(t("audit", "btn_save"), type="primary", use_container_width=True):
-                with st.spinner("Guardando..."):
-                    try:
-                        # Lógica de negocio (Evaluación de PASA / FALLA básica)
-                        # Nota: En una versión final, este límite puede venir de la tabla assets o config.py
-                        limite = 1e9 if asset_data.get("category", "") != "Maquinaria" else 1.0
-                        resultado = "PASS"
-                        
-                        if val_res is not None and val_res > limite:
-                            resultado = "FAIL"
-                        if val_volts is not None and abs(val_volts) > 100:
-                            resultado = "FAIL"
+                c_amb1, c_amb2 = st.columns(2)
+                temp = c_amb1.number_input(t("audit", "lbl_temp"), value=23.5, step=0.1)
+                hum = c_amb2.number_input(t("audit", "lbl_hum"), value=45.0, step=1.0)
+                
+                st.divider()
+                
+                c_val1, c_val2 = st.columns(2)
+                
+                if asset_data.get("category", "").upper() == "IONIZADOR":
+                    val_res = None
+                    val_volts = c_val2.number_input(t("audit", "lbl_volts"), format="%.1f", placeholder="0.0")
+                else:
+                    val_res = c_val1.number_input(t("audit", "lbl_res"), format="%.2e", min_value=0.0, placeholder="0.0e0")
+                    val_volts = c_val2.number_input(t("audit", "lbl_volts"), format="%.1f", placeholder="0.0")
+                    
+                obs = st.text_area("Observaciones")
+                
+                if st.form_submit_button(t("audit", "btn_save"), type="primary", use_container_width=True):
+                    with st.spinner("Guardando..."):
+                        try:
+                            limite = 1e9 if asset_data.get("category", "") != "Maquinaria" else 1.0
+                            resultado = "PASS"
+                            
+                            if val_res is not None and val_res > limite:
+                                resultado = "FAIL"
+                            if val_volts is not None and abs(val_volts) > 100:
+                                resultado = "FAIL"
 
-                        # 🛡️ Inserción Multi-Tenant en historial de mediciones
-                        supabase.table("measurements").insert({
-                            "site_id": site_id,
-                            "asset_id": asset_db_id,
-                            "auditor_id": user_id,
-                            "temperatura": temp,
-                            "humedad": hum,
-                            "resistance_value": val_res,
-                            "static_field_value": val_volts,
-                            "status_result": resultado,
-                            "observaciones": obs
-                        }).execute()
-                        
-                        st.success(t("audit", "msg_success"))
-                        
-                    except Exception as e:
-                        st.error(f"Error al guardar medición: {e}")
+                            supabase.table("measurements").insert({
+                                "site_id": site_id,
+                                "asset_id": asset_db_id,
+                                "auditor_id": user_id,
+                                "temperatura": temp,
+                                "humedad": hum,
+                                "resistance_value": val_res,
+                                "static_field_value": val_volts,
+                                "status_result": resultado,
+                                "observaciones": obs
+                            }).execute()
+                            
+                            st.success(t("audit", "msg_success"))
+                            
+                        except Exception as e:
+                            st.error(f"Error al guardar medición: {e}")
+                            
+        else:
+            # --- MODO INTEGRAL ---
+            num_meds = st.number_input("Cantidad de Puntos a Medir", min_value=1, max_value=50, value=5)
+            
+            with st.form("form_audit_integral", clear_on_submit=False):
+                c_amb1, c_amb2 = st.columns(2)
+                temp = c_amb1.number_input(t("audit", "lbl_temp"), value=23.5, step=0.1)
+                hum = c_amb2.number_input(t("audit", "lbl_hum"), value=45.0, step=1.0)
+                st.divider()
+                
+                st.markdown("**Captura de Puntos de Prueba (Ohms)**")
+                mediciones_dict = {}
+                cols = st.columns(3)
+                for i in range(num_meds):
+                    col_idx = i % 3
+                    val = cols[col_idx].number_input(f"Punto {i+1}", format="%.2e", min_value=0.0, step=1e5, key=f"med_int_{i}")
+                    mediciones_dict[f"m{i+1}"] = val
+                    
+                obs = st.text_area("Observaciones")
+                
+                str_save_int = t("audit", "btn_save_integral") if t("audit", "btn_save_integral") != "[audit.btn_save_integral]" else "💾 Guardar y Generar Reporte"
+                submitted = st.form_submit_button(str_save_int, type="primary", use_container_width=True)
+                
+                if submitted:
+                    with st.spinner("Evaluando y guardando..."):
+                        try:
+                            # Calcular promedio de resistencia
+                            valores_validos = [v for v in mediciones_dict.values() if v > 0]
+                            promedio_res = sum(valores_validos) / len(valores_validos) if valores_validos else 0.0
+                            
+                            limite = 1e9 if asset_data.get("category", "") != "Maquinaria" else 1.0
+                            resultado = "PASS" if promedio_res <= limite and promedio_res > 0 else "FAIL"
+                            
+                            # Insert en Base de Datos
+                            meas_data = {
+                                "site_id": site_id,
+                                "asset_id": asset_db_id,
+                                "auditor_id": user_id,
+                                "temperatura": temp,
+                                "humedad": hum,
+                                "resistance_value": promedio_res,
+                                "status_result": resultado,
+                                "observaciones": obs,
+                                "extra_data": mediciones_dict
+                            }
+                            
+                            supabase.table("measurements").insert(meas_data).execute()
+                            st.success("✅ Validación Integral guardada en base de datos.")
+                            
+                            # Generar Reporte HTML
+                            auditor_name = st.session_state.get("usuario_nombre", "Auditor")
+                            site_name = st.session_state.get("site_name", "Planta")
+                            html_report = generate_esd_html_report(asset_data, meas_data, site_name, auditor_name)
+                            
+                            # Guardar HTML en session_state para mostrar el botón de descarga
+                            st.session_state.last_report_html = html_report
+                            st.session_state.last_report_id = asset_data.get("custom_id", "000")
+                            
+                        except Exception as e:
+                            st.error(f"Error al guardar: {e}")
+                            
+            # Fuera del form, si existe un reporte recién generado, lo mostramos para descargar
+            if st.session_state.get("last_report_html"):
+                st.divider()
+                st.markdown("### 📄 Reporte Generado")
+                components.html(st.session_state.last_report_html, height=400, scrolling=True)
+                
+                st.download_button(
+                    label="📥 Descargar HTML del Reporte",
+                    data=st.session_state.last_report_html,
+                    file_name=f"BCS-PV-{st.session_state.last_report_id}.html",
+                    mime="text/html",
+                    use_container_width=True,
+                    type="primary"
+                )
