@@ -13,8 +13,7 @@ st.set_page_config(
 )
 
 # 2. Inicializar estado global y cargar diccionarios de idioma
-inicializar_estado_global(st)
-load_locales()
+inicializar_estado_global()
 
 # 3. Renderizar el menú lateral
 render_sidebar()

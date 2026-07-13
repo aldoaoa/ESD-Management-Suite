@@ -79,7 +79,6 @@
         "dashboard": "Dashboard & Metrics",
         "logout": "Sign Out"
     },
-    {
     "audit": {
         "title": "📱 Fast Inspection & Audit",
         "lbl_scan": "Point at the QR Code",
@@ -100,7 +99,6 @@
         "msg_not_found": "ID not found in this site's registry.",
         "waiting": "👈 Scan or enter a code on the left to begin."
     },
-    {
     "dashboard": {
         "title": "📊 Dashboard & Metrics",
         "subtitle": "Overview of ESD compliance status",
