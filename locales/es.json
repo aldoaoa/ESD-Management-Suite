@@ -124,6 +124,7 @@
         "welcome": "Bienvenido"
     },
     "common": {
-        "processing_metrics": "Procesando métricas..."
+        "processing_metrics": "Procesando métricas...",
+        "select_module": "👈 Selecciona un módulo del menú lateral para comenzar."
     }
 }

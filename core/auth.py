@@ -5,6 +5,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from core.db import get_supabase_client
 
 logger = logging.getLogger(__name__)
+from core.logging import log_login, log_error
 
 def iniciar_sesion(email, password):
     """
@@ -32,10 +33,13 @@ def iniciar_sesion(email, password):
             # Verificamos si la cuenta está activa
             if not user_data.get("is_active"):
                 logger.warning(f"Login attempt for inactive account: {email}")
+                log_login(email, False, "account_inactive")
                 return False, "account_inactive"
                 
             # Verificamos la contraseña hasheada
             if check_password_hash(user_data["password_hash"], password):
+                
+                # ¡LOGIN EXITOSO! Guardamos los datos vitales en la sesión
                 
                 # ¡LOGIN EXITOSO! Guardamos los datos vitales en la sesión
                 st.session_state.user_id = user_data["id"]
@@ -51,16 +55,20 @@ def iniciar_sesion(email, password):
                 st.session_state.site_name = user_data["sites"]["name"] if user_data.get("sites") else "All Sites"
                 
                 logger.info(f"Successful login: {email}")
+                log_login(email, True)
                 return True, "success"
             else:
                 logger.warning(f"Invalid password attempt: {email}")
+                log_login(email, False, "invalid_password")
                 return False, "invalid_password"
         else:
             logger.warning(f"Login attempt for non-existent user: {email}")
+            log_login(email, False, "user_not_found")
             return False, "user_not_found"
             
     except Exception as e:
         logger.error(f"Login error for {email}: {str(e)}")
+        log_error("LOGIN_ERROR", str(e), context={"email": email})
         return False, "db_error"
 
 def cerrar_sesion():
