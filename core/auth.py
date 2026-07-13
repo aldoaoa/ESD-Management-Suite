@@ -60,7 +60,7 @@ def iniciar_sesion(email, password):
             return False, "user_not_found"
             
     except Exception as e:
-        logger.error(f"Database error during login: {str(e)}")
+        logger.error(f"Login error for {email}: {str(e)}")
         return False, "db_error"
 
 def cerrar_sesion():

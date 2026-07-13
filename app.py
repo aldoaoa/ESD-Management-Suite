@@ -28,23 +28,23 @@ if st.session_state.get("is_read_only", True):
     with col2:
         with st.container(border=True):
             with st.form("login_form"):
-                st.subheader("🔒 Account Access")
+                st.subheader(t("login_ui", "account_access"))
                 email_input = st.text_input(t("login", "email_ph"))
                 pwd_input = st.text_input(t("login", "pwd_ph"), type="password")
                 
                 if st.form_submit_button(t("login", "btn_submit"), use_container_width=True, type="primary"):
                     if email_input and pwd_input:
-                        with st.spinner("Authenticating..."):
+                        with st.spinner(t("login_ui", "authenticating")):
                             success, msg = iniciar_sesion(email_input, pwd_input)
                             if success:
                                 st.rerun()
                             else:
                                 st.error(t("login", "error_creds"))
                     else:
-                        st.warning("Please fill in all fields.")
+                        st.warning(t("login_ui", "fields_required"))
 else:
     # --- PANTALLA DE INICIO (USUARIO LOGUEADO) ---
-    st.title(f"👋 Welcome, {st.session_state.user_name}")
+    st.title(f"👋 {t('login_ui', 'welcome')}, {st.session_state.user_name}")
     st.info("👈 Please select a module from the sidebar to begin.")
     
     # Aquí puedes colocar métricas de alto nivel a futuro

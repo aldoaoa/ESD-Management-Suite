@@ -113,5 +113,14 @@
         "col_category": "Category",
         "col_date": "Date",
         "col_status": "Status"
+    },
+    "login_ui": {
+        "account_access": "🔒 Account Access",
+        "authenticating": "Authenticating...",
+        "fields_required": "Please fill in all fields.",
+        "welcome": "Welcome"
+    },
+    "common": {
+        "processing_metrics": "Processing metrics..."
     }
 }

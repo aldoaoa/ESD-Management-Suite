@@ -8,15 +8,17 @@ logger = logging.getLogger(__name__)
 def get_supabase_client() -> Client:
     """Inicializa y retorna la conexión a Supabase usando los secrets de Streamlit."""
     try:
-        url = st.secrets["SUPABASE_URL"]
-        key = st.secrets["SUPABASE_KEY"]
+        url = st.secrets.get("SUPABASE_URL")
+        key = st.secrets.get("SUPABASE_KEY")
+        
+        if not url or not key:
+            raise ValueError("Missing SUPABASE_URL or SUPABASE_KEY in secrets")
+        
         return create_client(url, key)
-    except KeyError as e:
-        logger.error(f"Missing environment variable: {e}")
-        raise RuntimeError(f"❌ Configuración faltante: {str(e)}") from e
     except Exception as e:
         logger.error(f"Failed to initialize Supabase client: {e}")
-        raise RuntimeError(f"❌ Error al conectar a Supabase: {str(e)}") from e
+        st.error("❌ Database connection failed. Please check configuration.")
+        st.stop()
 
 # --- FUNCIONES WRAPPER MULTI-TENANT ---
 # Estas funciones aseguran que siempre se consulte la información correcta
