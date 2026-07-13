@@ -19,7 +19,7 @@ inicializar_estado_global()
 render_sidebar()
 
 # 4. Lógica de Enrutamiento (Router)
-if st.session_state.get("modo_lectura", True):
+if st.session_state.get("is_read_only", True):
     # --- PANTALLA DE LOGIN ---
     st.title(t("login", "title"))
     st.markdown("---")
@@ -44,11 +44,11 @@ if st.session_state.get("modo_lectura", True):
                         st.warning("Please fill in all fields.")
 else:
     # --- PANTALLA DE INICIO (USUARIO LOGUEADO) ---
-    st.title(f"👋 Welcome, {st.session_state.usuario_nombre}")
+    st.title(f"👋 Welcome, {st.session_state.user_name}")
     st.info("👈 Please select a module from the sidebar to begin.")
     
     # Aquí puedes colocar métricas de alto nivel a futuro
     c1, c2, c3 = st.columns(3)
     c1.metric("Company", st.session_state.get('company_name', 'N/A'))
     c2.metric("Active Site", st.session_state.get('site_name', 'N/A'))
-    c3.metric("Role", st.session_state.get('rol_usuario', 'N/A'))
+    c3.metric("Role", st.session_state.get('user_role', 'N/A'))

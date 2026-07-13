@@ -1,4 +1,4 @@
-# pages/03_settings.py
+﻿# pages/03_settings.py
 
 import streamlit as st
 import pandas as pd
@@ -8,20 +8,20 @@ from core.db import get_supabase_client
 # ==========================================
 # 1. BARRERA DE SEGURIDAD
 # ==========================================
-if st.session_state.get("modo_lectura", True):
+if st.session_state.get("is_read_only", True):
     st.warning(t("auth", "login_required"))
     st.stop()
 
 supabase = get_supabase_client()
 site_id = st.session_state.site_id
 company_id = st.session_state.company_id
-rol = st.session_state.get("rol_usuario", "")
+rol = st.session_state.get("user_role", "")
 
 st.markdown(f"### {t('settings', 'title')}")
 st.caption(f"{t('settings', 'subtitle')} - **{st.session_state.site_name}**")
 
 # ==========================================
-# 2. PESTAÑAS DE CONFIGURACIÓN
+# 2. PESTAÃ‘AS DE CONFIGURACIÃ“N
 # ==========================================
 tab_loc, tab_eq, tab_usr = st.tabs([
     t("settings", "tab_locations"), 
@@ -29,7 +29,7 @@ tab_loc, tab_eq, tab_usr = st.tabs([
     t("settings", "tab_users")
 ])
 
-# --- PESTAÑA A: UBICACIONES / LÍNEAS ---
+# --- PESTAÃ‘A A: UBICACIONES / LÃNEAS ---
 with tab_loc:
     col1, col2 = st.columns([1, 1.5])
     
@@ -41,11 +41,11 @@ with tab_loc:
                 if loc_name.strip():
                     try:
                         supabase.table("locations").insert({"site_id": site_id, "name": loc_name.strip().upper()}).execute()
-                        st.success("Ubicación guardada.")
+                        st.success("UbicaciÃ³n guardada.")
                         st.rerun()
                     except Exception as e:
                         if "23505" in str(e): # Error de llave duplicada
-                            st.error("Esta ubicación ya existe.")
+                            st.error("Esta ubicaciÃ³n ya existe.")
                         else:
                             st.error(f"Error: {e}")
                             
@@ -57,7 +57,7 @@ with tab_loc:
         else:
             st.info("No hay ubicaciones registradas.")
 
-# --- PESTAÑA B: EQUIPOS DE MEDICIÓN ---
+# --- PESTAÃ‘A B: EQUIPOS DE MEDICIÃ“N ---
 with tab_eq:
     col_e1, col_e2 = st.columns([1, 2])
     
@@ -80,18 +80,18 @@ with tab_eq:
                         st.success("Equipo registrado.")
                         st.rerun()
                     except Exception as e:
-                        st.error("Error al registrar equipo (¿ID duplicado?).")
+                        st.error("Error al registrar equipo (Â¿ID duplicado?).")
                         
     with col_e2:
         resp_eq = supabase.table("measurement_equipment").select("custom_id, equipment_type, next_calibration").eq("site_id", site_id).execute()
         if resp_eq.data:
             df_eq = pd.DataFrame(resp_eq.data)
-            df_eq.columns = ["ID Equipo", "Tipo", "Próxima Calibración"]
+            df_eq.columns = ["ID Equipo", "Tipo", "PrÃ³xima CalibraciÃ³n"]
             st.dataframe(df_eq, use_container_width=True, hide_index=True)
         else:
             st.info("No hay equipos registrados.")
 
-# --- PESTAÑA C: GESTIÓN DE USUARIOS ---
+# --- PESTAÃ‘A C: GESTIÃ“N DE USUARIOS ---
 with tab_usr:
     st.markdown(f"#### {t('settings', 'us_title')}")
     
@@ -99,9 +99,9 @@ with tab_usr:
     if rol not in ["SuperAdmin", "CompanyAdmin", "SiteManager"]:
         st.warning(t("settings", "us_warning"))
     else:
-        # En una arquitectura real, aquí crearías la lógica para hacer INSERT en la tabla 'users'
-        # encriptando la contraseña usando `generate_password_hash` desde `core/auth.py`.
-        st.write("Panel de administración habilitado para creación de cuentas y reseteo de contraseñas.")
+        # En una arquitectura real, aquÃ­ crearÃ­as la lÃ³gica para hacer INSERT en la tabla 'users'
+        # encriptando la contraseÃ±a usando `generate_password_hash` desde `core/auth.py`.
+        st.write("Panel de administraciÃ³n habilitado para creaciÃ³n de cuentas y reseteo de contraseÃ±as.")
         
         try:
             # Filtramos para que un SiteManager solo vea a los usuarios de su planta, 
@@ -117,3 +117,4 @@ with tab_usr:
                 st.dataframe(df_usr, use_container_width=True, hide_index=True)
         except Exception as e:
             st.error(f"Error cargando usuarios: {e}")
+

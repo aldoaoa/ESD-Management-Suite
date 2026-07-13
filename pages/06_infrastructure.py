@@ -1,4 +1,4 @@
-# pages/06_infrastructure.py
+﻿# pages/06_infrastructure.py
 
 import streamlit as st
 import pandas as pd
@@ -8,7 +8,7 @@ from core.db import get_supabase_client
 # ==========================================
 # 1. BARRERA DE SEGURIDAD MULTI-TENANT
 # ==========================================
-if st.session_state.get("modo_lectura", True):
+if st.session_state.get("is_read_only", True):
     st.warning(t("auth", "login_required"))
     st.stop()
 
@@ -20,7 +20,7 @@ st.markdown(f"### {t('infra', 'title')}")
 st.caption(f"{t('infra', 'subtitle')} - **{st.session_state.site_name}**")
 
 # ==========================================
-# 2. PESTAÑAS DE INFRAESTRUCTURA
+# 2. PESTAÃ‘AS DE INFRAESTRUCTURA
 # ==========================================
 tab_ground, tab_floor, tab_iso, tab_chk = st.tabs([
     t('infra', 'tab_ground'), 
@@ -29,7 +29,7 @@ tab_ground, tab_floor, tab_iso, tab_chk = st.tabs([
     t('infra', 'tab_checkers')
 ])
 
-# --- PESTAÑA A: TIERRAS Y CONEXIONES ---
+# --- PESTAÃ‘A A: TIERRAS Y CONEXIONES ---
 with tab_ground:
     st.markdown(f"#### {t('infra', 'tab_ground')}")
     
@@ -44,10 +44,10 @@ with tab_ground:
         
         if st.form_submit_button(t('infra', 'gr_save'), type="primary", use_container_width=True):
             if not p_loc or not p_id:
-                st.error("Ubicación e ID son obligatorios.")
+                st.error("UbicaciÃ³n e ID son obligatorios.")
             else:
                 with st.spinner("Guardando..."):
-                    # Lógica Normativa: Tierras auxiliares < 25 ohms, Conexiones de pulsera < 2.0 ohms
+                    # LÃ³gica Normativa: Tierras auxiliares < 25 ohms, Conexiones de pulsera < 2.0 ohms
                     limit = 25.0 if p_type == "Auxiliary Ground" else 2.0
                     status = "PASS" if p_ohms < limit else "FAIL"
                     
@@ -69,7 +69,7 @@ with tab_ground:
                     except Exception as e:
                         st.error(f"Error SQL: {e}")
 
-# --- PESTAÑA B: PISO ESD ---
+# --- PESTAÃ‘A B: PISO ESD ---
 with tab_floor:
     st.markdown(f"#### {t('infra', 'tab_floor')}")
     
@@ -79,7 +79,7 @@ with tab_floor:
         f_point = cf2.number_input(t('infra', 'fl_point'), min_value=1, step=1)
         
         cf3, cf4, cf5 = st.columns(3)
-        f_temp = cf3.number_input("Temp (°C)", value=23.5)
+        f_temp = cf3.number_input("Temp (Â°C)", value=23.5)
         f_hum = cf4.number_input("Humedad (%)", value=45)
         f_ohms = cf5.number_input("Ohms", min_value=0.0, format="%.2e", step=1e6)
         
@@ -105,7 +105,7 @@ with tab_floor:
                     except Exception as e:
                         st.error(f"Error SQL: {e}")
 
-# --- PESTAÑA C: CONDUCTORES AISLADOS ---
+# --- PESTAÃ‘A C: CONDUCTORES AISLADOS ---
 with tab_iso:
     st.markdown(f"#### {t('infra', 'tab_iso')}")
     
@@ -116,16 +116,16 @@ with tab_iso:
         
         ci3, ci4 = st.columns([1, 2])
         i_volt = ci3.number_input(t('infra', 'iso_volt'), min_value=0.0, format="%.1f", step=1.0)
-        i_notes = ci4.text_input("Comentarios / Ubicación exacta")
+        i_notes = ci4.text_input("Comentarios / UbicaciÃ³n exacta")
         
         if st.form_submit_button(t('infra', 'iso_save'), type="primary", use_container_width=True):
             if not i_loc or not i_op:
-                st.error("Línea y Operación son obligatorios.")
+                st.error("LÃ­nea y OperaciÃ³n son obligatorios.")
             else:
                 with st.spinner("Guardando..."):
                     # Norma S20.20: Conductores aislados < 35V
                     if i_volt > 35.0 and not i_notes.strip():
-                        st.error("⚠️ Al superar los 35V, es obligatorio especificar la ubicación exacta en los comentarios.")
+                        st.error("âš ï¸ Al superar los 35V, es obligatorio especificar la ubicaciÃ³n exacta en los comentarios.")
                     else:
                         try:
                             supabase.table("isolated_conductors_logs").insert({
@@ -138,31 +138,31 @@ with tab_iso:
                             }).execute()
                             
                             if i_volt > 35.0:
-                                st.error(f"🚨 FAIL: {i_volt}V supera el límite de 35V. Requiere Ionización.")
+                                st.error(f"ðŸš¨ FAIL: {i_volt}V supera el lÃ­mite de 35V. Requiere IonizaciÃ³n.")
                             else:
-                                st.success("✅ PASS: Voltaje dentro de norma.")
+                                st.success("âœ… PASS: Voltaje dentro de norma.")
                         except Exception as e:
                             st.error(f"Error SQL: {e}")
 
-# --- PESTAÑA D: CHECADORES DE INGRESO ---
+# --- PESTAÃ‘A D: CHECADORES DE INGRESO ---
 with tab_chk:
     st.markdown(f"#### {t('infra', 'tab_checkers')}")
-    st.info("Validación mensual cruzada con Megóhmetro (Tolerancia máxima 5%)")
+    st.info("ValidaciÃ³n mensual cruzada con MegÃ³hmetro (Tolerancia mÃ¡xima 5%)")
     
     with st.form("form_checkers", clear_on_submit=True):
         chk_id = st.text_input("ID del Checador", placeholder="CHECADOR-01")
         
         st.markdown("##### Pie Izquierdo")
         cl1, cl2 = st.columns(2)
-        ref_izq = cl1.number_input("Ref. Megóhmetro Izq (Ohms)", format="%.2e", step=1e6)
+        ref_izq = cl1.number_input("Ref. MegÃ³hmetro Izq (Ohms)", format="%.2e", step=1e6)
         lec_izq = cl2.number_input("Lectura Checador Izq (Ohms)", format="%.2e", step=1e6)
         
         st.markdown("##### Pie Derecho")
         cd1, cd2 = st.columns(2)
-        ref_der = cd1.number_input("Ref. Megóhmetro Der (Ohms)", format="%.2e", step=1e6)
+        ref_der = cd1.number_input("Ref. MegÃ³hmetro Der (Ohms)", format="%.2e", step=1e6)
         lec_der = cd2.number_input("Lectura Checador Der (Ohms)", format="%.2e", step=1e6)
         
-        if st.form_submit_button("💾 Guardar Verificación", type="primary", use_container_width=True):
+        if st.form_submit_button("ðŸ’¾ Guardar VerificaciÃ³n", type="primary", use_container_width=True):
             if not chk_id:
                 st.error("El ID del checador es obligatorio.")
             else:
@@ -189,8 +189,9 @@ with tab_chk:
                         }).execute()
                         
                         if status == "PASS":
-                            st.success("✅ Verificación exitosa. Variaciones menores al 5%.")
+                            st.success("âœ… VerificaciÃ³n exitosa. Variaciones menores al 5%.")
                         else:
-                            st.error("🚨 Falla de calibración: Desviación supera el 5% permitido.")
+                            st.error("ðŸš¨ Falla de calibraciÃ³n: DesviaciÃ³n supera el 5% permitido.")
                     except Exception as e:
                         st.error(f"Error SQL: {e}")
+
