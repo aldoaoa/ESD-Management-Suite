@@ -13,14 +13,13 @@ st.set_page_config(
 )
 
 # 2. Inicializar estado global y cargar diccionarios de idioma
-inicializar_estado_global(st)
-load_locales()
+inicializar_estado_global()
 
 # 3. Renderizar el menú lateral
 render_sidebar()
 
 # 4. Lógica de Enrutamiento (Router)
-if st.session_state.get("modo_lectura", True):
+if st.session_state.get("is_read_only", True):
     # --- PANTALLA DE LOGIN ---
     st.title(t("login", "title"))
     st.markdown("---")
@@ -28,28 +27,57 @@ if st.session_state.get("modo_lectura", True):
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         with st.container(border=True):
+            import re
+            from datetime import datetime, timedelta
+
+            def validate_email(email):
+                pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+                return re.match(pattern, email) is not None
+
+            def validate_password(password):
+                return len(password) >= 8
+
             with st.form("login_form"):
-                st.subheader("🔒 Account Access")
+                st.subheader(t("login_ui", "account_access"))
                 email_input = st.text_input(t("login", "email_ph"))
                 pwd_input = st.text_input(t("login", "pwd_ph"), type="password")
                 
                 if st.form_submit_button(t("login", "btn_submit"), use_container_width=True, type="primary"):
-                    if email_input and pwd_input:
-                        with st.spinner("Authenticating..."):
+                    # Validaciones de input
+                    if not email_input or not pwd_input:
+                        st.warning(t("login_ui", "fields_required"))
+                    elif not validate_email(email_input):
+                        st.warning(t("login", "invalid_email"))
+                    elif not validate_password(pwd_input):
+                        st.warning(t("login", "weak_password"))
+                    else:
+                        # Rate limiting
+                        if "login_attempts" not in st.session_state:
+                            st.session_state.login_attempts = []
+                        recent_attempts = [
+                            t for t in st.session_state.login_attempts 
+                            if datetime.now() - t < timedelta(minutes=15)
+                        ]
+                        if len(recent_attempts) >= 5:
+                            st.error(t("login", "too_many_attempts"))
+                            st.stop()
+
+                        with st.spinner(t("login_ui", "authenticating")):
                             success, msg = iniciar_sesion(email_input, pwd_input)
                             if success:
+                                st.session_state.login_attempts = []
                                 st.rerun()
                             else:
+                                # Registrar intento fallido
+                                st.session_state.login_attempts.append(datetime.now())
                                 st.error(t("login", "error_creds"))
-                    else:
-                        st.warning("Please fill in all fields.")
 else:
     # --- PANTALLA DE INICIO (USUARIO LOGUEADO) ---
-    st.title(f"👋 Welcome, {st.session_state.usuario_nombre}")
-    st.info("👈 Please select a module from the sidebar to begin.")
+    st.title(f"👋 {t('login_ui', 'welcome')}, {st.session_state.user_name}")
+    st.info(t("common", "select_module"))
     
     # Aquí puedes colocar métricas de alto nivel a futuro
     c1, c2, c3 = st.columns(3)
     c1.metric("Company", st.session_state.get('company_name', 'N/A'))
     c2.metric("Active Site", st.session_state.get('site_name', 'N/A'))
-    c3.metric("Role", st.session_state.get('rol_usuario', 'N/A'))
+    c3.metric("Role", st.session_state.get('user_role', 'N/A'))

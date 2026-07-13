@@ -1,17 +1,21 @@
-# pages/01_dashboard.py
+﻿# pages/01_dashboard.py
 
 import streamlit as st
 import pandas as pd
 import plotly.express as px
 from core.i18n import t
-from core.db import get_supabase_client
+from core.db import get_supabase_client, get_site_assets, get_site_measurements
 
 # ==========================================
 # 1. BARRERA DE SEGURIDAD MULTI-TENANT
 # ==========================================
-if st.session_state.get("modo_lectura", True):
-    st.warning(t("auth", "login_required"))
-    st.stop()
+from core.auth import requires_auth
+
+@requires_auth
+def __ensure_auth():
+    pass
+
+__ensure_auth()
 
 supabase = get_supabase_client()
 site_id = st.session_state.site_id
@@ -20,19 +24,24 @@ st.markdown(f"### {t('dashboard', 'title')}")
 st.caption(f"{t('dashboard', 'subtitle')} - **{st.session_state.site_name}**")
 
 # ==========================================
-# 2. EXTRACCIÓN DE DATOS
+# 2. EXTRACCIÃ“N DE DATOS
 # ==========================================
-with st.spinner("Procesando métricas..."):
-    # Extraer todos los activos de la planta
-    resp_assets = supabase.table("assets").select("id, custom_id, category, status").eq("site_id", site_id).execute()
-    df_assets = pd.DataFrame(resp_assets.data)
+with st.spinner(t("common", "processing_metrics")):
+    # Use central DB wrappers (they handle empty results and errors)
+    try:
+        df_assets = pd.DataFrame(get_site_assets())
+    except Exception as e:
+        st.error("Datos de activos no disponibles.")
+        df_assets = pd.DataFrame()
 
-    # Extraer el historial de mediciones de la planta
-    resp_meas = supabase.table("measurements").select("asset_id, status_result, measured_at").eq("site_id", site_id).order("measured_at", desc=True).execute()
-    df_meas = pd.DataFrame(resp_meas.data)
+    try:
+        df_meas = pd.DataFrame(get_site_measurements())
+    except Exception as e:
+        st.error("Datos de mediciones no disponibles.")
+        df_meas = pd.DataFrame()
 
 # ==========================================
-# 3. CÁLCULO DE KPIs
+# 3. CÃLCULO DE KPIs
 # ==========================================
 if not df_assets.empty:
     # Filtrar solo activos operativos
@@ -44,23 +53,23 @@ if not df_assets.empty:
     alertas_criticas = []
 
     if not df_meas.empty:
-        # Obtener la medición más reciente por cada activo
+        # Obtener la mediciÃ³n mÃ¡s reciente por cada activo
         df_latest_meas = df_meas.drop_duplicates(subset=['asset_id'], keep='first')
         
-        # Cruzar los activos con su última medición
+        # Cruzar los activos con su Ãºltima mediciÃ³n
         df_kpi = pd.merge(activos_operativos, df_latest_meas, left_on='id', right_on='asset_id', how='left')
         
-        # Contar estatus (Si no tiene medición, se considera como PENDIENTE/FALLO para el compliance)
+        # Contar estatus (Si no tiene mediciÃ³n, se considera como PENDIENTE/FALLO para el compliance)
         df_kpi['status_result'] = df_kpi['status_result'].fillna('PENDING')
         
         activos_aprobados = len(df_kpi[df_kpi['status_result'] == 'PASS'])
         activos_fallidos = total_activos - activos_aprobados
         
-        # Identificar las alertas críticas (FALLA o PENDIENTE)
+        # Identificar las alertas crÃ­ticas (FALLA o PENDIENTE)
         df_alertas = df_kpi[df_kpi['status_result'] != 'PASS'].copy()
         
     else:
-        # Si no hay mediciones, todo está pendiente
+        # Si no hay mediciones, todo estÃ¡ pendiente
         activos_fallidos = total_activos
         df_kpi = activos_operativos.copy()
         df_kpi['status_result'] = 'PENDING'
@@ -78,7 +87,7 @@ if not df_assets.empty:
     st.divider()
 
     # ==========================================
-    # 4. GRÁFICOS INTERACTIVOS (Plotly)
+    # 4. GRÃFICOS INTERACTIVOS (Plotly)
     # ==========================================
     col_chart1, col_chart2 = st.columns(2)
 
@@ -115,7 +124,7 @@ if not df_assets.empty:
         st.plotly_chart(fig_cat, use_container_width=True)
 
     # ==========================================
-    # 5. TABLA DE ALERTAS CRÍTICAS
+    # 5. TABLA DE ALERTAS CRÃTICAS
     # ==========================================
     st.divider()
     st.markdown(f"#### {t('dashboard', 'alerts_title')}")
@@ -126,12 +135,13 @@ if not df_assets.empty:
         
         # Formato visual
         df_show_alerts[t("dashboard", "col_status")] = df_show_alerts[t("dashboard", "col_status")].apply(
-            lambda x: f"🔴 {x}" if x == 'FAIL' else f"🟡 {x}"
+            lambda x: f"ðŸ”´ {x}" if x == 'FAIL' else f"ðŸŸ¡ {x}"
         )
         
         st.dataframe(df_show_alerts, use_container_width=True, hide_index=True)
     else:
-        st.success("🎉 Todo el equipamiento se encuentra en cumplimiento normativo.")
+        st.success("ðŸŽ‰ Todo el equipamiento se encuentra en cumplimiento normativo.")
 
 else:
     st.info("No hay activos registrados en el sistema para esta planta.")
+

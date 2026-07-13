@@ -56,7 +56,10 @@
         "email_ph": "Email address",
         "pwd_ph": "Password",
         "btn_submit": "Sign In",
-        "error_creds": "Invalid credentials or inactive account."
+        "error_creds": "Invalid credentials or inactive account.",
+        "invalid_email": "Email format is invalid.",
+        "weak_password": "Password must be at least 8 characters.",
+        "too_many_attempts": "Too many failed attempts. Try again in 15 minutes."
     },
     "settings": {
         "title": "⚙️ System Settings",
@@ -79,7 +82,6 @@
         "dashboard": "Dashboard & Metrics",
         "logout": "Sign Out"
     },
-    {
     "audit": {
         "title": "📱 Fast Inspection & Audit",
         "lbl_scan": "Point at the QR Code",
@@ -100,7 +102,6 @@
         "msg_not_found": "ID not found in this site's registry.",
         "waiting": "👈 Scan or enter a code on the left to begin."
     },
-    {
     "dashboard": {
         "title": "📊 Dashboard & Metrics",
         "subtitle": "Overview of ESD compliance status",
@@ -115,5 +116,15 @@
         "col_category": "Category",
         "col_date": "Date",
         "col_status": "Status"
+    },
+    "login_ui": {
+        "account_access": "🔒 Account Access",
+        "authenticating": "Authenticating...",
+        "fields_required": "Please fill in all fields.",
+        "welcome": "Welcome"
+    },
+    "common": {
+        "processing_metrics": "Processing metrics...",
+        "select_module": "👈 Please select a module from the sidebar to begin."
     }
 }

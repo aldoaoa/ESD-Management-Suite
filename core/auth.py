@@ -1,17 +1,29 @@
 
 import streamlit as st
+import logging
 from werkzeug.security import check_password_hash, generate_password_hash
-# Importaremos supabase desde nuestro gestor de base de datos en el siguiente paso
 from core.db import get_supabase_client
+
+logger = logging.getLogger(__name__)
+from core.logging import log_login, log_error
 
 def iniciar_sesion(email, password):
     """
     Verifica las credenciales del usuario y carga sus datos de acceso.
-    Retorna True si el login es exitoso, False en caso contrario.
+    Retorna tupla (success: bool, message: str).
     """
-    supabase = get_supabase_client()
+    # Validar entrada
+    if not email or not password:
+        logger.warning("Login attempt with empty credentials")
+        return False, "invalid_credentials"
+    
+    if not isinstance(email, str) or not isinstance(password, str):
+        logger.warning("Login attempt with invalid input types")
+        return False, "invalid_input"
     
     try:
+        supabase = get_supabase_client()
+        
         # Buscamos al usuario por su email
         response = supabase.table("users").select("*, sites(name, timezone), companies(name)").eq("email", email).execute()
         
@@ -20,42 +32,59 @@ def iniciar_sesion(email, password):
             
             # Verificamos si la cuenta está activa
             if not user_data.get("is_active"):
+                logger.warning(f"Login attempt for inactive account: {email}")
+                log_login(email, False, "account_inactive")
                 return False, "account_inactive"
                 
             # Verificamos la contraseña hasheada
             if check_password_hash(user_data["password_hash"], password):
                 
                 # ¡LOGIN EXITOSO! Guardamos los datos vitales en la sesión
+                
+                # ¡LOGIN EXITOSO! Guardamos los datos vitales en la sesión
                 st.session_state.user_id = user_data["id"]
                 st.session_state.company_id = user_data["company_id"]
                 st.session_state.site_id = user_data["site_id"]
-                st.session_state.usuario_nombre = user_data["full_name"]
-                st.session_state.rol_usuario = user_data["role"]
+                st.session_state.user_name = user_data["full_name"]
+                st.session_state.user_role = user_data["role"]
                 st.session_state.lang = user_data.get("preferred_language", "en")
-                st.session_state.modo_lectura = False
+                st.session_state.is_read_only = False
                 
                 # Guardamos los nombres para mostrarlos en la UI
                 st.session_state.company_name = user_data["companies"]["name"] if user_data.get("companies") else "Global"
                 st.session_state.site_name = user_data["sites"]["name"] if user_data.get("sites") else "All Sites"
                 
+                logger.info(f"Successful login: {email}")
+                log_login(email, True)
                 return True, "success"
             else:
+                logger.warning(f"Invalid password attempt: {email}")
+                log_login(email, False, "invalid_password")
                 return False, "invalid_password"
         else:
+            logger.warning(f"Login attempt for non-existent user: {email}")
+            log_login(email, False, "user_not_found")
             return False, "user_not_found"
             
     except Exception as e:
-        return False, f"db_error: {str(e)}"
+        logger.error(f"Login error for {email}: {str(e)}")
+        log_error("LOGIN_ERROR", str(e), context={"email": email})
+        return False, "db_error"
 
 def cerrar_sesion():
     """Limpia la sesión de Streamlit para volver a modo lectura."""
-    st.session_state.clear() # Limpia todo el diccionario
-    # Forzamos los valores por defecto
-    st.session_state.modo_lectura = True
-    st.session_state.usuario_nombre = None
-    st.session_state.rol_usuario = "Consulta"
-    st.session_state.lang = "en"
-    st.rerun()
+    try:
+        st.session_state.clear()
+        # Forzamos los valores por defecto
+        st.session_state.is_read_only = True
+        st.session_state.user_name = None
+        st.session_state.user_role = "Viewer"
+        st.session_state.lang = "en"
+        logger.info("Session cleared successfully")
+        st.rerun()
+    except Exception as e:
+        logger.error(f"Error closing session: {str(e)}")
+        st.error("❌ Error al cerrar sesión. Intenta de nuevo.")
 
 def requires_auth(func):
     """
@@ -63,9 +92,9 @@ def requires_auth(func):
     Si no lo está, muestra un mensaje de error y detiene la ejecución.
     """
     def wrapper(*args, **kwargs):
-        if st.session_state.get("modo_lectura", True):
+        if st.session_state.get("is_read_only", True):
             from core.i18n import t
-            st.warning(t("auth", "login_required")) # Necesitamos agregar esto a locales
+            st.warning(t("auth", "login_required"))
             st.stop()
         return func(*args, **kwargs)
     return wrapper

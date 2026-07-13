@@ -1,4 +1,4 @@
-# pages/02_audit.py
+﻿# pages/02_audit.py
 
 import streamlit as st
 import pandas as pd
@@ -9,9 +9,13 @@ from core.db import get_supabase_client
 # ==========================================
 # 1. BARRERA DE SEGURIDAD
 # ==========================================
-if st.session_state.get("modo_lectura", True):
-    st.warning(t("auth", "login_required"))
-    st.stop()
+from core.auth import requires_auth
+
+@requires_auth
+def __ensure_auth():
+    pass
+
+__ensure_auth()
 
 supabase = get_supabase_client()
 site_id = st.session_state.site_id
@@ -20,7 +24,7 @@ user_id = st.session_state.user_id
 st.markdown(f"### {t('audit', 'title')}")
 
 # ==========================================
-# 2. CONTROL DE ESTADO (URL / ESCÁNER)
+# 2. CONTROL DE ESTADO (URL / ESCÃNER)
 # ==========================================
 id_escaneado = st.query_params.get("qr_id", "")
 
@@ -40,15 +44,15 @@ with col_izq:
     if not id_escaneado:
         st.markdown(f"#### {t('audit', 'lbl_scan')}")
         
-        # --- CÓDIGO HTML/JS DEL ESCÁNER QR ---
+        # --- CÃ“DIGO HTML/JS DEL ESCÃNER QR ---
         html_code_qr = """
         <script src="https://unpkg.com/html5-qrcode"></script>
         <div id="reader_main" style="width:100%; max-width:500px; margin:auto; border-radius:10px; overflow:hidden; border: 2px solid #0052cc; background-color: #f9f9f9;"></div>
         <div style="text-align:center; margin-top:10px; display:flex; justify-content:center; gap:5px; flex-wrap:wrap;">
-            <button type="button" id="cam_wide_main" style="padding:10px; background:#28a745; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">📸 LENTE ESTÁNDAR</button>
-            <button type="button" id="cam_cycle_main" style="padding:10px; background:#555; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">🔄 OTRA CÁMARA</button>
+            <button type="button" id="cam_wide_main" style="padding:10px; background:#28a745; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">ðŸ“¸ LENTE ESTÃNDAR</button>
+            <button type="button" id="cam_cycle_main" style="padding:10px; background:#555; color:white; border:none; border-radius:5px; font-weight:bold; cursor:pointer;">ðŸ”„ OTRA CÃMARA</button>
         </div>
-        <p id="cam-status-main" style="text-align:center; color:#666; font-size: 14px; margin-top: 10px;">Buscando cámaras...</p>
+        <p id="cam-status-main" style="text-align:center; color:#666; font-size: 14px; margin-top: 10px;">Buscando cÃ¡maras...</p>
         <script>
         let html5QrCodeMain;
         let rearCamsMain = [];
@@ -76,9 +80,9 @@ with col_izq:
                 }, (err) => {} 
             ).then(() => { 
                 let activeCam = rearCamsMain.find(c => c.id === camId);
-                document.getElementById("cam-status-main").innerText = "Lente activo: " + (activeCam ? activeCam.label : "Cámara");
+                document.getElementById("cam-status-main").innerText = "Lente activo: " + (activeCam ? activeCam.label : "CÃ¡mara");
             }).catch(err => {
-                document.getElementById("cam-status-main").innerText = "Error iniciando lente. Intenta 'Otra Cámara'.";
+                document.getElementById("cam-status-main").innerText = "Error iniciando lente. Intenta 'Otra CÃ¡mara'.";
             });
         }
 
@@ -109,7 +113,7 @@ with col_izq:
                     startScannerMain(rearCamsMain[currentIdxMain].id);
                 });
             }
-        }).catch(err => { document.getElementById("cam-status-main").innerText = "Permisos de cámara denegados."; });
+        }).catch(err => { document.getElementById("cam-status-main").innerText = "Permisos de cÃ¡mara denegados."; });
         </script>
         """
         components.html(html_code_qr, height=500) 
@@ -121,9 +125,9 @@ with col_izq:
             st.rerun()
             
     else:
-        # --- EQUIPO ESCANEADO: BÚSQUEDA EN BD ---
+        # --- EQUIPO ESCANEADO: BÃšSQUEDA EN BD ---
         c_info, c_btn = st.columns([0.7, 0.3])
-        c_info.info(f"🔍 **ID:** {id_escaneado}")
+        c_info.info(f"ðŸ” **ID:** {id_escaneado}")
         if c_btn.button(t("audit", "btn_close"), use_container_width=True):
             limpiar_url()
             st.rerun()
@@ -131,7 +135,7 @@ with col_izq:
         id_limpio = str(id_escaneado).strip().upper()
         
         with st.spinner("Buscando activo..."):
-            # 🛡️ SEGURIDAD MULTI-TENANT: Buscamos el activo estrictamente en esta planta
+            # ðŸ›¡ï¸ SEGURIDAD MULTI-TENANT: Buscamos el activo estrictamente en esta planta
             resp_asset = supabase.table("assets").select("*").eq("site_id", site_id).eq("custom_id", id_limpio).execute()
             
             if resp_asset.data and len(resp_asset.data) > 0:
@@ -167,7 +171,7 @@ with col_der:
             else:
                 st.write("No hay registros previos.")
 
-        # --- 2. FORMULARIO DE CAPTURA RÁPIDA ---
+        # --- 2. FORMULARIO DE CAPTURA RÃPIDA ---
         st.markdown(f"#### {t('audit', 'new_record')}")
         with st.form("form_audit_capture", clear_on_submit=True):
             
@@ -179,7 +183,7 @@ with col_der:
             
             c_val1, c_val2 = st.columns(2)
             
-            # Dinámica del formulario: Ajustamos el placeholder según si es Ionizador o no
+            # DinÃ¡mica del formulario: Ajustamos el placeholder segÃºn si es Ionizador o no
             if asset_data.get("category", "").upper() == "IONIZADOR":
                 val_res = None
                 val_volts = c_val2.number_input(t("audit", "lbl_volts"), format="%.1f", placeholder="0.0")
@@ -192,8 +196,8 @@ with col_der:
             if st.form_submit_button(t("audit", "btn_save"), type="primary", use_container_width=True):
                 with st.spinner("Guardando..."):
                     try:
-                        # Lógica de negocio (Evaluación de PASA / FALLA básica)
-                        # Nota: En una versión final, este límite puede venir de la tabla assets o config.py
+                        # LÃ³gica de negocio (EvaluaciÃ³n de PASA / FALLA bÃ¡sica)
+                        # Nota: En una versiÃ³n final, este lÃ­mite puede venir de la tabla assets o config.py
                         limite = 1e9 if asset_data.get("category", "") != "Maquinaria" else 1.0
                         resultado = "PASS"
                         
@@ -202,7 +206,7 @@ with col_der:
                         if val_volts is not None and abs(val_volts) > 100:
                             resultado = "FAIL"
 
-                        # 🛡️ Inserción Multi-Tenant en historial de mediciones
+                        # ðŸ›¡ï¸ InserciÃ³n Multi-Tenant en historial de mediciones
                         supabase.table("measurements").insert({
                             "site_id": site_id,
                             "asset_id": asset_db_id,
@@ -218,4 +222,5 @@ with col_der:
                         st.success(t("audit", "msg_success"))
                         
                     except Exception as e:
-                        st.error(f"Error al guardar medición: {e}")
+                        st.error(f"Error al guardar mediciÃ³n: {e}")
+
