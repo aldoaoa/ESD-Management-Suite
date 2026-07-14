@@ -86,7 +86,10 @@ st.divider()
 # ==========================================
 # 3. CONSTRUCCIÓN DE PESTAÑAS SEGÚN ROL
 # ==========================================
-if rol in ["SuperAdmin", "admin"] and not st.session_state.company_id:
+is_global_admin = rol in ["SuperAdmin", "admin"] and not st.session_state.company_id
+is_company_admin = rol == "CompanyAdmin" or (rol in ["SuperAdmin", "admin"] and st.session_state.company_id)
+
+if is_global_admin:
     # Pestañas disponibles para SuperAdmin
     tabs = st.tabs([
         "🏢 Empresas (Global)", 
@@ -97,26 +100,25 @@ if rol in ["SuperAdmin", "admin"] and not st.session_state.company_id:
         "🛠️ Equipos de Medición"
     ])
     tab_companies, tab_admins, tab_sites, tab_usr_comp, tab_loc, tab_eq = tabs
+elif is_company_admin:
+    # Pestañas para Administrador de Empresa
+    tabs = st.tabs([
+        "🏭 Plantas (Sites)", 
+        "🔐 Gestión de Usuarios", 
+        "📍 Ubicaciones de Línea",
+        "🛠️ Equipos de Medición"
+    ])
+    tab_sites, tab_usr_comp, tab_loc, tab_eq = tabs
 else:
-    # Pestañas para Administrador de Empresa y SiteManager
-    if rol == "CompanyAdmin":
-        tabs = st.tabs([
-            "🏭 Plantas (Sites)", 
-            "🔐 Gestión de Usuarios", 
-            "📍 Ubicaciones de Línea",
-            "🛠️ Equipos de Medición"
-        ])
-        tab_sites, tab_usr_comp, tab_loc, tab_eq = tabs
-    else:
-        # SiteManager y regular
-        tabs = st.tabs([
-            t("settings", "tab_locations"), 
-            t("settings", "tab_equipment")
-        ])
-        tab_loc, tab_eq = tabs
+    # SiteManager y regular
+    tabs = st.tabs([
+        t("settings", "tab_locations"), 
+        t("settings", "tab_equipment")
+    ])
+    tab_loc, tab_eq = tabs
 
 # --- PESTAÑA: GESTIÓN DE EMPRESAS (SUPERADMIN) ---
-if rol in ["SuperAdmin", "admin"] and not st.session_state.company_id:
+if is_global_admin:
     with tab_companies:
         col1, col2 = st.columns([1, 1.5])
         with col1:
@@ -196,7 +198,7 @@ if rol in ["SuperAdmin", "admin"] and not st.session_state.company_id:
                 log_error("pages/03_settings.py", "Error fetching CompanyAdmin list", e)
 
 # --- PESTAÑA: PLANTAS (SITES) (SUPERADMIN & COMPANYADMIN) ---
-if rol in ["SuperAdmin", "admin", "CompanyAdmin"]:
+if is_global_admin or is_company_admin:
     with tab_sites:
         col_s1, col_s2 = st.columns([1, 1.5])
         with col_s1:
