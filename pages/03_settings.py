@@ -5,6 +5,7 @@ from werkzeug.security import generate_password_hash
 from core.i18n import t
 from core.db import get_supabase_client
 from core.logger import log_error, log_event
+from components.sidebar import render_sidebar
 
 # ==========================================
 # 1. BARRERA DE SEGURIDAD
