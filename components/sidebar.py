@@ -3,6 +3,18 @@ import streamlit as st
 from core.i18n import t
 from core.auth import cerrar_sesion
 
+def hide_sidebar():
+    st.markdown(
+        """
+        <style>
+        [data-testid="sidebar-nav"] {
+            display: none !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
 def render_sidebar():
     with st.sidebar:
         # --- LOGOTIPO Y ESTILOS CSS PARA OCULTAR MENÚ NATIVO ---

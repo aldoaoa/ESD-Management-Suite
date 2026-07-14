@@ -4,7 +4,10 @@ import streamlit as st
 import pandas as pd
 from core.i18n import t
 from core.db import get_supabase_client
-from components.sidebar import render_sidebar
+from components.sidebar import render_sidebar, hide_sidebar
+
+# Ocultar navegación nativa antes de evaluar accesos
+hide_sidebar()
 
 # ==========================================
 # 1. BARRERA DE SEGURIDAD MULTI-TENANT

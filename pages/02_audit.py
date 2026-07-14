@@ -7,7 +7,10 @@ import json
 from core.i18n import t
 from core.db import get_supabase_client
 from components.reports import generate_esd_html_report
-from components.sidebar import render_sidebar
+from components.sidebar import render_sidebar, hide_sidebar
+
+# Ocultar navegación nativa antes de evaluar accesos
+hide_sidebar()
 
 # ==========================================
 # 1. BARRERA DE SEGURIDAD

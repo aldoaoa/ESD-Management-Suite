@@ -8,7 +8,10 @@ import time
 from core.i18n import t
 from core.db import get_supabase_client
 from core.logger import log_event, log_error
-from components.sidebar import render_sidebar
+from components.sidebar import render_sidebar, hide_sidebar
+
+# Ocultar navegación nativa antes de evaluar accesos
+hide_sidebar()
 
 # ==========================================
 # 1. BARRERA DE SEGURIDAD MULTI-TENANT

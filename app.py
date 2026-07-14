@@ -3,8 +3,11 @@ import streamlit as st
 from config import inicializar_estado_global
 from core.i18n import load_locales, t
 from core.auth import iniciar_sesion
-from components.sidebar import render_sidebar
+from components.sidebar import render_sidebar, hide_sidebar
 from core.logger import log_event, log_error
+
+# Hide native Streamlit navigation lists globally
+hide_sidebar()
 
 # 1. Configuración de página (Debe ser el primer comando de Streamlit)
 st.set_page_config(
