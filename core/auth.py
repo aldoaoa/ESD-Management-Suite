@@ -13,7 +13,7 @@ def iniciar_sesion(email, password):
     
     try:
         # Buscamos al usuario por su email
-        response = supabase.table("users").select("*, sites(name, timezone), companies(name)").eq("email", email).execute()
+        response = supabase.table("users").select("*, sites:sites!users_site_id_fkey(name, timezone), companies(name)").eq("email", email).execute()
         
         if response.data and len(response.data) > 0:
             user_data = response.data[0]
