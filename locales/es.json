@@ -124,5 +124,12 @@
         "tab_historical": "📥 Cargar Histórico (Forms)",
         "tab_weekly": "🔄 Actualización Semanal",
         "tab_audit": "🕵️ Auditoría Cronológica"
+    },
+    "sensitivity": {
+        "title": "🔌 Análisis de Sensibilidad de Componentes (HBM / CDM)",
+        "subtitle": "Consulta y gestiona los límites de susceptibilidad de los ensambles.",
+        "tab_overview": "📈 Overview Global",
+        "tab_query": "📊 Consulta de Reportes",
+        "tab_import": "📥 Importar Histórico"
     }
 }

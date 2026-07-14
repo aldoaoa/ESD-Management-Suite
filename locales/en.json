@@ -124,5 +124,12 @@
         "tab_historical": "📥 Load Historical (Forms)",
         "tab_weekly": "🔄 Weekly Update",
         "tab_audit": "🕵️ Chronological Audit"
+    },
+    "sensitivity": {
+        "title": "🔌 Component Sensitivity Analysis (HBM / CDM)",
+        "subtitle": "Query and manage assembly susceptibility limits.",
+        "tab_overview": "📈 Global Overview",
+        "tab_query": "📊 Query Reports",
+        "tab_import": "📥 Import Historical"
     }
 }
