@@ -116,5 +116,13 @@
         "col_category": "Categoría",
         "col_date": "Fecha",
         "col_status": "Estatus"
+    },
+    "training": {
+        "title": "🎓 Gestión de Entrenamiento y Certificación ESD",
+        "subtitle": "Administra el historial de capacitaciones, calificaciones y analiza áreas de oportunidad.",
+        "tab_dash": "📊 Dashboard de Resultados",
+        "tab_historical": "📥 Cargar Histórico (Forms)",
+        "tab_weekly": "🔄 Actualización Semanal",
+        "tab_audit": "🕵️ Auditoría Cronológica"
     }
 }

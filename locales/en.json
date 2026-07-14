@@ -116,5 +116,13 @@
         "col_category": "Category",
         "col_date": "Date",
         "col_status": "Status"
+    },
+    "training": {
+        "title": "🎓 Training & ESD Certification Management",
+        "subtitle": "Manage training history, scores, and analyze areas of opportunity.",
+        "tab_dash": "📊 Results Dashboard",
+        "tab_historical": "📥 Load Historical (Forms)",
+        "tab_weekly": "🔄 Weekly Update",
+        "tab_audit": "🕵️ Chronological Audit"
     }
 }
