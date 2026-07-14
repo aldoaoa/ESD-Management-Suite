@@ -27,7 +27,7 @@ st.caption(f"{t('settings', 'subtitle')} - **{st.session_state.site_name}**")
 # ==========================================
 # 2. DEFINICIÓN DE PESTAÑAS BASADO EN ROLES
 # ==========================================
-if rol in ["SuperAdmin", "admin"] and not company_id:
+if rol in ["SuperAdmin", "admin"]:
     # --- VISTA PARA SUPERADMINISTRADOR GLOBAL ---
     tab_companies, tab_admins, tab_equip = st.tabs([
         "🏢 Empresas (Companies)", 
