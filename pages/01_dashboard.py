@@ -19,17 +19,24 @@ site_id = st.session_state.site_id
 st.markdown(f"### {t('dashboard', 'title')}")
 st.caption(f"{t('dashboard', 'subtitle')} - **{st.session_state.site_name}**")
 
+from core.logger import log_error
+
 # ==========================================
 # 2. EXTRACCIÓN DE DATOS
 # ==========================================
-with st.spinner("Procesando métricas..."):
-    # Extraer todos los activos de la planta
-    resp_assets = supabase.table("assets").select("id, custom_id, category, status").eq("site_id", site_id).execute()
-    df_assets = pd.DataFrame(resp_assets.data)
+try:
+    with st.spinner("Procesando métricas..."):
+        # Extraer todos los activos de la planta
+        resp_assets = supabase.table("assets").select("id, custom_id, category, status").eq("site_id", site_id).execute()
+        df_assets = pd.DataFrame(resp_assets.data)
 
-    # Extraer el historial de mediciones de la planta
-    resp_meas = supabase.table("measurements").select("asset_id, status_result, measured_at").eq("site_id", site_id).order("measured_at", desc=True).execute()
-    df_meas = pd.DataFrame(resp_meas.data)
+        # Extraer el historial de mediciones de la planta
+        resp_meas = supabase.table("measurements").select("asset_id, status_result, measured_at").eq("site_id", site_id).order("measured_at", desc=True).execute()
+        df_meas = pd.DataFrame(resp_meas.data)
+except Exception as e:
+    st.error("Error al cargar los datos del Dashboard. Por favor, intente de nuevo más tarde.")
+    log_error("pages/01_dashboard.py", "Error fetching assets or measurements from Supabase", e)
+    st.stop()
 
 # ==========================================
 # 3. CÁLCULO DE KPIs
