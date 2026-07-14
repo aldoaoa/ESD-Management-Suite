@@ -27,7 +27,32 @@ def render_sidebar():
         # --- INFORMACIÓN DEL USUARIO Y MENÚ ---
         if not st.session_state.get("modo_lectura", True):
             st.success(f"👤 {st.session_state.get('usuario_nombre', 'User')}")
-            st.caption(f"🏢 {st.session_state.get('company_name', 'Global')} | 📍 {st.session_state.get('site_name', 'All Sites')}")
+            
+            # --- SELECTOR DE PLANTA (PARA ADMINS) ---
+            available_sites = st.session_state.get("available_sites", [])
+            if available_sites:
+                site_names = [s["name"] for s in available_sites]
+                current_site_id = st.session_state.get("site_id")
+                
+                idx = 0
+                for i, s in enumerate(available_sites):
+                    if s["id"] == current_site_id:
+                        idx = i
+                        break
+                
+                selected_site_name = st.selectbox(
+                    "🏭 Active Site / Planta",
+                    options=site_names,
+                    index=idx
+                )
+                
+                selected_site = available_sites[site_names.index(selected_site_name)]
+                if selected_site["id"] != current_site_id:
+                    st.session_state.site_id = selected_site["id"]
+                    st.session_state.site_name = selected_site["name"]
+                    st.rerun()
+            else:
+                st.caption(f"🏢 {st.session_state.get('company_name', 'Global')} | 📍 {st.session_state.get('site_name', 'All Sites')}")
             
             st.markdown(f"### 🧭 {t('sidebar', 'menu')}")
             

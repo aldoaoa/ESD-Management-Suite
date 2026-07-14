@@ -37,6 +37,26 @@ def iniciar_sesion(email, password):
                 # Guardamos los nombres para mostrarlos en la UI
                 st.session_state.company_name = user_data["companies"]["name"] if user_data.get("companies") else "Global"
                 st.session_state.site_name = user_data["sites"]["name"] if user_data.get("sites") else "All Sites"
+
+                # Si es un usuario admin/global y no tiene site_id fijo, cargamos todas las plantas disponibles
+                if not st.session_state.site_id or st.session_state.rol_usuario in ["admin", "SuperAdmin", "CompanyAdmin"]:
+                    try:
+                        query = supabase.table("sites").select("id, name")
+                        if st.session_state.rol_usuario == "CompanyAdmin" and st.session_state.company_id:
+                            query = query.eq("company_id", st.session_state.company_id)
+                        
+                        sites_resp = query.execute()
+                        if sites_resp.data:
+                            st.session_state.available_sites = sites_resp.data
+                            # Inicializamos con el primer site si no tenía uno asignado o si el asignado no está en la lista
+                            if not st.session_state.site_id:
+                                st.session_state.site_id = sites_resp.data[0]["id"]
+                                st.session_state.site_name = sites_resp.data[0]["name"]
+                        else:
+                            st.session_state.available_sites = []
+                    except Exception as e:
+                        st.session_state.available_sites = []
+                        print(f"Error loading sites for admin: {e}")
                 
                 return True, "success"
             else:
