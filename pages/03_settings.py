@@ -5,7 +5,6 @@ from werkzeug.security import generate_password_hash
 from core.i18n import t
 from core.db import get_supabase_client
 from core.logger import log_error, log_event
-from components.sidebar import render_sidebar
 
 # ==========================================
 # 1. BARRERA DE SEGURIDAD
@@ -17,25 +16,106 @@ if st.session_state.get("modo_lectura", True):
 render_sidebar()
 
 supabase = get_supabase_client()
-site_id = st.session_state.site_id
-company_id = st.session_state.company_id
 rol = st.session_state.get("rol_usuario", "")
 
 st.markdown(f"### {t('settings', 'title')}")
-st.caption(f"{t('settings', 'subtitle')} - **{st.session_state.site_name}**")
 
 # ==========================================
-# 2. DEFINICIÓN DE PESTAÑAS BASADO EN ROLES
+# 2. SELECCIÓN DE CONTEXTO (COMPAÑÍA / PLANTA)
 # ==========================================
-if rol in ["SuperAdmin", "admin"]:
-    # --- VISTA PARA SUPERADMINISTRADOR GLOBAL ---
-    tab_companies, tab_admins, tab_equip = st.tabs([
-        "🏢 Empresas (Companies)", 
-        "🔐 Administradores de Empresa", 
-        "🛠️ Equipos de Medición Globales"
-    ])
+comp_id_gestion = st.session_state.company_id
+site_id_gestion = st.session_state.site_id
+
+if rol in ["SuperAdmin", "admin"] and not st.session_state.company_id:
+    # El SuperAdmin gestiona de manera global, cargamos todas las empresas
+    try:
+        resp_comps_ctx = supabase.table("companies").select("id, name").order("name").execute()
+        dict_comps_ctx = {c["id"]: c["name"] for c in resp_comps_ctx.data} if resp_comps_ctx.data else {}
+    except:
+        dict_comps_ctx = {}
     
-    # --- PESTAÑA 1: GESTIÓN DE EMPRESAS ---
+    if dict_comps_ctx:
+        col_ctx1, col_ctx2 = st.columns(2)
+        comp_id_gestion = col_ctx1.selectbox(
+            "🏢 Empresa a Gestionar (Modo SuperAdmin)",
+            options=list(dict_comps_ctx.keys()),
+            format_func=lambda x: dict_comps_ctx[x]
+        )
+        
+        # Cargar plantas de la empresa seleccionada
+        try:
+            resp_sites_ctx = supabase.table("sites").select("id, name").eq("company_id", comp_id_gestion).order("name").execute()
+            dict_sites_ctx = {s["id"]: s["name"] for s in resp_sites_ctx.data} if resp_sites_ctx.data else {}
+        except:
+            dict_sites_ctx = {}
+            
+        if dict_sites_ctx:
+            site_id_gestion = col_ctx2.selectbox(
+                "🏭 Planta a Gestionar (Modo SuperAdmin)",
+                options=list(dict_sites_ctx.keys()),
+                format_func=lambda x: dict_sites_ctx[x]
+            )
+        else:
+            col_ctx2.warning("Esta empresa no tiene plantas registradas.")
+            site_id_gestion = None
+    else:
+        st.warning("No hay empresas registradas en el sistema global.")
+
+elif rol == "CompanyAdmin":
+    # El Administrador de Empresa puede seleccionar de entre las plantas de su propia empresa
+    try:
+        resp_sites_ctx = supabase.table("sites").select("id, name").eq("company_id", comp_id_gestion).order("name").execute()
+        dict_sites_ctx = {s["id"]: s["name"] for s in resp_sites_ctx.data} if resp_sites_ctx.data else {}
+    except:
+        dict_sites_ctx = {}
+        
+    if dict_sites_ctx:
+        col_ctx = st.columns(1)[0]
+        site_id_gestion = col_ctx.selectbox(
+            "🏭 Planta Activa para Gestión",
+            options=list(dict_sites_ctx.keys()),
+            format_func=lambda x: dict_sites_ctx[x]
+        )
+    else:
+        st.warning("Registra una planta en la pestaña 'Plantas' para comenzar la administración de ubicaciones y equipos.")
+        site_id_gestion = None
+
+st.divider()
+
+# ==========================================
+# 3. CONSTRUCCIÓN DE PESTAÑAS SEGÚN ROL
+# ==========================================
+if rol in ["SuperAdmin", "admin"] and not st.session_state.company_id:
+    # Pestañas disponibles para SuperAdmin
+    tabs = st.tabs([
+        "🏢 Empresas (Global)", 
+        "🔐 Admins de Empresa", 
+        "🏭 Plantas (Sites)", 
+        "🔐 Usuarios de Planta", 
+        "📍 Ubicaciones de Línea",
+        "🛠️ Equipos de Medición"
+    ])
+    tab_companies, tab_admins, tab_sites, tab_usr_comp, tab_loc, tab_eq = tabs
+else:
+    # Pestañas para Administrador de Empresa y SiteManager
+    if rol == "CompanyAdmin":
+        tabs = st.tabs([
+            "🏭 Plantas (Sites)", 
+            "🔐 Gestión de Usuarios", 
+            "📍 Ubicaciones de Línea",
+            "🛠️ Equipos de Medición"
+        ])
+        tab_sites, tab_usr_comp, tab_loc, tab_eq = tabs
+    else:
+        # SiteManager y regular
+        tabs = st.tabs([
+            t("settings", "tab_locations"), 
+            t("settings", "tab_equipment")
+        ])
+        tab_loc, tab_eq = tabs
+
+# --- PESTAÑA: GESTIÓN DE EMPRESAS (SUPERADMIN) ---
+if rol in ["SuperAdmin", "admin"] and not st.session_state.company_id:
     with tab_companies:
         col1, col2 = st.columns([1, 1.5])
         with col1:
@@ -54,35 +134,31 @@ if rol in ["SuperAdmin", "admin"]:
         with col2:
             st.markdown("#### 📋 Directorio de Empresas")
             try:
-                resp_comps = supabase.table("companies").select("*").order("name").execute()
+                resp_comps = supabase.table("companies").select("id, name, created_at").order("name").execute()
                 if resp_comps.data:
                     df_comps = pd.DataFrame(resp_comps.data)
+                    df_comps = df_comps[['id', 'name', 'created_at']]
                     df_comps.columns = ["ID Empresa", "Nombre de Empresa", "Fecha Registro"]
                     st.dataframe(df_comps, use_container_width=True, hide_index=True)
                 else:
                     st.info("No hay empresas registradas.")
-            except:
+            except Exception as e:
                 st.info("Error al cargar empresas.")
+                log_error("pages/03_settings.py", "Error fetching companies", e)
 
-    # --- PESTAÑA 2: ADMINISTRADORES DE EMPRESA ---
+    # --- PESTAÑA: ADMINISTRADORES DE EMPRESA (SUPERADMIN) ---
     with tab_admins:
         col_adm1, col_adm2 = st.columns([1, 1.5])
         with col_adm1:
             st.markdown("#### ➕ Crear Administrador de Empresa")
-            try:
-                resp_comps_sel = supabase.table("companies").select("id, name").order("name").execute()
-                dict_comps = {c["id"]: c["name"] for c in resp_comps_sel.data} if resp_comps_sel.data else {}
-            except:
-                dict_comps = {}
-
-            if not dict_comps:
+            if not dict_comps_ctx:
                 st.warning("Debes registrar al menos una empresa primero.")
             else:
                 with st.form("form_add_company_admin", clear_on_submit=True):
                     adm_name = st.text_input("Nombre Completo")
                     adm_email = st.text_input("Email")
                     adm_pwd = st.text_input("Contraseña", type="password")
-                    adm_comp = st.selectbox("Empresa Asociada", options=list(dict_comps.keys()), format_func=lambda x: dict_comps[x])
+                    adm_comp = st.selectbox("Empresa Asociada", options=list(dict_comps_ctx.keys()), format_func=lambda x: dict_comps_ctx[x])
                     
                     if st.form_submit_button(t("settings", "btn_save"), type="primary", use_container_width=True):
                         if adm_name.strip() and adm_email.strip() and adm_pwd.strip():
@@ -94,7 +170,7 @@ if rol in ["SuperAdmin", "admin"]:
                                     "password_hash": hashed_pwd,
                                     "role": "CompanyAdmin",
                                     "company_id": adm_comp,
-                                    "site_id": None, # CompanyAdmin no tiene site fijo
+                                    "site_id": None,
                                     "is_active": True
                                 }).execute()
                                 st.success("Administrador de Empresa creado exitosamente.")
@@ -114,85 +190,69 @@ if rol in ["SuperAdmin", "admin"]:
                     st.dataframe(df_usr_show, use_container_width=True, hide_index=True)
                 else:
                     st.info("No hay administradores de empresa registrados.")
-            except:
+            except Exception as e:
                 st.info("Error al cargar administradores.")
+                log_error("pages/03_settings.py", "Error fetching CompanyAdmin list", e)
 
-    # --- PESTAÑA 3: EQUIPOS DE MEDICIÓN GLOBALES ---
-    with tab_equip:
-        st.info("Como SuperAdmin ves los equipos de todas las plantas.")
-        try:
-            resp_eq = supabase.table("measurement_equipment").select("custom_id, equipment_type, next_calibration, sites(name)").execute()
-            if resp_eq.data:
-                df_eq = pd.DataFrame(resp_eq.data)
-                df_eq['Planta'] = df_eq['sites'].apply(lambda x: x['name'] if isinstance(x, dict) else "N/D")
-                df_eq_show = df_eq[['custom_id', 'equipment_type', 'next_calibration', 'Planta']]
-                df_eq_show.columns = ["ID Equipo", "Tipo de Equipo", "Calibración", "Planta"]
-                st.dataframe(df_eq_show, use_container_width=True, hide_index=True)
-            else:
-                st.info("No hay equipos de medición registrados.")
-        except:
-            st.info("Error al consultar equipos de medición.")
-
-elif rol == "CompanyAdmin":
-    # --- VISTA PARA ADMINISTRADOR DE EMPRESA ---
-    tab_sites, tab_usr_comp, tab_loc, tab_eq = st.tabs([
-        "🏭 Plantas (Sites)", 
-        "🔐 Gestión de Usuarios", 
-        "📍 Ubicaciones de Línea",
-        "🛠️ Equipos de Medición"
-    ])
-
-    # --- PESTAÑA 1: GESTIÓN DE PLANTAS ---
+# --- PESTAÑA: PLANTAS (SITES) (SUPERADMIN & COMPANYADMIN) ---
+if rol in ["SuperAdmin", "admin", "CompanyAdmin"]:
     with tab_sites:
         col_s1, col_s2 = st.columns([1, 1.5])
         with col_s1:
             st.markdown("#### ➕ Registrar Nueva Planta")
-            with st.form("form_add_site", clear_on_submit=True):
-                site_name = st.text_input("Nombre de la Planta (Ej: Monterrey Plant)")
-                site_tz = st.selectbox("Zona Horaria", ["America/Mexico_City", "America/Monterrey", "America/Chihuahua", "America/Tijuana"])
-                
-                if st.form_submit_button(t("settings", "btn_save"), type="primary", use_container_width=True):
-                    if site_name.strip():
-                        try:
-                            supabase.table("sites").insert({
-                                "company_id": company_id,
-                                "name": site_name.strip(),
-                                "timezone": site_tz
-                            }).execute()
-                            st.success("Planta registrada con éxito.")
-                            st.rerun()
-                        except Exception as e:
-                            st.error(f"Error al guardar planta: {e}")
-                            log_error("pages/03_settings.py", "Error inserting site", e)
+            if not comp_id_gestion:
+                st.warning("Selecciona una empresa arriba para agregar plantas.")
+            else:
+                with st.form("form_add_site", clear_on_submit=True):
+                    site_name_inp = st.text_input("Nombre de la Planta (Ej: Monterrey Plant)")
+                    site_tz = st.selectbox("Zona Horaria", ["America/Mexico_City", "America/Monterrey", "America/Chihuahua", "America/Tijuana"])
+                    
+                    if st.form_submit_button(t("settings", "btn_save"), type="primary", use_container_width=True):
+                        if site_name_inp.strip():
+                            try:
+                                supabase.table("sites").insert({
+                                    "company_id": comp_id_gestion,
+                                    "name": site_name_inp.strip(),
+                                    "timezone": site_tz
+                                }).execute()
+                                st.success("Planta registrada con éxito.")
+                                st.rerun()
+                            except Exception as e:
+                                st.error(f"Error al guardar planta: {e}")
+                                log_error("pages/03_settings.py", "Error inserting site", e)
         with col_s2:
-            st.markdown("#### 📋 Plantas de tu Empresa")
-            try:
-                resp_s = supabase.table("sites").select("*").eq("company_id", company_id).execute()
-                if resp_s.data:
-                    df_s = pd.DataFrame(resp_s.data)
-                    df_s_show = df_s[['name', 'timezone', 'created_at']]
-                    df_s_show.columns = ["Nombre Planta", "Zona Horaria", "Fecha Creación"]
-                    st.dataframe(df_s_show, use_container_width=True, hide_index=True)
-                else:
-                    st.info("No hay plantas registradas para tu empresa.")
-            except:
-                st.info("Error al cargar plantas.")
+            st.markdown("#### 📋 Plantas Registradas")
+            if comp_id_gestion:
+                try:
+                    resp_s = supabase.table("sites").select("*").eq("company_id", comp_id_gestion).execute()
+                    if resp_s.data:
+                        df_s = pd.DataFrame(resp_s.data)
+                        df_s_show = df_s[['name', 'timezone', 'created_at']]
+                        df_s_show.columns = ["Nombre Planta", "Zona Horaria", "Fecha Creación"]
+                        st.dataframe(df_s_show, use_container_width=True, hide_index=True)
+                    else:
+                        st.info("No hay plantas registradas para esta empresa.")
+                except Exception as e:
+                    st.info("Error al cargar plantas.")
+                    log_error("pages/03_settings.py", "Error fetching sites list", e)
 
-    # --- PESTAÑA 2: GESTIÓN DE USUARIOS MULTI-SITIOS ---
+    # --- PESTAÑA: GESTIÓN DE USUARIOS (SUPERADMIN & COMPANYADMIN) ---
     with tab_usr_comp:
         col_u1, col_u2 = st.columns([1.2, 1.5])
         
         try:
             # Obtener sitios de la empresa para selección
-            resp_sites_sel = supabase.table("sites").select("id, name").eq("company_id", company_id).execute()
+            resp_sites_sel = supabase.table("sites").select("id, name").eq("company_id", comp_id_gestion).execute()
             list_sites = resp_sites_sel.data if resp_sites_sel.data else []
         except:
             list_sites = []
 
         with col_u1:
             st.markdown("#### ➕ Crear Usuario de Empresa")
-            if not list_sites:
-                st.warning("Debes registrar al menos una Planta (Site) primero.")
+            if not comp_id_gestion:
+                st.warning("Selecciona una empresa para gestionar usuarios.")
+            elif not list_sites:
+                st.warning("Debes registrar al menos una Planta (Site) primero para esta empresa.")
             else:
                 with st.form("form_add_company_user", clear_on_submit=True):
                     u_name = st.text_input("Nombre Completo")
@@ -213,20 +273,17 @@ elif rol == "CompanyAdmin":
                             else:
                                 try:
                                     hashed_pwd = generate_password_hash(u_pwd)
-                                    # Insertar en users
                                     resp_u = supabase.table("users").insert({
                                         "full_name": u_name.strip(),
                                         "email": u_email.strip().lower(),
                                         "password_hash": hashed_pwd,
                                         "role": u_role,
-                                        "company_id": company_id,
-                                        "site_id": selected_site_ids[0], # Default primary site
+                                        "company_id": comp_id_gestion,
+                                        "site_id": selected_site_ids[0],
                                         "is_active": True
                                     }).execute()
                                     
                                     new_user_id = resp_u.data[0]['id']
-                                    
-                                    # Insertar en user_sites
                                     lote_permisos = [{"user_id": new_user_id, "site_id": sid} for sid in selected_site_ids]
                                     supabase.table("user_sites").insert(lote_permisos).execute()
                                     
@@ -236,51 +293,57 @@ elif rol == "CompanyAdmin":
                                     st.error(f"Error al crear usuario: {e}")
                                     log_error("pages/03_settings.py", "Error creating company user and permissions", e)
         with col_u2:
-            st.markdown("#### 📋 Usuarios de tu Empresa")
-            try:
-                resp_users = supabase.table("users").select("id, full_name, email, role, is_active").eq("company_id", company_id).execute()
-                if resp_users.data:
-                    # Cargar permisos puente para mostrar
-                    resp_bridge = supabase.table("user_sites").select("user_id, sites(name)").execute()
-                    dict_bridge = {}
-                    if resp_bridge.data:
-                        for row in resp_bridge.data:
-                            uid = row["user_id"]
-                            sname = row["sites"]["name"] if row.get("sites") else ""
-                            if uid not in dict_bridge:
-                                dict_bridge[uid] = []
-                            if sname:
-                                dict_bridge[uid].append(sname)
+            st.markdown("#### 📋 Usuarios Registrados")
+            if comp_id_gestion:
+                try:
+                    resp_users = supabase.table("users").select("id, full_name, email, role, is_active").eq("company_id", comp_id_gestion).execute()
+                    if resp_users.data:
+                        # Cargar permisos puente para mostrar
+                        resp_bridge = supabase.table("user_sites").select("user_id, sites(name)").execute()
+                        dict_bridge = {}
+                        if resp_bridge.data:
+                            for row in resp_bridge.data:
+                                uid = row["user_id"]
+                                sname = row["sites"]["name"] if row.get("sites") else ""
+                                if uid not in dict_bridge:
+                                    dict_bridge[uid] = []
+                                if sname:
+                                    dict_bridge[uid].append(sname)
 
-                    df_users = pd.DataFrame(resp_users.data)
-                    df_users['Plantas Permitidas'] = df_users['id'].apply(lambda x: ", ".join(dict_bridge.get(x, [])) if x in dict_bridge else "Ninguna")
-                    df_users_show = df_users[['full_name', 'email', 'role', 'Plantas Permitidas', 'is_active']]
-                    df_users_show.columns = ["Nombre", "Email", "Rol", "Plantas Permitidas", "Activo"]
-                    st.dataframe(df_users_show, use_container_width=True, hide_index=True)
-                else:
-                    st.info("No hay usuarios registrados en tu empresa.")
-            except:
-                st.info("Error al cargar usuarios.")
+                        df_users = pd.DataFrame(resp_users.data)
+                        df_users['Plantas Permitidas'] = df_users['id'].apply(lambda x: ", ".join(dict_bridge.get(x, [])) if x in dict_bridge else "Ninguna")
+                        df_users_show = df_users[['full_name', 'email', 'role', 'Plantas Permitidas', 'is_active']]
+                        df_users_show.columns = ["Nombre", "Email", "Rol", "Plantas Permitidas", "Activo"]
+                        st.dataframe(df_users_show, use_container_width=True, hide_index=True)
+                    else:
+                        st.info("No hay usuarios registrados en tu empresa.")
+                except Exception as e:
+                    st.info("Error al cargar usuarios.")
+                    log_error("pages/03_settings.py", "Error listing users", e)
 
-    # --- PESTAÑA 3: UBICACIONES DE LÍNEA ---
-    with tab_loc:
-        col_l1, col_l2 = st.columns([1, 1.5])
-        with col_l1:
-            st.markdown(f"#### {t('settings', 'loc_add')}")
+# --- PESTAÑA: UBICACIONES DE LÍNEA ---
+with tab_loc:
+    col_l1, col_l2 = st.columns([1, 1.5])
+    with col_l1:
+        st.markdown(f"#### {t('settings', 'loc_add')}")
+        if not site_id_gestion:
+            st.warning("Selecciona una Planta (Site) arriba para agregar ubicaciones.")
+        else:
             with st.form("form_add_location", clear_on_submit=True):
                 loc_name = st.text_input(t("settings", "loc_name"))
                 if st.form_submit_button(t("settings", "btn_save"), type="primary", use_container_width=True):
-                    if loc_name.strip() and site_id:
+                    if loc_name.strip():
                         try:
-                            supabase.table("locations").insert({"site_id": site_id, "name": loc_name.strip().upper()}).execute()
+                            supabase.table("locations").insert({"site_id": site_id_gestion, "name": loc_name.strip().upper()}).execute()
                             st.success("Ubicación guardada.")
                             st.rerun()
                         except Exception as e:
                             st.error(f"Error al guardar ubicación: {e}")
-        with col_l2:
-            st.markdown("#### 📋 Ubicaciones Registradas en esta Planta")
+    with col_l2:
+        st.markdown("#### 📋 Ubicaciones Registradas en esta Planta")
+        if site_id_gestion:
             try:
-                resp_loc = supabase.table("locations").select("name").eq("site_id", site_id).order("name").execute()
+                resp_loc = supabase.table("locations").select("name").eq("site_id", site_id_gestion).order("name").execute()
                 if resp_loc.data:
                     df_loc = pd.DataFrame(resp_loc.data)
                     st.dataframe(df_loc, use_container_width=True, hide_index=True)
@@ -289,20 +352,25 @@ elif rol == "CompanyAdmin":
             except:
                 st.info("Error al cargar ubicaciones.")
 
-    # --- PESTAÑA 4: EQUIPOS DE MEDICIÓN ---
-    with tab_eq:
-        col_eq1, col_eq2 = st.columns([1, 1.5])
-        with col_eq1:
-            st.markdown(f"#### {t('settings', 'eq_add')}")
+# --- PESTAÑA: EQUIPOS DE MEDICIÓN ---
+with tab_eq:
+    col_eq1, col_eq2 = st.columns([1, 1.5])
+    with col_eq1:
+        st.markdown(f"#### {t('settings', 'eq_add')}")
+        if not site_id_gestion:
+            st.warning("Selecciona una Planta (Site) arriba para agregar equipos.")
+        elif rol not in ["SiteManager", "CompanyAdmin", "SuperAdmin", "admin"]:
+            st.warning("Solo los administradores y gestores pueden agregar equipos.")
+        else:
             with st.form("form_add_eq", clear_on_submit=True):
                 eq_id = st.text_input(t("settings", "eq_id"))
                 eq_type = st.text_input(t("settings", "eq_type"))
                 eq_cal = st.date_input(t("settings", "eq_cal"))
                 if st.form_submit_button(t("settings", "btn_save"), type="primary", use_container_width=True):
-                    if eq_id.strip() and site_id:
+                    if eq_id.strip():
                         try:
                             supabase.table("measurement_equipment").insert({
-                                "site_id": site_id,
+                                "site_id": site_id_gestion,
                                 "custom_id": eq_id.strip().upper(),
                                 "equipment_type": eq_type.strip(),
                                 "next_calibration": str(eq_cal)
@@ -311,77 +379,11 @@ elif rol == "CompanyAdmin":
                             st.rerun()
                         except:
                             st.error("Error al registrar equipo.")
-        with col_eq2:
-            st.markdown("#### 📋 Equipos Registrados en esta Planta")
+    with col_eq2:
+        st.markdown("#### 📋 Equipos Registrados en esta Planta")
+        if site_id_gestion:
             try:
-                resp_eq = supabase.table("measurement_equipment").select("custom_id, equipment_type, next_calibration").eq("site_id", site_id).execute()
-                if resp_eq.data:
-                    df_eq = pd.DataFrame(resp_eq.data)
-                    df_eq.columns = ["ID Equipo", "Tipo de Equipo", "Próxima Calibración"]
-                    st.dataframe(df_eq, use_container_width=True, hide_index=True)
-                else:
-                    st.info("No hay equipos registrados.")
-            except:
-                st.info("Error al cargar equipos.")
-
-else:
-    # --- VISTA PARA ROLES REGULARES (SITEMANAGER, OPERATOR, ETC.) ---
-    tab_loc, tab_eq = st.tabs([t("settings", "tab_locations"), t("settings", "tab_equipment")])
-    
-    with tab_loc:
-        col1, col2 = st.columns([1, 1.5])
-        with col1:
-            st.markdown(f"#### {t('settings', 'loc_add')}")
-            with st.form("form_add_location", clear_on_submit=True):
-                loc_name = st.text_input(t("settings", "loc_name"))
-                if st.form_submit_button(t("settings", "btn_save"), type="primary", use_container_width=True):
-                    if loc_name.strip() and site_id:
-                        try:
-                            supabase.table("locations").insert({"site_id": site_id, "name": loc_name.strip().upper()}).execute()
-                            st.success("Ubicación guardada.")
-                            st.rerun()
-                        except:
-                            st.error("Error al guardar ubicación.")
-        with col2:
-            st.markdown("#### 📋 Ubicaciones Registradas")
-            try:
-                resp_loc = supabase.table("locations").select("name").eq("site_id", site_id).order("name").execute()
-                if resp_loc.data:
-                    df_loc = pd.DataFrame(resp_loc.data)
-                    st.dataframe(df_loc, use_container_width=True, hide_index=True)
-                else:
-                    st.info("No hay ubicaciones registradas.")
-            except:
-                st.info("Error al cargar ubicaciones.")
-
-    with tab_eq:
-        col_eq1, col_eq2 = st.columns([1, 1.5])
-        with col_eq1:
-            st.markdown(f"#### {t('settings', 'eq_add')}")
-            if rol not in ["SiteManager", "CompanyAdmin", "SuperAdmin"]:
-                st.warning("Solo los administradores y gestores pueden agregar equipos.")
-            else:
-                with st.form("form_add_eq_regular", clear_on_submit=True):
-                    eq_id = st.text_input(t("settings", "eq_id"))
-                    eq_type = st.text_input(t("settings", "eq_type"))
-                    eq_cal = st.date_input(t("settings", "eq_cal"))
-                    if st.form_submit_button(t("settings", "btn_save"), type="primary", use_container_width=True):
-                        if eq_id.strip() and site_id:
-                            try:
-                                supabase.table("measurement_equipment").insert({
-                                    "site_id": site_id,
-                                    "custom_id": eq_id.strip().upper(),
-                                    "equipment_type": eq_type.strip(),
-                                    "next_calibration": str(eq_cal)
-                                }).execute()
-                                st.success("Equipo registrado.")
-                                st.rerun()
-                            except:
-                                st.error("Error al registrar equipo.")
-        with col_eq2:
-            st.markdown("#### 📋 Equipos Registrados")
-            try:
-                resp_eq = supabase.table("measurement_equipment").select("custom_id, equipment_type, next_calibration").eq("site_id", site_id).execute()
+                resp_eq = supabase.table("measurement_equipment").select("custom_id, equipment_type, next_calibration").eq("site_id", site_id_gestion).execute()
                 if resp_eq.data:
                     df_eq = pd.DataFrame(resp_eq.data)
                     df_eq.columns = ["ID Equipo", "Tipo de Equipo", "Próxima Calibración"]
