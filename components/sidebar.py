@@ -5,7 +5,26 @@ from core.auth import cerrar_sesion
 
 def render_sidebar():
     with st.sidebar:
-        # Logotipo Genérico (Puede ser dinámico por empresa en el futuro)
+        # --- LOGOTIPO Y ESTILOS CSS PARA OCULTAR MENÚ NATIVO ---
+        st.markdown(
+            """
+            <style>
+            [data-testid="sidebar-nav"] {
+                display: none !important;
+            }
+            .sidebar-category {
+                font-size: 11px;
+                font-weight: 800;
+                color: #888888;
+                margin-top: 15px;
+                margin-bottom: 5px;
+                letter-spacing: 1px;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True
+        )
+        
         st.image("https://raw.githubusercontent.com/aldoaoa/Visualizador-BCS-IDS/refs/heads/main/Logo_BCS_transparent%20(1).png", use_container_width=True)
         st.divider()
 
@@ -24,11 +43,11 @@ def render_sidebar():
             
         st.divider()
 
-        # --- INFORMACIÓN DEL USUARIO Y MENÚ ---
+        # --- INFORMACIÓN DEL USUARIO ---
         if not st.session_state.get("modo_lectura", True):
             st.success(f"👤 {st.session_state.get('usuario_nombre', 'User')}")
             
-            # --- SELECTOR DE PLANTA (PARA ADMINS) ---
+            # --- SELECTOR DE PLANTA (PARA ADMINS / MULTI-TENANT) ---
             available_sites = st.session_state.get("available_sites", [])
             if available_sites:
                 site_names = [s["name"] for s in available_sites]
@@ -54,11 +73,31 @@ def render_sidebar():
             else:
                 st.caption(f"🏢 {st.session_state.get('company_name', 'Global')} | 📍 {st.session_state.get('site_name', 'All Sites')}")
             
-            st.markdown(f"### 🧭 {t('sidebar', 'menu')}")
-            
-            # Streamlit renderiza los enlaces de la carpeta /pages automáticamente aquí.
-            # Por ahora, solo colocamos el botón de salida al fondo.
-            
-            st.write("") # Espaciador
-            if st.button(f"🚪 {t('sidebar', 'logout')}", use_container_width=True):
+            st.divider()
+
+            # --- MENÚ DE NAVEGACIÓN AGRUPADO ---
+            # MONITOREO Y MÉTRICAS
+            st.markdown('<div class="sidebar-category">MONITOREO Y MÉTRICAS</div>', unsafe_allow_html=True)
+            st.page_link("pages/01_dashboard.py", label="Dashboard general", icon="📊")
+
+            # VERIFICACIÓN Y PISO
+            st.markdown('<div class="sidebar-category">VERIFICACIÓN Y PISO</div>', unsafe_allow_html=True)
+            st.page_link("pages/02_audit.py", label="Auditoría en piso", icon="🔍")
+            st.page_link("pages/09_schedule.py", label="Cronograma de verificación", icon="📅")
+
+            # ACTIVOS Y CAPACITACIÓN
+            st.markdown('<div class="sidebar-category">ACTIVOS Y CAPACITACIÓN</div>', unsafe_allow_html=True)
+            st.page_link("pages/04_inventory.py", label="Directorio de activos", icon="📦")
+            st.page_link("pages/05_lab.py", label="Laboratorio de pruebas", icon="🧪")
+            st.page_link("pages/06_infraestucture.py", label="Infraestructura (EPA)", icon="⚡")
+            st.page_link("pages/07_training.py", label="Entrenamiento y certificación", icon="🎓")
+            st.page_link("pages/08_sensibilidad.py", label="Análisis de sensibilidad", icon="🔌")
+
+            # CONFIGURACIÓN
+            st.markdown('<div class="sidebar-category">CONFIGURACIÓN</div>', unsafe_allow_html=True)
+            st.page_link("pages/03_settings.py", label="Ajustes del sistema", icon="⚙️")
+
+            st.divider()
+            if st.button("🚪 Logout / Cerrar Sesión", use_container_width=True, type="secondary"):
                 cerrar_sesion()
+                st.rerun()
