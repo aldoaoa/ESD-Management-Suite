@@ -38,25 +38,59 @@ def iniciar_sesion(email, password):
                 st.session_state.company_name = user_data["companies"]["name"] if user_data.get("companies") else "Global"
                 st.session_state.site_name = user_data["sites"]["name"] if user_data.get("sites") else "All Sites"
 
-                # Si es un usuario admin/global y no tiene site_id fijo, cargamos todas las plantas disponibles
-                if not st.session_state.site_id or st.session_state.rol_usuario in ["admin", "SuperAdmin", "CompanyAdmin"]:
+                # Si es un usuario global (SuperAdmin/admin), cargamos todos los sitios del sistema
+                if st.session_state.rol_usuario in ["SuperAdmin", "admin"]:
                     try:
-                        query = supabase.table("sites").select("id, name")
-                        if st.session_state.rol_usuario == "CompanyAdmin" and st.session_state.company_id:
-                            query = query.eq("company_id", st.session_state.company_id)
-                        
-                        sites_resp = query.execute()
-                        if sites_resp.data:
-                            st.session_state.available_sites = sites_resp.data
-                            # Inicializamos con el primer site si no tenía uno asignado o si el asignado no está en la lista
-                            if not st.session_state.site_id:
-                                st.session_state.site_id = sites_resp.data[0]["id"]
-                                st.session_state.site_name = sites_resp.data[0]["name"]
+                        sites_resp = supabase.table("sites").select("id, name").execute()
+                        st.session_state.available_sites = sites_resp.data if sites_resp.data else []
+                    except Exception as e:
+                        st.session_state.available_sites = []
+                        print(f"Error loading all sites for SuperAdmin: {e}")
+                
+                # Si es administrador de empresa (CompanyAdmin), cargamos todos los sitios de su empresa
+                elif st.session_state.rol_usuario == "CompanyAdmin":
+                    try:
+                        if st.session_state.company_id:
+                            sites_resp = supabase.table("sites").select("id, name").eq("company_id", st.session_state.company_id).execute()
+                            st.session_state.available_sites = sites_resp.data if sites_resp.data else []
                         else:
                             st.session_state.available_sites = []
                     except Exception as e:
                         st.session_state.available_sites = []
-                        print(f"Error loading sites for admin: {e}")
+                        print(f"Error loading company sites for CompanyAdmin: {e}")
+                
+                # Para roles regulares, cargamos las plantas asignadas en la tabla puente user_sites
+                else:
+                    try:
+                        user_sites_resp = supabase.table("user_sites").select("site_id, sites(name)").eq("user_id", st.session_state.user_id).execute()
+                        if user_sites_resp.data:
+                            st.session_state.available_sites = [
+                                {"id": x["site_id"], "name": x["sites"]["name"]} 
+                                for x in user_sites_resp.data if x.get("sites")
+                            ]
+                        else:
+                            st.session_state.available_sites = []
+                    except Exception as e:
+                        st.session_state.available_sites = []
+                        print(f"Error loading user_sites for regular user: {e}")
+
+                # Inicializamos la planta activa por defecto en base a los accesos cargados
+                if st.session_state.available_sites:
+                    # Validar si el site_id de la cuenta está dentro de sus accesos permitidos
+                    site_ids = [s["id"] for s in st.session_state.available_sites]
+                    if st.session_state.site_id in site_ids:
+                        # Encontrar el nombre del sitio correspondiente
+                        for s in st.session_state.available_sites:
+                            if s["id"] == st.session_state.site_id:
+                                st.session_state.site_name = s["name"]
+                                break
+                    else:
+                        # Si no coincide o es nulo, forzamos el primero de la lista
+                        st.session_state.site_id = st.session_state.available_sites[0]["id"]
+                        st.session_state.site_name = st.session_state.available_sites[0]["name"]
+                else:
+                    st.session_state.site_id = None
+                    st.session_state.site_name = "Sin Planta Asignada"
                 
                 return True, "success"
             else:
