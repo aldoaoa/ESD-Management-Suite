@@ -20,6 +20,8 @@ def t(seccion, clave):
     Función de traducción rápida.
     Uso: t('login', 'btn_submit')
     """
+    if "locales" not in st.session_state:
+        load_locales()
     lang = st.session_state.get("lang", "en") # Inglés por defecto
     
     # Si el idioma no existe, usa inglés

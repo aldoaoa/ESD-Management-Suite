@@ -14,6 +14,11 @@ def hide_sidebar():
         """,
         unsafe_allow_html=True
     )
+    # Inicialización forzada para enlaces directos/actualizaciones
+    from config import inicializar_estado_global
+    from core.i18n import load_locales
+    inicializar_estado_global(st)
+    load_locales()
 
 def render_sidebar():
     with st.sidebar:
