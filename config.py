@@ -12,8 +12,9 @@ def inicializar_estado_global(st):
         "val_form_key": 0,
         "lang": "es",
         "site_id": None,
-        "site_name": None,
+        "site_name": "All Sites",
         "company_id": None,
+        "company_name": "Global",
         "user_id": None,
     }
     for key, value in defaults.items():
