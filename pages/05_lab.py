@@ -9,6 +9,7 @@ import pytesseract
 from PIL import Image
 from core.i18n import t
 from core.db import get_supabase_client
+from components.sidebar import render_sidebar
 
 # ==========================================
 # 1. BARRERA DE SEGURIDAD MULTI-TENANT
@@ -16,6 +17,8 @@ from core.db import get_supabase_client
 if st.session_state.get("modo_lectura", True):
     st.warning(t("auth", "login_required"))
     st.stop()
+
+render_sidebar()
 
 supabase = get_supabase_client()
 site_id = st.session_state.site_id

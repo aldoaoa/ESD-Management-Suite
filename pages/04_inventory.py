@@ -4,6 +4,7 @@ import streamlit as st
 import pandas as pd
 from core.i18n import t
 from core.db import get_supabase_client
+from components.sidebar import render_sidebar
 
 # ==========================================
 # 1. BARRERA DE SEGURIDAD
@@ -11,6 +12,8 @@ from core.db import get_supabase_client
 if st.session_state.get("modo_lectura", True):
     st.warning(t("auth", "login_required"))
     st.stop()
+
+render_sidebar()
 
 # Inicializamos cliente y extraemos credenciales del usuario actual
 supabase = get_supabase_client()

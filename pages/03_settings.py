@@ -5,6 +5,7 @@ from werkzeug.security import generate_password_hash
 from core.i18n import t
 from core.db import get_supabase_client
 from core.logger import log_error, log_event
+from components.sidebar import render_sidebar
 
 # ==========================================
 # 1. BARRERA DE SEGURIDAD
@@ -12,6 +13,8 @@ from core.logger import log_error, log_event
 if st.session_state.get("modo_lectura", True):
     st.warning(t("auth", "login_required"))
     st.stop()
+
+render_sidebar()
 
 supabase = get_supabase_client()
 site_id = st.session_state.site_id
