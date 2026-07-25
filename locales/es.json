@@ -106,7 +106,24 @@
     "tab_locations": "Ubicaciones de Línea",
     "tab_equipment": "Equipos de Medición",
     "loc_add": "➕ Registrar Nueva Ubicación",
-    "eq_add": "➕ Registrar Nuevo Equipo de Medición"
+    "eq_add": "Registrar Nuevo Equipo de Medición",
+    "btn_delete_eq": "Eliminar Equipo",
+    "btn_save_equipment": "💾 Guardar Equipo de Medición",
+    "eq_caption": "Registra instrumentos de prueba ESD (Megóhmetros, Voltímetros, Terómetros), controla sus fechas de calibración y vigencia.",
+    "eq_title": "Gestión de Equipos de Medición de Auditoría",
+    "hdr_eq_directory": "Directorio de Equipos de Medición Registrados",
+    "info_own_account_msg": "Por motivos de seguridad y para prevenir el bloqueo accidental de tu acceso, no es posible eliminar o desactivar tu propia cuenta mientras estás logueado.",
+    "info_own_account_title": "Cuenta Propia en Sesión",
+    "lbl_eq_brand": "Marca / Modelo",
+    "lbl_eq_calib_date": "Última Calibración",
+    "lbl_eq_code": "Código / ID de Calibración Interno",
+    "lbl_eq_name": "Nombre / Instrumento",
+    "lbl_eq_next_calib": "Próxima Calibración",
+    "lbl_eq_serial": "Número de Serie",
+    "lbl_eq_status": "Estatus del Equipo",
+    "msg_eq_saved": "Equipo de medición registrado exitosamente.",
+    "msg_eq_updated": "Equipo actualizado correctamente.",
+    "msg_no_eq_found": "Sin equipos de medición registrados actualmente en esta planta."
   },
   "dashboard": {
     "title": "Overview de Cumplimiento ESD",
@@ -124,5 +141,26 @@
   },
   "routes": {
     "title": "Alta, Enrutamiento y Secuencia de Productos"
+  },
+  "training": {
+    "title": "Capacitación y Certificación ESD",
+    "subtitle": "Control de entrenamientos, vigencias y evaluaciones del personal",
+    "tab_dash": "📊 Dashboard de Certificación",
+    "tab_weekly": "📅 Resumen Semanal",
+    "tab_historical": "📜 Historial de Evaluaciones",
+    "tab_audit": "🔍 Verificación de Personal"
+  },
+  "schedule": {
+    "title": "Cronograma de Verificación y Frecuencias TR53",
+    "subtitle": "Control de frecuencias normativas de auditoría por línea y estación",
+    "tab_general": "📅 Auditorías Programadas",
+    "tab_urgents": "🚨 Auditorías Vencidas / Urgentes"
+  },
+  "sensitivity": {
+    "title": "Matriz de Sensibilidad ESD por Producto y Componente",
+    "subtitle": "Niveles de sensibilidad HBM y CDM por modelo de producto",
+    "tab_overview": "🌍 Resumen de Planta",
+    "tab_query": "🔍 Consulta por Producto",
+    "tab_import": "📥 Clasificación de Componentes"
   }
 }
