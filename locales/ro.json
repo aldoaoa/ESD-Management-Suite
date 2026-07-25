@@ -137,7 +137,23 @@
     "lbl_scan": "Scanare Cod QR Echipament",
     "asset_info": "Detalii Echipament",
     "status": "Stare Operațională",
-    "new_record": "Înregistrare Măsurătoare Nouă"
+    "new_record": "Înregistrare Măsurătoare Nouă",
+    "waiting": "🔍 Scanați sau introduceți codul QR / ID pentru a începe auditul.",
+    "history": "📜 Istoric Audituri Recente",
+    "lbl_manual": "Sau introduceți manual codul / ID-ul:",
+    "btn_close": "Închidere Scanner QR",
+    "loc": "Locație / Linie",
+    "class": "Clasificare ESD",
+    "msg_not_found": "❌ Nu s-a găsit niciun echipament cu acest cod.",
+    "mode_quick": "Inspecție Rapidă (1 Punct)",
+    "mode_integral": "Validare Integrală S20.20",
+    "lbl_temp": "Temperatură Ambientală (°C)",
+    "lbl_hum": "Umiditate Relativă (%RH)",
+    "lbl_res": "Rezistență Măsurată (Ohmi)",
+    "lbl_volts": "Tensiune Electrostatică (V)",
+    "btn_save": "💾 Salvare Audit",
+    "btn_save_integral": "💾 Salvare și Generare Raport",
+    "msg_success": "✅ Audit înregistrat cu succes."
   },
   "routes": {
     "title": "Înregistrare Produs, Rute și Secvență"
