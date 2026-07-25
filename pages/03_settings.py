@@ -555,6 +555,9 @@ if is_global_admin or is_company_admin or is_site_admin:
                                 with pe5: ep_sett = st.checkbox("Ajustes", value=p_dict.get("settings", False), key=f"pset_{usr_id}")
 
                                 if st.form_submit_button(t("settings", "btn_save_changes", "💾 Guardar Cambios")):
+                                    if is_own_account and not e_act:
+                                        st.warning("⚠️ No puedes desactivar tu propia cuenta mientras estás en sesión activa.")
+                                        e_act = True
                                     try:
                                         nuevos_perms = {
                                             "audit": ep_audit,
@@ -594,14 +597,22 @@ if is_global_admin or is_company_admin or is_site_admin:
 
                         # Sub-tab 3: Eliminar o Desactivar Usuario
                         with tab_e3:
-                            st.warning(t("settings", "warn_delete_user", "⚠️ Advertencia: Esta acción eliminará permanentemente la cuenta de usuario."))
-                            if st.button(f"🗑️ {t('settings', 'btn_confirm_delete', 'Eliminar Usuario Definitivamente')}", key=f"del_u_{usr_id}", type="primary"):
-                                try:
-                                    supabase.table("users").delete().eq("id", usr_id).execute()
-                                    st.success(f"✅ {t('settings', 'msg_user_deleted', 'Usuario eliminado exitosamente.')}")
-                                    st.rerun()
-                                except Exception as ex:
-                                    st.error(f"Error al eliminar: {ex}")
+                            mi_email_sesion = str(st.session_state.get("usuario_email", st.session_state.get("user_email", ""))).strip().lower()
+                            mi_id_sesion = str(st.session_state.get("user_id", "")).strip()
+                            
+                            is_own_account = (usr_id and str(usr_id).strip() == mi_id_sesion) or (usr_email and usr_email.strip().lower() == mi_email_sesion)
+                            
+                            if is_own_account:
+                                st.info(f"🛡️ **{t('settings', 'info_own_account_title', 'Cuenta Propia en Sesión')}**: {t('settings', 'info_own_account_msg', 'Por motivos de seguridad y para prevenir el bloqueo accidental de tu acceso, no es posible eliminar o desactivar tu propia cuenta mientras estás logueado.')}")
+                            else:
+                                st.warning(t("settings", "warn_delete_user", "⚠️ Advertencia: Esta acción eliminará permanentemente la cuenta de usuario."))
+                                if st.button(f"🗑️ {t('settings', 'btn_confirm_delete', 'Eliminar Usuario Definitivamente')}", key=f"del_u_{usr_id}", type="primary"):
+                                    try:
+                                        supabase.table("users").delete().eq("id", usr_id).execute()
+                                        st.success(f"✅ {t('settings', 'msg_user_deleted', 'Usuario eliminado exitosamente.')}")
+                                        st.rerun()
+                                    except Exception as ex:
+                                        st.error(f"Error al eliminar: {ex}")
                     else:
                         # Modo solo lectura para usuarios de jerarquía superior o igual
                         st.info("ℹ️ **Vista de Solo Lectura**: No cuentas con jerarquía suficiente para modificar o restablecer la contraseña de este usuario superior o de igual nivel.")
