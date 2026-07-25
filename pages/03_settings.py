@@ -7,6 +7,13 @@ from core.db import get_supabase_client
 from core.logger import log_error, log_event
 from components.sidebar import render_sidebar, hide_sidebar
 
+# Cargar lista completa de zonas horarias mundiales IANA
+try:
+    import zoneinfo
+    ALL_TIMEZONES = sorted([tz for tz in zoneinfo.available_timezones() if '/' in tz or tz == 'UTC'])
+except Exception:
+    ALL_TIMEZONES = ["UTC", "America/Mexico_City", "America/Tijuana", "America/New_York", "Europe/London", "Asia/Tokyo"]
+
 # Ocultar navegación nativa antes de evaluar accesos
 hide_sidebar()
 
@@ -119,9 +126,12 @@ if is_global_admin or is_company_admin:
                     with col1:
                         nombre_site_input = st.text_input("Nombre de la Planta / Sucursal", placeholder="Ej. Planta Guadalajara / Site Norte")
                     with col2:
+                        idx_tz_default = ALL_TIMEZONES.index("America/Mexico_City") if "America/Mexico_City" in ALL_TIMEZONES else 0
                         timezone_input = st.selectbox(
-                            "Zona Horaria",
-                            ["America/Mexico_City", "America/Tijuana", "America/Monterrey", "America/Hermosillo", "America/Chihuahua", "UTC"]
+                            "Zona Horaria (Mundial IANA)",
+                            options=ALL_TIMEZONES,
+                            index=idx_tz_default,
+                            help="Soporta todas las zonas horarias del mundo (América, Europa, Asia, África, Oceanía, etc.)"
                         )
                     
                     empresa_target_id = comp_id_gestion
@@ -159,13 +169,19 @@ if is_global_admin or is_company_admin:
                     for s in resp_sites.data:
                         s_id = s["id"]
                         s_name = s["name"]
-                        s_tz = s.get("timezone", "N/A")
+                        s_tz = s.get("timezone", "UTC")
                         c_name = s.get("companies", {}).get("name", "N/A")
+                        
+                        idx_current_tz = ALL_TIMEZONES.index(s_tz) if s_tz in ALL_TIMEZONES else 0
                         
                         with st.expander(f"🏭 **{s_name}** ({c_name}) — TZ: `{s_tz}`", expanded=False):
                             with st.form(f"form_edit_site_{s_id}"):
                                 edit_name = st.text_input("Nombre de Planta", value=s_name)
-                                edit_tz = st.selectbox("Zona Horaria", ["America/Mexico_City", "America/Tijuana", "America/Monterrey", "America/Hermosillo", "America/Chihuahua", "UTC"], index=0)
+                                edit_tz = st.selectbox(
+                                    "Zona Horaria (Mundial IANA)",
+                                    options=ALL_TIMEZONES,
+                                    index=idx_current_tz
+                                )
                                 if st.form_submit_button("💾 Actualizar Planta"):
                                     try:
                                         supabase.table("sites").update({
