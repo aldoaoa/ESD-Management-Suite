@@ -14,7 +14,6 @@ def hide_sidebar():
         """,
         unsafe_allow_html=True
     )
-    # Inicialización forzada para enlaces directos/actualizaciones
     from config import inicializar_estado_global
     from core.i18n import load_locales
     inicializar_estado_global(st)
@@ -45,24 +44,9 @@ def render_sidebar():
         st.image("https://raw.githubusercontent.com/aldoaoa/Visualizador-BCS-IDS/refs/heads/main/Logo_BCS_transparent%20(1).png", use_container_width=True)
         st.divider()
 
-        # --- SELECTOR DE IDIOMA ---
-        lang_actual = st.session_state.get("lang", "en")
-        nuevo_lang = st.selectbox(
-            "🌐 Language / Idioma", 
-            options=["en", "es"], 
-            format_func=lambda x: "English" if x == "en" else "Español",
-            index=0 if lang_actual == "en" else 1
-        )
-        
-        if nuevo_lang != lang_actual:
-            st.session_state.lang = nuevo_lang
-            st.rerun()
-            
-        st.divider()
-
         # --- INFORMACIÓN DEL USUARIO ---
         if not st.session_state.get("modo_lectura", True):
-            st.success(f"👤 {st.session_state.get('usuario_nombre', 'User')}")
+            st.success(f"👤 {st.session_state.get('usuario_nombre', st.session_state.get('user_name', 'Usuario'))}")
             
             # --- SELECTOR DE PLANTA (PARA ADMINS / MULTI-TENANT) ---
             available_sites = st.session_state.get("available_sites", [])
@@ -77,7 +61,7 @@ def render_sidebar():
                         break
                 
                 selected_site_name = st.selectbox(
-                    "🏭 Active Site / Planta",
+                    "🏭 Site / Planta",
                     options=site_names,
                     index=idx
                 )
@@ -88,33 +72,34 @@ def render_sidebar():
                     st.session_state.site_name = selected_site["name"]
                     st.rerun()
             else:
-                st.caption(f"🏢 {st.session_state.get('company_name', 'Global')} | 📍 {st.session_state.get('site_name', 'All Sites')}")
+                st.caption(f"🏢 {st.session_state.get('company_name', 'Global')} | 📍 {st.session_state.get('site_name', 'Site Principal')}")
             
             st.divider()
 
-            # --- MENÚ DE NAVEGACIÓN AGRUPADO ---
+            # --- MENÚ DE NAVEGACIÓN AGRUPADO CON TRADUCCIÓN COMPLETA ---
             # MONITOREO Y MÉTRICAS
-            st.markdown('<div class="sidebar-category">MONITOREO Y MÉTRICAS</div>', unsafe_allow_html=True)
-            st.page_link("pages/01_dashboard.py", label="Dashboard general", icon="📊")
+            st.markdown(f'<div class="sidebar-category">{t("nav", "cat_monitoring", default="MONITOREO Y MÉTRICAS")}</div>', unsafe_allow_html=True)
+            st.page_link("pages/01_dashboard.py", label=t("nav", "dashboard", default="Dashboard general"), icon="📊")
 
             # VERIFICACIÓN Y PISO
-            st.markdown('<div class="sidebar-category">VERIFICACIÓN Y PISO</div>', unsafe_allow_html=True)
-            st.page_link("pages/02_audit.py", label="Auditoría en piso", icon="🔍")
-            st.page_link("pages/09_schedule.py", label="Cronograma de verificación", icon="📅")
+            st.markdown(f'<div class="sidebar-category">{t("nav", "cat_verification", default="VERIFICACIÓN Y PISO")}</div>', unsafe_allow_html=True)
+            st.page_link("pages/02_audit.py", label=t("nav", "audit", default="Auditoría en piso"), icon="🔍")
+            st.page_link("pages/09_schedule.py", label=t("nav", "schedule", default="Cronograma de verificación"), icon="📅")
 
             # ACTIVOS Y CAPACITACIÓN
-            st.markdown('<div class="sidebar-category">ACTIVOS Y CAPACITACIÓN</div>', unsafe_allow_html=True)
-            st.page_link("pages/04_inventory.py", label="Directorio de activos", icon="📦")
-            st.page_link("pages/05_lab.py", label="Laboratorio de pruebas", icon="🧪")
-            st.page_link("pages/06_infraestucture.py", label="Infraestructura (EPA)", icon="⚡")
-            st.page_link("pages/07_training.py", label="Entrenamiento y certificación", icon="🎓")
-            st.page_link("pages/08_sensibilidad.py", label="Análisis de sensibilidad", icon="🔌")
+            st.markdown(f'<div class="sidebar-category">{t("nav", "cat_assets_training", default="ACTIVOS Y CAPACITACIÓN")}</div>', unsafe_allow_html=True)
+            st.page_link("pages/04_inventory.py", label=t("nav", "inventory", default="Directorio de activos"), icon="📦")
+            st.page_link("pages/05_lab.py", label=t("nav", "lab", default="Laboratorio de pruebas"), icon="🧪")
+            st.page_link("pages/06_infraestucture.py", label=t("nav", "infrastructure", default="Infraestructura (EPA)"), icon="⚡")
+            st.page_link("pages/07_training.py", label=t("nav", "training", default="Entrenamiento y certificación"), icon="🎓")
+            st.page_link("pages/08_sensibilidad.py", label=t("nav", "sensitivity", default="Análisis de sensibilidad"), icon="🔌")
+            st.page_link("pages/10_routes.py", label=t("nav", "routes", default="Rutas de productos"), icon="📦")
 
             # CONFIGURACIÓN
-            st.markdown('<div class="sidebar-category">CONFIGURACIÓN</div>', unsafe_allow_html=True)
-            st.page_link("pages/03_settings.py", label="Ajustes del sistema", icon="⚙️")
+            st.markdown(f'<div class="sidebar-category">{t("nav", "cat_settings", default="CONFIGURACIÓN")}</div>', unsafe_allow_html=True)
+            st.page_link("pages/03_settings.py", label=t("nav", "settings", default="Ajustes del sistema"), icon="⚙️")
 
             st.divider()
-            if st.button("🚪 Logout / Cerrar Sesión", use_container_width=True, type="secondary"):
+            if st.button("🚪 " + t("nav", "logout", default="Cerrar Sesión"), use_container_width=True, type="secondary"):
                 cerrar_sesion()
                 st.rerun()
