@@ -22,9 +22,17 @@
     "email": "Correo Electrónico",
     "password": "Contraseña",
     "submit": "Iniciar Sesión",
+    "email_ph": "Correo Electrónico",
+    "pwd_ph": "Contraseña",
+    "btn_submit": "Iniciar Sesión",
+    "error_creds": "❌ Credenciales incorrectas. Verifica tu correo y contraseña.",
     "account_inactive": "Tu cuenta de usuario está inactiva.",
     "invalid_password": "La contraseña ingresada es incorrecta.",
-    "user_not_found": "No existe un usuario registrado con este correo."
+    "user_not_found": "No existe un usuario registrado con este correo.",
+    "authenticating": "Autenticando...",
+    "fill_all": "Por favor completa todos los campos.",
+    "welcome": "Bienvenido",
+    "select_module": "Por favor selecciona un módulo del menú lateral para comenzar."
   },
   "auth": {
     "login_required": "Por favor inicia sesión para acceder a este módulo.",
