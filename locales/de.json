@@ -22,9 +22,17 @@
     "email": "E-Mail-Adresse",
     "password": "Passwort",
     "submit": "Anmelden",
+    "email_ph": "E-Mail-Adresse",
+    "pwd_ph": "Passwort",
+    "btn_submit": "Anmelden",
+    "error_creds": "❌ Ungültige Anmeldedaten. Bitte überprüfen Sie E-Mail und Passwort.",
     "account_inactive": "Ihr Benutzerkonto ist deaktiviert.",
     "invalid_password": "Das eingegebene Passwort ist falsch.",
-    "user_not_found": "Kein Benutzerkonto mit dieser E-Mail-Adresse gefunden."
+    "user_not_found": "Kein Benutzerkonto mit dieser E-Mail-Adresse gefunden.",
+    "authenticating": "Authentifizierung läuft...",
+    "fill_all": "Bitte füllen Sie alle Felder aus.",
+    "welcome": "Willkommen",
+    "select_module": "Bitte wählen Sie ein Modul in der Seitenleiste, um zu beginnen."
   },
   "auth": {
     "login_required": "Bitte melden Sie sich an, um auf dieses Modul zuzugreifen.",
