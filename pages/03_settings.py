@@ -412,11 +412,21 @@ if is_global_admin or is_company_admin:
         st.markdown(f"##### 📋 {t('settings', 'hdr_user_directory', 'Directorio de Usuarios de la Empresa')}")
         try:
             if comp_id_gestion:
-                u_q = supabase.table("users").select("*, sites(name)").eq("company_id", comp_id_gestion).order("email").execute()
+                u_q = supabase.table("users").select("*, sites!users_site_id_fkey(name)").eq("company_id", comp_id_gestion).order("email").execute()
             else:
-                u_q = supabase.table("users").select("*, sites(name)").order("email").execute()
+                u_q = supabase.table("users").select("*, sites!users_site_id_fkey(name)").order("email").execute()
                 
             list_u_data = u_q.data if u_q.data else []
+        except Exception:
+            try:
+                if comp_id_gestion:
+                    u_q = supabase.table("users").select("*").eq("company_id", comp_id_gestion).order("email").execute()
+                else:
+                    u_q = supabase.table("users").select("*").order("email").execute()
+                list_u_data = u_q.data if u_q.data else []
+            except Exception as ex_f:
+                list_u_data = []
+                st.error(f"Error: {ex_f}")
             
             if list_u_data:
                 for usr in list_u_data:
