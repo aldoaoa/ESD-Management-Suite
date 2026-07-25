@@ -1,141 +1,66 @@
 {
-    "auth": {
-        "login_required": "Por favor inicia sesión para acceder a este módulo."
-    }, 
-    "inventory": {
-        "title": "📦 Gestión de Inventario ESD",
-        "tab_dir": "📋 Directorio de Activos",
-        "tab_add": "➕ Registrar Nuevo",
-        "tab_retire": "🗑️ Dar de Baja",
-        "lbl_id": "ID del Activo (Ej: SMT-01)",
-        "lbl_category": "Categoría",
-        "lbl_class": "Clasificación (Ej: Mesa, Tapete)",
-        "lbl_location": "Ubicación / Línea",
-        "btn_save": "Guardar Activo",
-        "msg_success": "¡Activo registrado exitosamente!",
-        "msg_duplicate": "Error: El ID ya existe en esta planta."
-    },
-    "infra": {
-        "title": "🌍 Infraestructura EPA",
-        "subtitle": "Control de Tierras, Piso y Conductores Aislados",
-        "tab_ground": "🔌 Tierras y Conexiones",
-        "tab_floor": "🗺️ Piso ESD",
-        "tab_iso": "⚡ Conductores Aislados",
-        "tab_checkers": "🛂 Checadores",
-        "gr_type": "Tipo de Punto",
-        "gr_loc": "Línea / Ubicación",
-        "gr_id": "ID del Punto",
-        "gr_ohms": "Resistencia (Ohms)",
-        "gr_save": "💾 Guardar Medición a Tierra",
-        "fl_room": "Cuarto / Área",
-        "fl_point": "Número de Punto",
-        "fl_save": "💾 Guardar Punto de Piso",
-        "iso_op": "Operación",
-        "iso_volt": "Voltaje Máximo (V)",
-        "iso_save": "💾 Guardar Conductor Aislado",
-        "msg_pass": "Medición Aprobada (PASS)",
-        "msg_fail": "Medición Rechazada (FAIL) - Excede los límites"
-    },
-    "lab": {
-        "title": "🧪 Laboratorio de Pruebas",
-        "subtitle": "Análisis avanzado: Event Meter y Walking Test",
-        "tab_event": "⚡ Event Meter",
-        "tab_walking": "🚶‍♂️ Walking Test",
-        "em_location": "Ubicación / Línea",
-        "em_operation": "ID Operación (Ej. OP-50)",
-        "em_contact": "Tipo de Contacto",
-        "em_events": "Cant. de Eventos",
-        "em_voltage": "Voltaje Máximo (V)",
-        "em_save": "💾 Guardar Event Meter",
-        "wt_upload": "📄 Subir PDF del Walking Test",
-        "wt_extracting": "Analizando imagen con OCR...",
-        "wt_save": "💾 Confirmar y Guardar Walking Test"
-    },
-    "settings": {
-        "title": "⚙️ Ajustes del Sistema",
-        "subtitle": "Gestión de catálogos y accesos",
-        "tab_locations": "📍 Ubicaciones",
-        "tab_equipment": "🛠️ Equipos de Medición",
-        "tab_users": "🔐 Usuarios",
-        "loc_add": "➕ Agregar Nueva Ubicación",
-        "loc_name": "Nombre del Área o Línea",
-        "btn_save": "Guardar",
-        "eq_add": "➕ Registrar Equipo",
-        "eq_id": "ID del Equipo",
-        "eq_type": "Tipo (Ej: Megóhmetro)",
-        "eq_cal": "Próxima Calibración",
-        "us_title": "Gestión de Accesos",
-        "us_warning": "Solo los administradores pueden gestionar usuarios."
-    },
-    "login": {
-        "title": "Bienvenido a ESD Management Suite",
-        "email_ph": "Correo electrónico",
-        "pwd_ph": "Contraseña",
-        "btn_submit": "Ingresar",
-        "error_creds": "Credenciales inválidas o cuenta inactiva."
-    },
-    "sidebar": {
-        "menu": "Menú Principal",
-        "dashboard": "Tablero y Métricas",
-        "logout": "Cerrar Sesión"
-    },
-    "audit": {
-        "title": "📱 Inspección y Auditoría Rápida",
-        "lbl_scan": "Apunta al Código QR",
-        "lbl_manual": "O ingresa el ID manual:",
-        "btn_close": "❌ Cerrar Escáner",
-        "asset_info": "📊 Identidad del Equipo",
-        "loc": "Ubicación",
-        "class": "Clasificación",
-        "status": "Estatus Actual",
-        "history": "🕰️ Historial de Mediciones",
-        "new_record": "⚡ Registro de Nueva Medición",
-        "lbl_temp": "Temp (°C)",
-        "lbl_hum": "Humedad (%)",
-        "lbl_res": "Resistencia a Tierra (Ω)",
-        "lbl_volts": "Campo Estático / Balance (V)",
-        "btn_save": "💾 Guardar Medición",
-        "msg_success": "¡Medición guardada y estatus actualizado exitosamente!",
-        "msg_not_found": "El ID no se encontró en el registro de esta planta.",
-        "waiting": "👈 Escanea o ingresa un código a la izquierda para comenzar.",
-        "mode_quick": "Inspección Rápida (1 Punto)",
-        "mode_integral": "Validación Integral S20.20",
-        "btn_save_integral": "💾 Guardar y Generar Reporte"
-    },
-    "dashboard": {
-        "title": "📊 Tablero y Métricas",
-        "subtitle": "Visión general del estado de cumplimiento ESD",
-        "kpi_total": "Total de Activos",
-        "kpi_comp": "Cumplimiento Global",
-        "kpi_pass": "Vigentes / Aprobados",
-        "kpi_fail": "Vencidos / Fallos",
-        "chart_status": "Distribución de Estatus",
-        "chart_category": "Activos por Categoría",
-        "alerts_title": "🚨 Alertas Críticas (Requieren Atención)",
-        "col_asset": "ID Activo",
-        "col_category": "Categoría",
-        "col_date": "Fecha",
-        "col_status": "Estatus"
-    },
-    "training": {
-        "title": "🎓 Gestión de Entrenamiento y Certificación ESD",
-        "subtitle": "Administra el historial de capacitaciones, calificaciones y analiza áreas de oportunidad.",
-        "tab_dash": "📊 Dashboard de Resultados",
-        "tab_historical": "📥 Cargar Histórico (Forms)",
-        "tab_weekly": "🔄 Actualización Semanal",
-        "tab_audit": "🕵️ Auditoría Cronológica"
-    },
-    "sensitivity": {
-        "title": "🔌 Análisis de Sensibilidad de Componentes (HBM / CDM)",
-        "subtitle": "Consulta y gestiona los límites de susceptibilidad de los ensambles.",
-        "tab_overview": "📈 Overview Global",
-        "tab_query": "📊 Consulta de Reportes",
-        "tab_import": "📥 Importar Histórico"
-    },
-    "schedule": {
-        "title": "📅 Cronograma de Verificaciones ESD",
-        "subtitle": "Visualización integrada de vencimientos de equipos e infraestructura.",
-        "tab_general": "📅 Cronograma General",
-        "tab_urgents": "🚨 Pendientes y Vencidos (Edición Directa)"
-    }
+  "nav": {
+    "cat_monitoring": "MONITOREO Y MÉTRICAS",
+    "dashboard": "Dashboard General",
+    "cat_verification": "VERIFICACIÓN Y PISO",
+    "audit": "Auditoría en Piso",
+    "schedule": "Cronograma de Verificación",
+    "cat_assets_training": "ACTIVOS Y CAPACITACIÓN",
+    "inventory": "Directorio de Activos",
+    "lab": "Laboratorio de Pruebas",
+    "infrastructure": "Infraestructura (EPA)",
+    "training": "Entrenamiento y Certificación",
+    "sensitivity": "Análisis de Sensibilidad",
+    "routes": "Rutas de Productos",
+    "cat_settings": "CONFIGURACIÓN",
+    "settings": "Ajustes del Sistema",
+    "logout": "Cerrar Sesión"
+  },
+  "login": {
+    "title": "ESD Management Suite - Acceso al Sistema",
+    "account_access": "Acceso de Usuario",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "submit": "Iniciar Sesión",
+    "account_inactive": "Tu cuenta de usuario está inactiva.",
+    "invalid_password": "La contraseña ingresada es incorrecta.",
+    "user_not_found": "No existe un usuario registrado con este correo."
+  },
+  "auth": {
+    "login_required": "Por favor inicia sesión para acceder a este módulo.",
+    "logout": "Cerrar Sesión"
+  },
+  "settings": {
+    "title": "Ajustes y Configuración del Sistema",
+    "tab_language": "Idioma / Language",
+    "lang_heading": "Preferencias de Idioma",
+    "lang_caption": "Selecciona el idioma preferido para la interfaz y todos los textos del sistema.",
+    "lbl_select_lang": "Idioma de la plataforma:",
+    "lang_updated": "Idioma actualizado correctamente.",
+    "tab_companies": "Empresas (Global)",
+    "tab_admins": "Admins de Empresa",
+    "tab_sites": "Plantas (Sites)",
+    "tab_users": "Gestión de Usuarios",
+    "tab_locations": "Ubicaciones de Línea",
+    "tab_equipment": "Equipos de Medición",
+    "loc_add": "➕ Registrar Nueva Ubicación",
+    "eq_add": "➕ Registrar Nuevo Equipo de Medición"
+  },
+  "dashboard": {
+    "title": "Overview de Cumplimiento ESD",
+    "subtitle": "Estado global de cumplimiento normativo ANSI/ESD S20.20",
+    "chart_status": "Estatus Operativo de Activos",
+    "chart_category": "Distribución por Categoría",
+    "alerts_title": "Alertas Críticas y Vencimientos"
+  },
+  "audit": {
+    "title": "Módulo de Auditoría y Verificación ESD",
+    "lbl_scan": "Escanear Código QR del Activo",
+    "asset_info": "Información del Activo",
+    "status": "Estatus Operativo",
+    "new_record": "Registrar Nueva Medición"
+  },
+  "routes": {
+    "title": "Alta, Enrutamiento y Secuencia de Productos"
+  }
 }
