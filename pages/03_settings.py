@@ -10,6 +10,21 @@ from core.logger import log_error, log_event
 from components.sidebar import render_sidebar, hide_sidebar
 
 # ==========================================
+# JERARQUÍA PONDERADA DE ROLES PÚBLICOS
+# ==========================================
+ROLE_HIERARCHY = {
+    "SuperAdmin": 100,
+    "admin": 100,
+    "CompanyAdmin": 80,
+    "ADMIN": 60,
+    "SiteAdmin": 60,
+    "SUPERVISOR": 40,
+    "AUDITOR": 20,
+    "READONLY": 10,
+    "USER": 10
+}
+
+# ==========================================
 # GENERAR LISTA DE ZONAS HORARIAS CON UTC OFFSET
 # ==========================================
 @st.cache_data
@@ -52,7 +67,8 @@ if st.session_state.get("modo_lectura", True):
 render_sidebar()
 
 supabase = get_supabase_client()
-rol = st.session_state.get("rol_usuario", st.session_state.get("user_role", ""))
+rol_sesion = st.session_state.get("rol_usuario", st.session_state.get("user_role", ""))
+peso_sesion = ROLE_HIERARCHY.get(rol_sesion, 10)
 
 st.markdown(f"### ⚙️ {t('settings', 'title', 'Ajustes y Configuración del Sistema')}")
 
@@ -62,7 +78,7 @@ st.markdown(f"### ⚙️ {t('settings', 'title', 'Ajustes y Configuración del S
 comp_id_gestion = st.session_state.get("company_id")
 site_id_gestion = st.session_state.get("site_id")
 
-if rol in ["SuperAdmin", "admin"] and not st.session_state.get("company_id"):
+if rol_sesion in ["SuperAdmin", "admin"] and not st.session_state.get("company_id"):
     try:
         resp_comps_ctx = supabase.table("companies").select("id, name").order("name").execute()
         dict_comps_ctx = {c["id"]: c["name"] for c in resp_comps_ctx.data} if resp_comps_ctx.data else {}
@@ -74,8 +90,9 @@ else:
 # ==========================================
 # 3. CONSTRUCCIÓN DE PESTAÑAS SEGÚN ROL
 # ==========================================
-is_global_admin = rol in ["SuperAdmin", "admin"] and not st.session_state.get("company_id")
-is_company_admin = rol == "CompanyAdmin" or (rol in ["SuperAdmin", "admin"] and st.session_state.get("company_id"))
+is_global_admin = rol_sesion in ["SuperAdmin", "admin"] and not st.session_state.get("company_id")
+is_company_admin = rol_sesion == "CompanyAdmin" or (rol_sesion in ["SuperAdmin", "admin"] and st.session_state.get("company_id"))
+is_site_admin = rol_sesion in ["ADMIN", "SiteAdmin"]
 
 if is_global_admin:
     tabs = st.tabs([
@@ -88,7 +105,7 @@ if is_global_admin:
         "🛠️ " + t("settings", "tab_equipment", "Equipos de Medición")
     ])
     tab_lang, tab_companies, tab_admins, tab_sites, tab_usr_comp, tab_loc, tab_eq = tabs
-elif is_company_admin:
+elif is_company_admin or is_site_admin:
     tabs = st.tabs([
         "🌐 " + t("settings", "tab_language", "Idioma / Language"),
         "🏭 " + t("settings", "tab_sites", "Plantas (Sites)"), 
@@ -143,7 +160,7 @@ with tab_lang:
 # ==========================================
 # PESTAÑA: GESTIÓN DE PLANTAS (SITES)
 # ==========================================
-if is_global_admin or is_company_admin:
+if is_global_admin or is_company_admin or is_site_admin:
     with tab_sites:
         st.markdown("#### 🏭 " + t("settings", "sites_title", "Gestión de Plantas (Sites), Usuarios y Permisos"))
         st.caption(t("settings", "sites_caption", "Crea plantas, asigna usuarios de tu organización a los diferentes sites y edita sus roles y permisos."))
@@ -154,54 +171,57 @@ if is_global_admin or is_company_admin:
         ])
         
         with subtab_sites:
-            with st.expander(t("settings", "expander_add_site", "➕ Registrar Nueva Planta (Site)"), expanded=True):
-                with st.form("form_alta_site", clear_on_submit=True):
-                    col1, col2 = st.columns(2)
-                    with col1:
-                        nombre_site_input = st.text_input(
-                            t("settings", "lbl_site_name", "Nombre de la Planta / Sucursal"), 
-                            placeholder=t("settings", "ph_site_name", "Ej. Planta Guadalajara / Site Norte")
-                        )
-                    with col2:
-                        idx_tz_default = TZ_CODES.index("America/Mexico_City") if "America/Mexico_City" in TZ_CODES else 0
-                        timezone_input_code = st.selectbox(
-                            t("settings", "lbl_timezone", "Zona Horaria (Mundial IANA)"),
-                            options=TZ_CODES,
-                            format_func=lambda x: TZ_MAP.get(x, x),
-                            index=idx_tz_default,
-                            help=t("settings", "help_timezone", "Soporta todas las zonas horarias del mundo con desfase UTC")
-                        )
-                    
-                    empresa_target_id = comp_id_gestion
-                    if is_global_admin and dict_comps_ctx:
-                        empresa_target_id = st.selectbox(
-                            t("settings", "lbl_belongs_company", "Empresa a la que pertenece:"),
-                            options=list(dict_comps_ctx.keys()),
-                            format_func=lambda x: dict_comps_ctx[x]
-                        )
-                    
-                    if st.form_submit_button(t("settings", "btn_save_site", "💾 Guardar Planta"), type="primary"):
-                        if nombre_site_input and empresa_target_id:
-                            try:
-                                supabase.table("sites").insert({
-                                    "company_id": empresa_target_id,
-                                    "name": nombre_site_input.strip(),
-                                    "timezone": timezone_input_code
-                                }).execute()
-                                st.success(f"✅ {t('settings', 'msg_site_created', 'Planta creada exitosamente.')}")
-                                st.rerun()
-                            except Exception as e:
-                                st.error(f"Error: {e}")
-                        else:
-                            st.warning(f"⚠️ {t('settings', 'msg_fill_required', 'Completa los campos obligatorios.')}")
+            if is_global_admin or is_company_admin:
+                with st.expander(t("settings", "expander_add_site", "➕ Registrar Nueva Planta (Site)"), expanded=True):
+                    with st.form("form_alta_site", clear_on_submit=True):
+                        col1, col2 = st.columns(2)
+                        with col1:
+                            nombre_site_input = st.text_input(
+                                t("settings", "lbl_site_name", "Nombre de la Planta / Sucursal"), 
+                                placeholder=t("settings", "ph_site_name", "Ej. Planta Guadalajara / Site Norte")
+                            )
+                        with col2:
+                            idx_tz_default = TZ_CODES.index("America/Mexico_City") if "America/Mexico_City" in TZ_CODES else 0
+                            timezone_input_code = st.selectbox(
+                                t("settings", "lbl_timezone", "Zona Horaria (Mundial IANA)"),
+                                options=TZ_CODES,
+                                format_func=lambda x: TZ_MAP.get(x, x),
+                                index=idx_tz_default,
+                                help=t("settings", "help_timezone", "Soporta todas las zonas horarias del mundo con desfase UTC")
+                            )
+                        
+                        empresa_target_id = comp_id_gestion
+                        if is_global_admin and dict_comps_ctx:
+                            empresa_target_id = st.selectbox(
+                                t("settings", "lbl_belongs_company", "Empresa a la que pertenece:"),
+                                options=list(dict_comps_ctx.keys()),
+                                format_func=lambda x: dict_comps_ctx[x]
+                            )
+                        
+                        if st.form_submit_button(t("settings", "btn_save_site", "💾 Guardar Planta"), type="primary"):
+                            if nombre_site_input and empresa_target_id:
+                                try:
+                                    supabase.table("sites").insert({
+                                        "company_id": empresa_target_id,
+                                        "name": nombre_site_input.strip(),
+                                        "timezone": timezone_input_code
+                                    }).execute()
+                                    st.success(f"✅ {t('settings', 'msg_site_created', 'Planta creada exitosamente.')}")
+                                    st.rerun()
+                                except Exception as e:
+                                    st.error(f"Error: {e}")
+                            else:
+                                st.warning(f"⚠️ {t('settings', 'msg_fill_required', 'Completa los campos obligatorios.')}")
 
             st.divider()
             st.markdown(f"##### {t('settings', 'hdr_registered_sites', '📋 Directores y Plantas Registradas')}")
             try:
-                if comp_id_gestion:
+                if is_global_admin:
+                    resp_sites = supabase.table("sites").select("*, companies(name)").order("name").execute()
+                elif comp_id_gestion:
                     resp_sites = supabase.table("sites").select("*, companies(name)").eq("company_id", comp_id_gestion).order("name").execute()
                 else:
-                    resp_sites = supabase.table("sites").select("*, companies(name)").order("name").execute()
+                    resp_sites = supabase.table("sites").select("*, companies(name)").eq("id", site_id_gestion).order("name").execute()
                     
                 if resp_sites.data and len(resp_sites.data) > 0:
                     for s in resp_sites.data:
@@ -214,24 +234,27 @@ if is_global_admin or is_company_admin:
                         idx_current_tz = TZ_CODES.index(s_tz) if s_tz in TZ_CODES else 0
                         
                         with st.expander(f"🏭 **{s_name}** ({c_name}) — TZ: `{s_tz_label}`", expanded=False):
-                            with st.form(f"form_edit_site_{s_id}"):
-                                edit_name = st.text_input(t("settings", "lbl_site_name", "Nombre de Planta"), value=s_name)
-                                edit_tz_code = st.selectbox(
-                                    t("settings", "lbl_timezone", "Zona Horaria (Mundial IANA)"),
-                                    options=TZ_CODES,
-                                    format_func=lambda x: TZ_MAP.get(x, x),
-                                    index=idx_current_tz
-                                )
-                                if st.form_submit_button(t("settings", "btn_update_site", "💾 Actualizar Planta")):
-                                    try:
-                                        supabase.table("sites").update({
-                                            "name": edit_name.strip(),
-                                            "timezone": edit_tz_code
-                                        }).eq("id", s_id).execute()
-                                        st.success(f"✅ {t('settings', 'msg_site_updated', 'Planta actualizada.')}")
-                                        st.rerun()
-                                    except Exception as ex:
-                                        st.error(f"Error: {ex}")
+                            if is_global_admin or is_company_admin:
+                                with st.form(f"form_edit_site_{s_id}"):
+                                    edit_name = st.text_input(t("settings", "lbl_site_name", "Nombre de Planta"), value=s_name)
+                                    edit_tz_code = st.selectbox(
+                                        t("settings", "lbl_timezone", "Zona Horaria (Mundial IANA)"),
+                                        options=TZ_CODES,
+                                        format_func=lambda x: TZ_MAP.get(x, x),
+                                        index=idx_current_tz
+                                    )
+                                    if st.form_submit_button(t("settings", "btn_update_site", "💾 Actualizar Planta")):
+                                        try:
+                                            supabase.table("sites").update({
+                                                "name": edit_name.strip(),
+                                                "timezone": edit_tz_code
+                                            }).eq("id", s_id).execute()
+                                            st.success(f"✅ {t('settings', 'msg_site_updated', 'Planta actualizada.')}")
+                                            st.rerun()
+                                        except Exception as ex:
+                                            st.error(f"Error: {ex}")
+                            else:
+                                st.write(f"📍 **Planta:** {s_name} | **Empresa:** {c_name} | **Zona Horaria:** {s_tz_label}")
                 else:
                     st.info(t("settings", "msg_no_sites", "Sin plantas registradas para esta empresa."))
             except Exception as e:
@@ -241,10 +264,12 @@ if is_global_admin or is_company_admin:
             st.markdown(f"##### {t('settings', 'hdr_assign_heading', '👥 Asignación de Usuarios a Sites y Permisos de Acceso')}")
             
             try:
-                if comp_id_gestion:
+                if is_global_admin:
+                    resp_s_list = supabase.table("sites").select("id, name").order("name").execute()
+                elif comp_id_gestion:
                     resp_s_list = supabase.table("sites").select("id, name").eq("company_id", comp_id_gestion).order("name").execute()
                 else:
-                    resp_s_list = supabase.table("sites").select("id, name").order("name").execute()
+                    resp_s_list = supabase.table("sites").select("id, name").eq("id", site_id_gestion).order("name").execute()
                 
                 sites_dict = {s["id"]: s["name"] for s in resp_s_list.data} if resp_s_list.data else {}
             except:
@@ -261,10 +286,12 @@ if is_global_admin or is_company_admin:
                 
                 with st.expander(f"{t('settings', 'expander_assign_user', '➕ Asignar / Editar Permisos de Usuario en')} '{sites_dict[site_sel_id]}'", expanded=True):
                     try:
-                        if comp_id_gestion:
+                        if is_global_admin:
+                            u_resp = supabase.table("users").select("id, email, full_name, role, site_id").order("email").execute()
+                        elif comp_id_gestion:
                             u_resp = supabase.table("users").select("id, email, full_name, role, site_id").eq("company_id", comp_id_gestion).order("email").execute()
                         else:
-                            u_resp = supabase.table("users").select("id, email, full_name, role, site_id").order("email").execute()
+                            u_resp = supabase.table("users").select("id, email, full_name, role, site_id").eq("site_id", site_id_gestion).order("email").execute()
                         
                         users_list = u_resp.data if u_resp.data else []
                     except:
@@ -317,22 +344,35 @@ if is_global_admin or is_company_admin:
                     st.error(f"Error: {e}")
 
 # ==========================================
-# PESTAÑA: GESTIÓN DE USUARIOS (ALTA, EDICIÓN, PASSWORD, PERMISOS Y ELIMINACIÓN)
+# PESTAÑA: GESTIÓN DE USUARIOS (JERARQUÍA, ALTA, EDICIÓN, PASSWORD, PERMISOS Y ELIMINACIÓN)
 # ==========================================
-if is_global_admin or is_company_admin:
+if is_global_admin or is_company_admin or is_site_admin:
     with tab_usr_comp:
         st.markdown(f"#### 👥 {t('settings', 'users_title', 'Gestión Integral de Usuarios de la Organización')}")
         st.caption(t("settings", "users_caption", "Administra usuarios registrados, otorga o edita permisos modulares granulares, restablece contraseñas y gestiona sus estados."))
 
-        # 1. Cargar plantas/sites de la empresa para selección
+        # 1. Cargar plantas/sites disponibles según alcance del usuario
         try:
-            if comp_id_gestion:
+            if is_global_admin:
+                resp_s_u = supabase.table("sites").select("id, name").order("name").execute()
+            elif comp_id_gestion:
                 resp_s_u = supabase.table("sites").select("id, name").eq("company_id", comp_id_gestion).order("name").execute()
             else:
-                resp_s_u = supabase.table("sites").select("id, name").order("name").execute()
+                resp_s_u = supabase.table("sites").select("id, name").eq("id", site_id_gestion).order("name").execute()
             sites_user_dict = {s["id"]: s["name"] for s in resp_s_u.data} if resp_s_u.data else {}
         except:
             sites_user_dict = {}
+
+        # Determinar roles que el usuario actual PUEDE crear/asignar (estrictamente subordinados o iguales si es SuperAdmin)
+        roles_disponibles_creacion = []
+        if peso_sesion >= 100: # SuperAdmin
+            roles_disponibles_creacion = ["CompanyAdmin", "ADMIN", "SUPERVISOR", "AUDITOR", "READONLY"]
+        elif peso_sesion >= 80: # CompanyAdmin
+            roles_disponibles_creacion = ["ADMIN", "SUPERVISOR", "AUDITOR", "READONLY"]
+        elif peso_sesion >= 60: # SiteAdmin / ADMIN
+            roles_disponibles_creacion = ["SUPERVISOR", "AUDITOR", "READONLY"]
+        else:
+            roles_disponibles_creacion = ["READONLY"]
 
         # --- FORMULARIO 1: ALTA DE NUEVO USUARIO ---
         with st.expander(f"➕ **{t('settings', 'btn_create_new_user', 'Registrar Nuevo Usuario')}**", expanded=False):
@@ -346,7 +386,7 @@ if is_global_admin or is_company_admin:
                 with col_u2:
                     nu_rol = st.selectbox(
                         t("settings", "lbl_user_role", "Rol Principal:"),
-                        ["ADMIN", "SUPERVISOR", "AUDITOR", "READONLY", "CompanyAdmin"]
+                        roles_disponibles_creacion
                     )
                     
                     nu_site = None
@@ -408,19 +448,31 @@ if is_global_admin or is_company_admin:
 
         st.divider()
 
-        # --- LISTA Y EDICIÓN DE USUARIOS EXISTENTES ---
-        st.markdown(f"##### 📋 {t('settings', 'hdr_user_directory', 'Directorio de Usuarios de la Empresa')}")
+        # --- LISTA Y EDICIÓN DE USUARIOS SEGÚN VISIBILIDAD DE ALCANCE ---
+        st.markdown(f"##### 📋 {t('settings', 'hdr_user_directory', 'Directorio de Usuarios de la Organización')}")
         try:
-            if comp_id_gestion:
+            # 1. Filtro de Consulta según Alcance Organizacional
+            if is_global_admin:
+                # SuperAdmin ve TODOS los usuarios globales
+                u_q = supabase.table("users").select("*, sites!users_site_id_fkey(name)").order("email").execute()
+            elif is_company_admin and comp_id_gestion:
+                # Admin de Empresa ve TODOS los usuarios de su empresa
                 u_q = supabase.table("users").select("*, sites!users_site_id_fkey(name)").eq("company_id", comp_id_gestion).order("email").execute()
+            elif site_id_gestion:
+                # Admin de Site ve TODOS los usuarios de su site
+                u_q = supabase.table("users").select("*, sites!users_site_id_fkey(name)").eq("site_id", site_id_gestion).order("email").execute()
             else:
                 u_q = supabase.table("users").select("*, sites!users_site_id_fkey(name)").order("email").execute()
                 
             list_u_data = u_q.data if u_q.data else []
         except Exception:
             try:
-                if comp_id_gestion:
+                if is_global_admin:
+                    u_q = supabase.table("users").select("*").order("email").execute()
+                elif is_company_admin and comp_id_gestion:
                     u_q = supabase.table("users").select("*").eq("company_id", comp_id_gestion).order("email").execute()
+                elif site_id_gestion:
+                    u_q = supabase.table("users").select("*").eq("site_id", site_id_gestion).order("email").execute()
                 else:
                     u_q = supabase.table("users").select("*").order("email").execute()
                 list_u_data = u_q.data if u_q.data else []
@@ -428,19 +480,26 @@ if is_global_admin or is_company_admin:
                 list_u_data = []
                 st.error(f"Error: {ex_f}")
             
-            if list_u_data:
-                for usr in list_u_data:
-                    usr_id = usr["id"]
-                    usr_email = usr.get("email", "Sin Email")
-                    usr_name = usr.get("full_name") or usr_email
-                    usr_role = usr.get("role", "USER")
-                    usr_active = usr.get("is_active", True)
-                    usr_site_id = usr.get("site_id")
-                    site_name_disp = usr.get("sites", {}).get("name") if isinstance(usr.get("sites"), dict) else "Sin Site"
+        if list_u_data:
+            for usr in list_u_data:
+                usr_id = usr["id"]
+                usr_email = usr.get("email", "Sin Email")
+                usr_name = usr.get("full_name") or usr_email
+                usr_role = usr.get("role", "USER")
+                usr_active = usr.get("is_active", True)
+                usr_site_id = usr.get("site_id")
+                site_name_disp = usr.get("sites", {}).get("name") if isinstance(usr.get("sites"), dict) else "Sin Site"
 
-                    badge_active = "🟢" if usr_active else "🔴"
-                    
-                    with st.expander(f"{badge_active} **{usr_name}** (`{usr_email}`) | Rol: `{usr_role}` | Site: `{site_name_disp}`", expanded=False):
+                peso_target = ROLE_HIERARCHY.get(usr_role, 10)
+                
+                # REGLA DE PERMISOS: Puede modificar si mi_peso > target_peso O si soy SuperAdmin (peso=100)
+                puede_modificar = (peso_sesion > peso_target) or (peso_sesion >= 100)
+                
+                badge_active = "🟢" if usr_active else "🔴"
+                lock_icon = "✏️" if puede_modificar else "👁️ (Lectura)"
+                
+                with st.expander(f"{badge_active} **{usr_name}** (`{usr_email}`) | Rol: `{usr_role}` | Site: `{site_name_disp}` | {lock_icon}", expanded=False):
+                    if puede_modificar:
                         tab_e1, tab_e2, tab_e3 = st.tabs([
                             "✏️ " + t("settings", "tab_edit_details", "Editar Detalles y Permisos"),
                             "🔑 " + t("settings", "tab_change_pass", "Cambiar Contraseña"),
@@ -453,10 +512,18 @@ if is_global_admin or is_company_admin:
                                 c_e1, c_e2 = st.columns(2)
                                 with c_e1:
                                     e_fn = st.text_input(t("settings", "lbl_full_name", "Nombre Completo"), value=usr_name)
+                                    
+                                    # Solo mostrar roles que el usuario actual tiene derecho a asignar
+                                    roles_permitidos_edit = [r for r in roles_disponibles_creacion if r in ["ADMIN", "SUPERVISOR", "AUDITOR", "READONLY", "CompanyAdmin"]]
+                                    if usr_role not in roles_permitidos_edit:
+                                        roles_permitidos_edit.append(usr_role)
+                                        
+                                    idx_r_e = roles_permitidos_edit.index(usr_role) if usr_role in roles_permitidos_edit else 0
+                                    
                                     e_rl = st.selectbox(
                                         t("settings", "lbl_user_role", "Rol Principal:"),
-                                        ["ADMIN", "SUPERVISOR", "AUDITOR", "READONLY", "CompanyAdmin"],
-                                        index=["ADMIN", "SUPERVISOR", "AUDITOR", "READONLY", "CompanyAdmin"].index(usr_role) if usr_role in ["ADMIN", "SUPERVISOR", "AUDITOR", "READONLY", "CompanyAdmin"] else 0
+                                        roles_permitidos_edit,
+                                        index=idx_r_e
                                     )
                                 with c_e2:
                                     s_idx = 0
@@ -471,7 +538,6 @@ if is_global_admin or is_company_admin:
                                     )
                                     e_act = st.checkbox(t("settings", "chk_active_user", "Cuenta Activa"), value=usr_active)
 
-                                # Parsear permisos existentes
                                 perm_raw = usr.get("permissions")
                                 p_dict = {}
                                 if isinstance(perm_raw, str):
@@ -536,10 +602,16 @@ if is_global_admin or is_company_admin:
                                     st.rerun()
                                 except Exception as ex:
                                     st.error(f"Error al eliminar: {ex}")
-            else:
-                st.info(t("settings", "msg_no_users_found", "No hay usuarios registrados en la empresa."))
-        except Exception as e:
-            st.error(f"Error al cargar usuarios: {e}")
+                    else:
+                        # Modo solo lectura para usuarios de jerarquía superior o igual
+                        st.info("ℹ️ **Vista de Solo Lectura**: No cuentas con jerarquía suficiente para modificar o restablecer la contraseña de este usuario superior o de igual nivel.")
+                        st.write(f"👤 **Nombre:** {usr_name}")
+                        st.write(f"📧 **Email:** {usr_email}")
+                        st.write(f"🛡️ **Rol:** {usr_role}")
+                        st.write(f"🏭 **Planta:** {site_name_disp}")
+                        st.write(f"🟢 **Estatus:** {'Activo' if usr_active else 'Inactivo'}")
+        else:
+            st.info(t("settings", "msg_no_users_found", "No hay usuarios registrados en la empresa."))
 
 # ==========================================
 # GESTIÓN DE UBICACIONES Y EQUIPOS (PARA TODOS LOS ROLES)
