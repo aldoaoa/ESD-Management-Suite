@@ -78,28 +78,28 @@ def render_sidebar():
 
             # --- MENÚ DE NAVEGACIÓN AGRUPADO CON TRADUCCIÓN COMPLETA ---
             # MONITOREO Y MÉTRICAS
-            st.markdown(f'<div class="sidebar-category">{t("nav", "cat_monitoring", default="MONITOREO Y MÉTRICAS")}</div>', unsafe_allow_html=True)
-            st.page_link("pages/01_dashboard.py", label=t("nav", "dashboard", default="Dashboard general"), icon="📊")
+            st.markdown(f'<div class="sidebar-category">{t("nav", "cat_monitoring", "MONITOREO Y MÉTRICAS")}</div>', unsafe_allow_html=True)
+            st.page_link("pages/01_dashboard.py", label=t("nav", "dashboard", "Dashboard general"), icon="📊")
 
             # VERIFICACIÓN Y PISO
-            st.markdown(f'<div class="sidebar-category">{t("nav", "cat_verification", default="VERIFICACIÓN Y PISO")}</div>', unsafe_allow_html=True)
-            st.page_link("pages/02_audit.py", label=t("nav", "audit", default="Auditoría en piso"), icon="🔍")
-            st.page_link("pages/09_schedule.py", label=t("nav", "schedule", default="Cronograma de verificación"), icon="📅")
+            st.markdown(f'<div class="sidebar-category">{t("nav", "cat_verification", "VERIFICACIÓN Y PISO")}</div>', unsafe_allow_html=True)
+            st.page_link("pages/02_audit.py", label=t("nav", "audit", "Auditoría en piso"), icon="🔍")
+            st.page_link("pages/09_schedule.py", label=t("nav", "schedule", "Cronograma de verificación"), icon="📅")
 
             # ACTIVOS Y CAPACITACIÓN
-            st.markdown(f'<div class="sidebar-category">{t("nav", "cat_assets_training", default="ACTIVOS Y CAPACITACIÓN")}</div>', unsafe_allow_html=True)
-            st.page_link("pages/04_inventory.py", label=t("nav", "inventory", default="Directorio de activos"), icon="📦")
-            st.page_link("pages/05_lab.py", label=t("nav", "lab", default="Laboratorio de pruebas"), icon="🧪")
-            st.page_link("pages/06_infraestucture.py", label=t("nav", "infrastructure", default="Infraestructura (EPA)"), icon="⚡")
-            st.page_link("pages/07_training.py", label=t("nav", "training", default="Entrenamiento y certificación"), icon="🎓")
-            st.page_link("pages/08_sensibilidad.py", label=t("nav", "sensitivity", default="Análisis de sensibilidad"), icon="🔌")
-            st.page_link("pages/10_routes.py", label=t("nav", "routes", default="Rutas de productos"), icon="📦")
+            st.markdown(f'<div class="sidebar-category">{t("nav", "cat_assets_training", "ACTIVOS Y CAPACITACIÓN")}</div>', unsafe_allow_html=True)
+            st.page_link("pages/04_inventory.py", label=t("nav", "inventory", "Directorio de activos"), icon="📦")
+            st.page_link("pages/05_lab.py", label=t("nav", "lab", "Laboratorio de pruebas"), icon="🧪")
+            st.page_link("pages/06_infraestucture.py", label=t("nav", "infrastructure", "Infraestructura (EPA)"), icon="⚡")
+            st.page_link("pages/07_training.py", label=t("nav", "training", "Entrenamiento y certificación"), icon="🎓")
+            st.page_link("pages/08_sensibilidad.py", label=t("nav", "sensitivity", "Análisis de sensibilidad"), icon="🔌")
+            st.page_link("pages/10_routes.py", label=t("nav", "routes", "Rutas de productos"), icon="📦")
 
             # CONFIGURACIÓN
-            st.markdown(f'<div class="sidebar-category">{t("nav", "cat_settings", default="CONFIGURACIÓN")}</div>', unsafe_allow_html=True)
-            st.page_link("pages/03_settings.py", label=t("nav", "settings", default="Ajustes del sistema"), icon="⚙️")
+            st.markdown(f'<div class="sidebar-category">{t("nav", "cat_settings", "CONFIGURACIÓN")}</div>', unsafe_allow_html=True)
+            st.page_link("pages/03_settings.py", label=t("nav", "settings", "Ajustes del sistema"), icon="⚙️")
 
             st.divider()
-            if st.button("🚪 " + t("nav", "logout", default="Cerrar Sesión"), use_container_width=True, type="secondary"):
+            if st.button("🚪 " + t("nav", "logout", "Cerrar Sesión"), use_container_width=True, type="secondary"):
                 cerrar_sesion()
                 st.rerun()
