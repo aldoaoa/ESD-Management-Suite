@@ -1,19 +1,30 @@
 # core/auth.py
 import streamlit as st
-from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.security import check_password_hash
 from core.db import get_supabase_client
 
 def iniciar_sesion(email, password):
     """
     Verifica las credenciales del usuario y carga sus datos de acceso.
-    Retorna (True, user_data) si el login es exitoso, (False, error_key) en caso contrario.
+    Resuelve la ambigüedad de relaciones FK en Supabase (PGRST201).
     """
     supabase = get_supabase_client()
+    clean_email = email.strip().lower()
     
     try:
-        # Buscamos al usuario por su email incluyendo relaciones de site y company
-        response = supabase.table("users").select("*, sites(name, timezone), companies(name)").eq("email", email.strip().lower()).execute()
-        
+        # Intentar consulta con especificación explícita de clave foránea FK
+        try:
+            response = supabase.table("users").select("*, sites!users_site_id_fkey(name, timezone), companies(name)").eq("email", clean_email).execute()
+        except Exception:
+            # Fallback seguro si la FK se llama distinto o no está incrustada directamente
+            response = supabase.table("users").select("*, companies(name)").eq("email", clean_email).execute()
+            if response.data and len(response.data) > 0:
+                user_rec = response.data[0]
+                if user_rec.get("site_id"):
+                    s_resp = supabase.table("sites").select("name, timezone").eq("id", user_rec["site_id"]).execute()
+                    if s_resp.data:
+                        user_rec["sites"] = s_resp.data[0]
+
         if response.data and len(response.data) > 0:
             user_data = response.data[0]
             
@@ -24,7 +35,7 @@ def iniciar_sesion(email, password):
             # Verificamos la contraseña hasheada
             stored_hash = user_data.get("password_hash", "")
             if check_password_hash(stored_hash, password):
-                # LOGIN EXITOSO - Guardar variables clave en la sesión
+                # LOGIN EXITOSO
                 st.session_state["modo_lectura"] = False
                 st.session_state["user_id"] = user_data.get("id")
                 st.session_state["user_email"] = user_data.get("email")
