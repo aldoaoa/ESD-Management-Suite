@@ -130,7 +130,14 @@
     "subtitle": "Statutul global al conformității ANSI/ESD S20.20",
     "chart_status": "Stare Operațională Echipamente",
     "chart_category": "Distribuție pe Categorii",
-    "alerts_title": "Alerte Critice și Expirări"
+    "alerts_title": "Alerte Critice și Expirări",
+    "kpi_total": "Total Echipamente ESD",
+    "kpi_comp": "Rată de Conformitate Globală",
+    "kpi_pass": "Echipamente Conforme (PASS)",
+    "kpi_fail": "Echipamente Neconforme (FAIL)",
+    "col_asset": "Cod Echipament",
+    "col_category": "Categorie",
+    "col_status": "Stare"
   },
   "audit": {
     "title": "Modul Audit și Verificare ESD",
@@ -178,5 +185,53 @@
     "tab_overview": "🌍 Prezentare Generală Fabrica",
     "tab_query": "🔍 Căutare Produs",
     "tab_import": "📥 Clasificare Componente"
+  },
+  "infra": {
+    "title": "Infrastructură ESD și Zone Protejate EPA",
+    "subtitle": "Verificare împământare, podele ESD și conductori izolați",
+    "tab_ground": "⚡ Împământare Fizică",
+    "tab_floor": "🧱 Podele ESD",
+    "tab_iso": "🔌 Conductori Izolați",
+    "tab_checkers": "👟 Verificatori Intrarea",
+    "gr_id": "ID Punct Împământare",
+    "gr_loc": "Locație / Zonă",
+    "gr_ohms": "Rezistență la Împământare (Ohmi)",
+    "gr_save": "💾 Salvare Împământare",
+    "fl_room": "Cameră / Camere Curate",
+    "fl_point": "Punct de Testare Podea",
+    "fl_save": "💾 Salvare Măsurătoare Podea",
+    "iso_op": "Operațiune / Proces",
+    "iso_volt": "Tensiune Electrostatică Măsurată (V)",
+    "iso_save": "💾 Salvare Conductor Izolat",
+    "msg_pass": "✅ Înregistrare conformă cu standardul ANSI/ESD S20.20.",
+    "msg_fail": "🚨 Înregistrare neconformă. Acțiune corectivă necesară."
+  },
+  "inventory": {
+    "title": "Director Echipamente ESD și Inventar",
+    "tab_dir": "📋 Director Echipamente",
+    "tab_add": "➕ Adăugare Echipament Nou",
+    "tab_retire": "🗑️ Casare / Dezactivare",
+    "lbl_id": "Cod / ID Echipament",
+    "lbl_category": "Categorie ESD",
+    "lbl_class": "Clasificare / Subtip",
+    "lbl_location": "Locație / Linie",
+    "btn_save": "💾 Salvare Echipament",
+    "msg_success": "✅ Echipament înregistrat cu succes în inventar.",
+    "msg_duplicate": "❌ Codul echipamentului este deja înregistrat."
+  },
+  "lab": {
+    "title": "Laborator de Testare ESD și OCR",
+    "subtitle": "Analiză evenimente PCBA și digitalizare Walking Test",
+    "tab_event": "⚡ Event Meter (PCBA)",
+    "tab_walking": "📷 OCR Walking Test",
+    "em_location": "Locație Test",
+    "em_contact": "Punct de Contact PCBA",
+    "em_voltage": "Tensiune Descărcare ESD (V)",
+    "em_events": "Număr Evenimente ESD",
+    "em_operation": "Operațiune / Asamblare",
+    "em_save": "💾 Salvare Eveniment ESD",
+    "wt_upload": "Încărcare Imagine Grafic Walking Test",
+    "wt_extracting": "🔍 Se analizează imaginea graficului cu motorul OCR...",
+    "wt_save": "💾 Salvare Date OCR"
   }
 }
