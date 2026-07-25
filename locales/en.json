@@ -130,7 +130,14 @@
     "subtitle": "Global status of ANSI/ESD S20.20 compliance",
     "chart_status": "Asset Operational Status",
     "chart_category": "Distribution by Category",
-    "alerts_title": "Critical Alerts & Expirations"
+    "alerts_title": "Critical Alerts & Expirations",
+    "kpi_total": "Total ESD Assets",
+    "kpi_comp": "Global Compliance Rate",
+    "kpi_pass": "Conformant Assets (PASS)",
+    "kpi_fail": "Non-Conformant Assets (FAIL)",
+    "col_asset": "Asset Code",
+    "col_category": "Category",
+    "col_status": "Status"
   },
   "audit": {
     "title": "ESD Audit & Verification Module",
@@ -178,5 +185,53 @@
     "tab_overview": "🌍 Plant Overview",
     "tab_query": "🔍 Product Search",
     "tab_import": "📥 Component Classification"
+  },
+  "infra": {
+    "title": "ESD Infrastructure & EPA Protected Areas",
+    "subtitle": "Grounding, ESD flooring, and isolated conductor verification",
+    "tab_ground": "⚡ Physical Grounding",
+    "tab_floor": "🧱 ESD Floors",
+    "tab_iso": "🔌 Isolated Conductors",
+    "tab_checkers": "👟 Entrance Checkers",
+    "gr_id": "Ground Point ID",
+    "gr_loc": "Location / Area",
+    "gr_ohms": "Resistance to Ground (Ohms)",
+    "gr_save": "💾 Log Physical Ground",
+    "fl_room": "Room / Cleanroom",
+    "fl_point": "Floor Test Point",
+    "fl_save": "💾 Log Floor Measurement",
+    "iso_op": "Operation / Process",
+    "iso_volt": "Measured Electrostatic Voltage (V)",
+    "iso_save": "💾 Log Isolated Conductor",
+    "msg_pass": "✅ Record complies with ANSI/ESD S20.20 standard.",
+    "msg_fail": "🚨 Record non-compliant. Corrective action required."
+  },
+  "inventory": {
+    "title": "ESD Asset Directory & Inventory",
+    "tab_dir": "📋 Asset Directory",
+    "tab_add": "➕ Add New Asset",
+    "tab_retire": "🗑️ Retire / Deactivate",
+    "lbl_id": "Asset Code / ID",
+    "lbl_category": "ESD Category",
+    "lbl_class": "Classification / Subtype",
+    "lbl_location": "Location / Line",
+    "btn_save": "💾 Save Asset",
+    "msg_success": "✅ Asset logged into inventory successfully.",
+    "msg_duplicate": "❌ Asset code is already registered."
+  },
+  "lab": {
+    "title": "ESD Testing Lab & OCR",
+    "subtitle": "PCBA event analysis and Walking Test digitization",
+    "tab_event": "⚡ Event Meter (PCBA)",
+    "tab_walking": "📷 OCR Walking Test",
+    "em_location": "Test Location",
+    "em_contact": "PCBA Contact Point",
+    "em_voltage": "ESD Discharge Voltage (V)",
+    "em_events": "ESD Event Count",
+    "em_operation": "Operation / Assembly",
+    "em_save": "💾 Log ESD Event",
+    "wt_upload": "Upload Walking Test Chart Image",
+    "wt_extracting": "🔍 Analyzing chart image with OCR engine...",
+    "wt_save": "💾 Save OCR Data"
   }
 }
