@@ -18,13 +18,21 @@
   },
   "login": {
     "title": "ESD Management Suite - 系统登录",
-    "account_access": "用户登录",
+    "account_access": "账户登录",
     "email": "电子邮件地址",
     "password": "密码",
     "submit": "登录",
+    "email_ph": "电子邮件地址",
+    "pwd_ph": "密码",
+    "btn_submit": "登录",
+    "error_creds": "❌ 凭据无效。请检查您的电子邮件和密码。",
     "account_inactive": "您的用户账户已被禁用。",
     "invalid_password": "输入的密码不正确。",
-    "user_not_found": "未找到与此电子邮件关联的用户账户。"
+    "user_not_found": "未找到与此电子邮件关联的用户账户。",
+    "authenticating": "正在身份验证...",
+    "fill_all": "请填写所有字段。",
+    "welcome": "欢迎",
+    "select_module": "请从侧边栏选择一个模块开始。"
   },
   "auth": {
     "login_required": "请登录以访问此模块。",
