@@ -134,6 +134,8 @@ with tab_lang:
     
     if sel_lang != lang_actual:
         st.session_state["lang"] = sel_lang
+        from core.i18n import load_locales
+        load_locales(force=True)
         st.success(t("settings", "lang_updated", "✅ Idioma actualizado correctamente."))
         st.rerun()
 
