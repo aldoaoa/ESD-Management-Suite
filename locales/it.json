@@ -130,7 +130,14 @@
     "subtitle": "Stato globale della conformità ANSI/ESD S20.20",
     "chart_status": "Stato Operativo Risorse",
     "chart_category": "Distribuzione per Categoria",
-    "alerts_title": "Avvisi Critici e Scadenze"
+    "alerts_title": "Avvisi Critici e Scadenze",
+    "kpi_total": "Totale Risorse ESD",
+    "kpi_comp": "Tasso di Conformità Globale",
+    "kpi_pass": "Risorse Conformi (PASS)",
+    "kpi_fail": "Risorse Non Conformi (FAIL)",
+    "col_asset": "Codice Risorsa",
+    "col_category": "Categoria",
+    "col_status": "Stato"
   },
   "audit": {
     "title": "Modulo Audit e Verifica ESD",
@@ -178,5 +185,53 @@
     "tab_overview": "🌍 Panoramica Stabilimento",
     "tab_query": "🔍 Ricerca Prodotto",
     "tab_import": "📥 Classificazione Componenti"
+  },
+  "infra": {
+    "title": "Infrastruttura ESD e Aree Protette EPA",
+    "subtitle": "Verifica di messe a terra, pavimentazioni ESD e conduttori isolati",
+    "tab_ground": "⚡ Messe a Terra",
+    "tab_floor": "🧱 Pavimenti ESD",
+    "tab_iso": "🔌 Conduttori Isolati",
+    "tab_checkers": "👟 Test d'Ingresso",
+    "gr_id": "ID Punto di Terra",
+    "gr_loc": "Posizione / Area",
+    "gr_ohms": "Resistenza a Terra (Ohm)",
+    "gr_save": "💾 Salva Messa a Terra",
+    "fl_room": "Stanza / Camera Bianca",
+    "fl_point": "Punto di Prova Pavimento",
+    "fl_save": "💾 Salva Misurazione Pavimento",
+    "iso_op": "Operazione / Processo",
+    "iso_volt": "Tensione Elettrostatica Misurata (V)",
+    "iso_save": "💾 Salva Conduttore Isolato",
+    "msg_pass": "✅ Registro conforme allo standard ANSI/ESD S20.20.",
+    "msg_fail": "🚨 Registro non conforme. Azione correttiva richiesta."
+  },
+  "inventory": {
+    "title": "Registro Risorse ESD e Inventario",
+    "tab_dir": "📋 Registro Risorse",
+    "tab_add": "➕ Aggiungi Nuova Risorsa",
+    "tab_retire": "🗑️ Dismetti / Disattiva",
+    "lbl_id": "Codice / ID Risorsa",
+    "lbl_category": "Categoria ESD",
+    "lbl_class": "Classificazione / Sottotipo",
+    "lbl_location": "Posizione / Linea",
+    "btn_save": "💾 Salva Risorsa",
+    "msg_success": "✅ Risorsa registrata con successo nell'inventario.",
+    "msg_duplicate": "❌ Il codice risorsa è già registrato."
+  },
+  "lab": {
+    "title": "Laboratorio di Prova ESD e OCR",
+    "subtitle": "Analisi eventi PCBA e digitalizzazione Walking Test",
+    "tab_event": "⚡ Event Meter (PCBA)",
+    "tab_walking": "📷 OCR Walking Test",
+    "em_location": "Posizione Prova",
+    "em_contact": "Punto di Contatto su PCBA",
+    "em_voltage": "Tensione di Scarica ESD (V)",
+    "em_events": "Conteggio Eventi ESD",
+    "em_operation": "Operazione / Assemblaggio",
+    "em_save": "💾 Salva Evento ESD",
+    "wt_upload": "Carica Immagine Grafico Walking Test",
+    "wt_extracting": "🔍 Analisi immagine grafico con motore OCR in corso...",
+    "wt_save": "💾 Salva Dati OCR"
   }
 }
