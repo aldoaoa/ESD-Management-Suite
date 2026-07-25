@@ -18,13 +18,21 @@
   },
   "login": {
     "title": "ESD Management Suite - Autentificare Sistem",
-    "account_access": "Autentificare Utilizator",
+    "account_access": "Acces Cont",
     "email": "Adresă de Email",
     "password": "Parolă",
     "submit": "Autentificare",
+    "email_ph": "Adresă de Email",
+    "pwd_ph": "Parolă",
+    "btn_submit": "Autentificare",
+    "error_creds": "❌ Date de autentificare invalide. Verificați emailul și parola.",
     "account_inactive": "Contul dumneavoastră de utilizator este dezactivat.",
     "invalid_password": "Parola introdusă este incorectă.",
-    "user_not_found": "Nu s-a găsit niciun cont cu această adresă de email."
+    "user_not_found": "Nu s-a găsit niciun cont cu această adresă de email.",
+    "authenticating": "Se autentifică...",
+    "fill_all": "Vă rugăm să completați toate câmpurile.",
+    "welcome": "Bine ați venit",
+    "select_module": "Vă rugăm să selectați un modul din bara laterală pentru a începe."
   },
   "auth": {
     "login_required": "Vă rugăm să vă autentificați pentru a accesa acest modul.",
