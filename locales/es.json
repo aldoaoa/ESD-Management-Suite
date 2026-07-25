@@ -137,7 +137,23 @@
     "lbl_scan": "Escanear Código QR del Activo",
     "asset_info": "Información del Activo",
     "status": "Estatus Operativo",
-    "new_record": "Registrar Nueva Medición"
+    "new_record": "Registrar Nueva Medición",
+    "waiting": "🔍 Ingresa o escanea el código QR del activo para iniciar la auditoría.",
+    "history": "📜 Historial de Auditorías Recientes",
+    "lbl_manual": "O ingresa la clave/ID del activo manualmente:",
+    "btn_close": "Cerrar Escáner QR",
+    "loc": "Ubicación / Línea",
+    "class": "Clasificación ESD",
+    "msg_not_found": "❌ No se encontró ningún activo registrado con la clave ingresada.",
+    "mode_quick": "Inspección Rápida (1 Punto)",
+    "mode_integral": "Validación Integral S20.20",
+    "lbl_temp": "Temperatura Ambiente (°C)",
+    "lbl_hum": "Humedad Relativa (%RH)",
+    "lbl_res": "Resistencia Medida (Ohms)",
+    "lbl_volts": "Voltaje Electrostático (V)",
+    "btn_save": "💾 Guardar Auditoría",
+    "btn_save_integral": "💾 Guardar y Generar Reporte",
+    "msg_success": "✅ Auditoría registrada exitosamente."
   },
   "routes": {
     "title": "Alta, Enrutamiento y Secuencia de Productos"
