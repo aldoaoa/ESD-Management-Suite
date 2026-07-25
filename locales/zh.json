@@ -137,7 +137,23 @@
     "lbl_scan": "扫描资产二维码",
     "asset_info": "资产详情",
     "status": "运行状态",
-    "new_record": "记录新测量数据"
+    "new_record": "记录新测量数据",
+    "waiting": "🔍 扫描或输入资产二维码/编号以开始审计。",
+    "history": "📜 近期审计历史记录",
+    "lbl_manual": "或手动输入资产编号/代码：",
+    "btn_close": "关闭二维码扫描器",
+    "loc": "位置 / 产线",
+    "class": "ESD 分级分类",
+    "msg_not_found": "❌ 未找到与输入的代码相匹配的已注册资产。",
+    "mode_quick": "快速检验 (单点)",
+    "mode_integral": "S20.20 完整合规验证",
+    "lbl_temp": "环境温度 (°C)",
+    "lbl_hum": "相对湿度 (%RH)",
+    "lbl_res": "测量电阻值 (Ohms)",
+    "lbl_volts": "静电电压 (V)",
+    "btn_save": "💾 保存审计记录",
+    "btn_save_integral": "💾 保存并生成报告",
+    "msg_success": "✅ 审计记录保存成功。"
   },
   "routes": {
     "title": "产品注册、路由与工艺顺序"
