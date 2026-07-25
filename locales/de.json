@@ -130,7 +130,14 @@
     "subtitle": "Globaler Status der ANSI/ESD S20.20-Konformität",
     "chart_status": "Betriebsstatus der Betriebsmittel",
     "chart_category": "Verteilung nach Kategorie",
-    "alerts_title": "Kritische Warnungen & Fristen"
+    "alerts_title": "Kritische Warnungen & Fristen",
+    "kpi_total": "Gesamtzahl ESD-Betriebsmittel",
+    "kpi_comp": "Globale Konformitätsrate",
+    "kpi_pass": "Konforme Betriebsmittel (PASS)",
+    "kpi_fail": "Nicht-konforme Betriebsmittel (FAIL)",
+    "col_asset": "Betriebsmittel-Code",
+    "col_category": "Kategorie",
+    "col_status": "Status"
   },
   "audit": {
     "title": "ESD-Audit- & Verifizierungsmodul",
@@ -178,5 +185,53 @@
     "tab_overview": "🌍 Werksübersicht",
     "tab_query": "🔍 Produktsuche",
     "tab_import": "📥 Komponenteneinstufung"
+  },
+  "infra": {
+    "title": "ESD-Infrastruktur & EPA-Schutzbereiche",
+    "subtitle": "Überprüfung von Erdung, ESD-Böden und isolierten Leitern",
+    "tab_ground": "⚡ Erdungssysteme",
+    "tab_floor": "🧱 ESD-Böden",
+    "tab_iso": "🔌 Isolierte Leiter",
+    "tab_checkers": "👟 Zugangstester",
+    "gr_id": "Erdungspunkt-ID",
+    "gr_loc": "Standort / Bereich",
+    "gr_ohms": "Erdungswiderstand (Ohm)",
+    "gr_save": "💾 Erdung erfassen",
+    "fl_room": "Raum / Reinraum",
+    "fl_point": "Bodenprüfpunkt",
+    "fl_save": "💾 Bodenmessung erfassen",
+    "iso_op": "Vorgang / Prozess",
+    "iso_volt": "Gemessene elektrostatische Spannung (V)",
+    "iso_save": "💾 Isolierten Leiter erfassen",
+    "msg_pass": "✅ Datensatz entspricht der Norm ANSI/ESD S20.20.",
+    "msg_fail": "🚨 Datensatz nicht konform. Korrekturmaßnahme erforderlich."
+  },
+  "inventory": {
+    "title": "ESD-Betriebsmittelverzeichnis & Inventar",
+    "tab_dir": "📋 Betriebsmittelverzeichnis",
+    "tab_add": "➕ Neues Betriebsmittel hinzufügen",
+    "tab_retire": "🗑️ Aussondern / Deaktivieren",
+    "lbl_id": "Betriebsmittel-Code / ID",
+    "lbl_category": "ESD-Kategorie",
+    "lbl_class": "Klassifizierung / Untertyp",
+    "lbl_location": "Standort / Linie",
+    "btn_save": "💾 Betriebsmittel speichern",
+    "msg_success": "✅ Betriebsmittel erfolgreich im Inventar erfasst.",
+    "msg_duplicate": "❌ Dieser Betriebsmittel-Code ist bereits registriert."
+  },
+  "lab": {
+    "title": "ESD-Prüflaboratorium & OCR",
+    "subtitle": "PCBA-Ereignisanalyse und Digitalisierung des Walking-Tests",
+    "tab_event": "⚡ Ereignismessgerät (PCBA)",
+    "tab_walking": "📷 OCR Walking-Test",
+    "em_location": "Prüfort",
+    "em_contact": "PCBA-Kontaktpunkt",
+    "em_voltage": "ESD-Entladespannung (V)",
+    "em_events": "Anzahl ESD-Ereignisse",
+    "em_operation": "Vorgang / Montage",
+    "em_save": "💾 ESD-Ereignis erfassen",
+    "wt_upload": "Bild des Walking-Test-Diagramms hochladen",
+    "wt_extracting": "🔍 Diagrammbild wird mit OCR-Engine analysiert...",
+    "wt_save": "💾 OCR-Daten speichern"
   }
 }
