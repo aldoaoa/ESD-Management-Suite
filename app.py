@@ -16,40 +16,36 @@ st.set_page_config(
 inicializar_estado_global(st)
 load_locales()
 
-# 3. Renderizar el menú lateral
+# 3. Renderizar la barra lateral
 render_sidebar()
 
-# 4. Lógica de Enrutamiento (Router)
+# 4. Lógica de Enrutamiento (Login vs Sistema Principal)
 if st.session_state.get("modo_lectura", True):
     # --- PANTALLA DE LOGIN ---
-    st.title(t("login", "title"))
+    st.title("🛡️ " + t("login", "title", default="ESD Management Suite - Acceso al Sistema"))
     st.markdown("---")
     
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         with st.container(border=True):
+            st.subheader("🔒 " + t("login", "account_access", default="Acceso de Usuario"))
             with st.form("login_form"):
-                st.subheader("🔒 Account Access")
-                email_input = st.text_input(t("login", "email_ph"))
-                pwd_input = st.text_input(t("login", "pwd_ph"), type="password")
+                email_input = st.text_input(t("login", "email", default="Correo Electrónico"), placeholder="usuario@empresa.com")
+                password_input = st.text_input(t("login", "password", default="Contraseña"), type="password")
+                submit_btn = st.form_submit_button(t("login", "submit", default="Iniciar Sesión"), use_container_width=True, type="primary")
                 
-                if st.form_submit_button(t("login", "btn_submit"), use_container_width=True, type="primary"):
-                    if email_input and pwd_input:
-                        with st.spinner("Authenticating..."):
-                            success, msg = iniciar_sesion(email_input, pwd_input)
-                            if success:
-                                st.rerun()
-                            else:
-                                st.error(t("login", "error_creds"))
+                if submit_btn:
+                    if email_input and password_input:
+                        success, res = iniciar_sesion(email_input, password_input)
+                        if success:
+                            st.success("✅ Acceso autorizado. Cargando sistema...")
+                            st.rerun()
+                        else:
+                            msg = t("login", res, default=f"Error de inicio de sesión: {res}")
+                            st.error(f"❌ {msg}")
                     else:
-                        st.warning("Please fill in all fields.")
+                        st.warning("⚠️ Ingresa correo y contraseña.")
 else:
-    # --- PANTALLA DE INICIO (USUARIO LOGUEADO) ---
-    st.title(f"👋 Welcome, {st.session_state.usuario_nombre}")
-    st.info("👈 Please select a module from the sidebar to begin.")
-    
-    # Aquí puedes colocar métricas de alto nivel a futuro
-    c1, c2, c3 = st.columns(3)
-    c1.metric("Company", st.session_state.get('company_name', 'N/A'))
-    c2.metric("Active Site", st.session_state.get('site_name', 'N/A'))
-    c3.metric("Role", st.session_state.get('rol_usuario', 'N/A'))
+    # --- SISTEMA PRINCIPAL LOGUEADO ---
+    st.markdown(f"## 🛡️ ESD Management Suite - **{st.session_state.get('site_name', 'Site')}**")
+    st.caption("Selecciona un módulo en la navegación lateral para operar.")
