@@ -137,7 +137,23 @@
     "lbl_scan": "QR-Code scannen",
     "asset_info": "Details zum Betriebsmittel",
     "status": "Betriebsstatus",
-    "new_record": "Neue Messung erfassen"
+    "new_record": "Neue Messung erfassen",
+    "waiting": "🔍 Scannen oder geben Sie den QR-Code/ID ein, um das Audit zu starten.",
+    "history": "📜 Verlauf der letzten Audits",
+    "lbl_manual": "Oder geben Sie den Code/die ID manuell ein:",
+    "btn_close": "QR-Scanner schließen",
+    "loc": "Standort / Linie",
+    "class": "ESD-Klassifizierung",
+    "msg_not_found": "❌ Kein registriertes Betriebsmittel mit diesem Code gefunden.",
+    "mode_quick": "Schnellprüfung (1 Punkt)",
+    "mode_integral": "Vollständige S20.20-Validierung",
+    "lbl_temp": "Umgebungstemperatur (°C)",
+    "lbl_hum": "Relative Luftfeuchtigkeit (%RH)",
+    "lbl_res": "Gemessener Widerstand (Ohm)",
+    "lbl_volts": "Elektrostatische Spannung (V)",
+    "btn_save": "💾 Audit speichern",
+    "btn_save_integral": "💾 Speichern und Bericht erstellen",
+    "msg_success": "✅ Audit erfolgreich erfasst."
   },
   "routes": {
     "title": "Produktregistrierung, Routing & Ablaufsequenz"
