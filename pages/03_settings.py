@@ -635,26 +635,45 @@ with tab_loc:
             if nombre_linea_input:
                 try:
                     supabase.table("catalogo_lineas").insert({
+                        "company_id": comp_id_gestion,
                         "site_id": site_id_gestion,
                         "nombre_linea": nombre_linea_input.strip().upper()
                     }).execute()
                     st.success("✅ Ubicación agregada al catálogo.")
                     st.rerun()
                 except Exception as e:
-                    st.error(f"Error al agregar ubicación: {e}")
+                    if "PGRST205" in str(e) or "catalogo_lineas" in str(e):
+                        st.error("⚠️ La tabla 'catalogo_lineas' aún no existe en Supabase. Ejecuta el script SQL en Supabase Editor.")
+                    else:
+                        st.error(f"Error al agregar ubicación: {e}")
             else:
                 st.warning("⚠️ Debes ingresar un nombre de ubicación.")
                 
     st.divider()
     st.markdown("#### 📋 Ubicaciones Registradas en esta Planta")
     try:
-        resp_lineas = supabase.table("catalogo_lineas").select("*").eq("site_id", site_id_gestion).order("nombre_linea").execute()
+        if site_id_gestion:
+            resp_lineas = supabase.table("catalogo_lineas").select("*").eq("site_id", site_id_gestion).order("nombre_linea").execute()
+        else:
+            resp_lineas = supabase.table("catalogo_lineas").select("*").order("nombre_linea").execute()
+            
         if resp_lineas.data:
             st.dataframe(pd.DataFrame(resp_lineas.data), use_container_width=True)
         else:
             st.info("Sin ubicaciones registradas.")
     except Exception as e:
-        st.error(f"Error al cargar ubicaciones: {e}")
+        if "PGRST205" in str(e) or "catalogo_lineas" in str(e):
+            st.info("💡 **Configuración Requerida en Supabase**: Crea la tabla `catalogo_lineas` en el SQL Editor de Supabase:")
+            st.code("""CREATE TABLE IF NOT EXISTS public.catalogo_lineas (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+    company_id UUID REFERENCES public.companies(id) ON DELETE CASCADE,
+    site_id UUID REFERENCES public.sites(id) ON DELETE CASCADE,
+    nombre_linea TEXT NOT NULL,
+    CONSTRAINT unique_site_linea UNIQUE (site_id, nombre_linea)
+);""", language="sql")
+        else:
+            st.error(f"Error al cargar ubicaciones: {e}")
 
 with tab_eq:
     st.markdown(f"#### {t('settings', 'eq_add', '➕ Registrar Nuevo Equipo de Medición')}")
