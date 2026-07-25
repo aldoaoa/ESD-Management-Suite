@@ -130,7 +130,14 @@
     "subtitle": "ANSI/ESD S20.20 标准全球合规状态",
     "chart_status": "资产运行状态",
     "chart_category": "按类别分布",
-    "alerts_title": "关键警报与到期提醒"
+    "alerts_title": "关键警报与到期提醒",
+    "kpi_total": "ESD 资产总数",
+    "kpi_comp": "全球总体合规率",
+    "kpi_pass": "合格资产 (PASS)",
+    "kpi_fail": "不合格资产 (FAIL)",
+    "col_asset": "资产编号",
+    "col_category": "类别",
+    "col_status": "状态"
   },
   "audit": {
     "title": "ESD 审计与验证模块",
@@ -178,5 +185,53 @@
     "tab_overview": "🌍 工厂总览",
     "tab_query": "🔍 产品查询",
     "tab_import": "📥 组件分类"
+  },
+  "infra": {
+    "title": "ESD 基础设施与 EPA 防护区",
+    "subtitle": "接地、ESD 地坪及绝缘导体验证",
+    "tab_ground": "⚡ 物理接地",
+    "tab_floor": "🧱 ESD 防静电地坪",
+    "tab_iso": "🔌 绝缘导体",
+    "tab_checkers": "👟 入口门禁测试仪",
+    "gr_id": "接地点编号",
+    "gr_loc": "位置 / 区域",
+    "gr_ohms": "对地电阻 (Ohms)",
+    "gr_save": "💾 记录物理接地",
+    "fl_room": "房间 / 洁净室",
+    "fl_point": "地坪测试点",
+    "fl_save": "💾 记录地坪测量",
+    "iso_op": "工序 / 工艺",
+    "iso_volt": "测量静电电压 (V)",
+    "iso_save": "💾 记录绝缘导体",
+    "msg_pass": "✅ 记录符合 ANSI/ESD S20.20 标准。",
+    "msg_fail": "🚨 记录不合规，需要采取纠正措施。"
+  },
+  "inventory": {
+    "title": "ESD 资产目录与库存",
+    "tab_dir": "📋 资产目录",
+    "tab_add": "➕ 添加新资产",
+    "tab_retire": "🗑️ 报废 / 停用",
+    "lbl_id": "资产编号 / 代码",
+    "lbl_category": "ESD 类别",
+    "lbl_class": "分类 / 子类型",
+    "lbl_location": "位置 / 产线",
+    "btn_save": "💾 保存资产",
+    "msg_success": "✅ 资产已成功登记入库。",
+    "msg_duplicate": "❌ 该资产编号已被注册。"
+  },
+  "lab": {
+    "title": "ESD 测试实验室与 OCR 识别",
+    "subtitle": "PCBA 静电事件分析与 Walking Test 数字化",
+    "tab_event": "⚡ 事件测量仪 (PCBA)",
+    "tab_walking": "📷 OCR 人体行走测试图像识别",
+    "em_location": "测试位置",
+    "em_contact": "PCBA 接触点",
+    "em_voltage": "ESD 放电电压 (V)",
+    "em_events": "ESD 事件次数",
+    "em_operation": "工序 / 组装",
+    "em_save": "💾 记录 ESD 事件",
+    "wt_upload": "上传人体行走测试图表图像",
+    "wt_extracting": "🔍 正在使用 OCR 引擎分析图表图像...",
+    "wt_save": "💾 保存 OCR 数据"
   }
 }
