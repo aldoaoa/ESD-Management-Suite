@@ -130,7 +130,14 @@
     "subtitle": "Estado global de cumplimiento normativo ANSI/ESD S20.20",
     "chart_status": "Estatus Operativo de Activos",
     "chart_category": "Distribución por Categoría",
-    "alerts_title": "Alertas Críticas y Vencimientos"
+    "alerts_title": "Alertas Críticas y Vencimientos",
+    "kpi_total": "Total de Activos ESD",
+    "kpi_comp": "Porcentaje de Cumplimiento Global",
+    "kpi_pass": "Activos Conformes (PASS)",
+    "kpi_fail": "Activos No Conformes (FAIL)",
+    "col_asset": "Código de Activo",
+    "col_category": "Categoría",
+    "col_status": "Estatus"
   },
   "audit": {
     "title": "Módulo de Auditoría y Verificación ESD",
@@ -178,5 +185,53 @@
     "tab_overview": "🌍 Resumen de Planta",
     "tab_query": "🔍 Consulta por Producto",
     "tab_import": "📥 Clasificación de Componentes"
+  },
+  "infra": {
+    "title": "Infraestructura y Áreas Protegidas ESD (EPA)",
+    "subtitle": "Verificación de tierras físicas, pisos ESD y conductores aislados",
+    "tab_ground": "⚡ Tierras Físicas",
+    "tab_floor": "🧱 Pisos ESD",
+    "tab_iso": "🔌 Conductores Aislados",
+    "tab_checkers": "👟 Checadores de Entrada",
+    "gr_id": "ID Punto de Tierra",
+    "gr_loc": "Ubicación / Área",
+    "gr_ohms": "Resistencia a Tierra (Ohms)",
+    "gr_save": "💾 Registrar Tierra Física",
+    "fl_room": "Cuarto / Cuarto Limpio",
+    "fl_point": "Punto de Prueba de Piso",
+    "fl_save": "💾 Registrar Medición de Piso",
+    "iso_op": "Operación / Proceso",
+    "iso_volt": "Voltaje Electrostático Medido (V)",
+    "iso_save": "💾 Registrar Conductor Aislado",
+    "msg_pass": "✅ Registro conforme con norma ANSI/ESD S20.20.",
+    "msg_fail": "🚨 Registro fuera de norma. Requiere acción correctiva."
+  },
+  "inventory": {
+    "title": "Directorio de Activos e Inventario ESD",
+    "tab_dir": "📋 Directorio de Activos",
+    "tab_add": "➕ Alta de Nuevo Activo",
+    "tab_retire": "🗑️ Baja / Inactivación",
+    "lbl_id": "Código / ID de Activo",
+    "lbl_category": "Categoría ESD",
+    "lbl_class": "Clasificación / Subtipo",
+    "lbl_location": "Ubicación / Línea",
+    "btn_save": "💾 Registrar Activo",
+    "msg_success": "✅ Activo registrado en el inventario exitosamente.",
+    "msg_duplicate": "❌ El código de activo ya está registrado."
+  },
+  "lab": {
+    "title": "Laboratorio de Pruebas ESD y OCR",
+    "subtitle": "Análisis de eventos en PCBA y digitalización de Walking Test",
+    "tab_event": "⚡ Event Meter (PCBA)",
+    "tab_walking": "📷 OCR Walking Test",
+    "em_location": "Ubicación de Prueba",
+    "em_contact": "Punto de Contacto en PCBA",
+    "em_voltage": "Voltaje de Descarga ESD (V)",
+    "em_events": "Conteo de Eventos ESD",
+    "em_operation": "Operación / Ensamble",
+    "em_save": "💾 Registrar Evento ESD",
+    "wt_upload": "Cargar Imagen de Gráfica Walking Test",
+    "wt_extracting": "🔍 Analizando gráfica con motor OCR...",
+    "wt_save": "💾 Guardar Datos OCR"
   }
 }
