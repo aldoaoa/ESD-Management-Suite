@@ -18,13 +18,21 @@
   },
   "login": {
     "title": "ESD Management Suite - System Login",
-    "account_access": "User Login",
+    "account_access": "Account Access",
     "email": "Email Address",
     "password": "Password",
     "submit": "Log In",
+    "email_ph": "Email Address",
+    "pwd_ph": "Password",
+    "btn_submit": "Log In",
+    "error_creds": "❌ Invalid credentials. Please check your email and password.",
     "account_inactive": "Your user account is inactive.",
     "invalid_password": "The entered password is incorrect.",
-    "user_not_found": "No user account found with this email."
+    "user_not_found": "No user account found with this email.",
+    "authenticating": "Authenticating...",
+    "fill_all": "Please fill in all fields.",
+    "welcome": "Welcome",
+    "select_module": "Please select a module from the sidebar to begin."
   },
   "auth": {
     "login_required": "Please log in to access this module.",
