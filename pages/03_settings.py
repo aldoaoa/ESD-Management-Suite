@@ -676,5 +676,143 @@ with tab_loc:
             st.error(f"Error al cargar ubicaciones: {e}")
 
 with tab_eq:
-    st.markdown(f"#### {t('settings', 'eq_add', '➕ Registrar Nuevo Equipo de Medición')}")
-    st.info("Registra los instrumentos utilizados para auditorías (Megómetros, Voltímetros, etc.).")
+    st.markdown(f"#### 🛠️ {t('settings', 'eq_title', 'Gestión de Equipos de Medición de Auditoría')}")
+    st.caption(t('settings', 'eq_caption', 'Registra instrumentos de prueba ESD (Megóhmetros, Voltímetros, Terómetros), controla sus fechas de calibración y vigencia.'))
+    
+    with st.expander(f"➕ **{t('settings', 'eq_add', 'Registrar Nuevo Equipo de Medición')}**", expanded=False):
+        with st.form("form_alta_equipo_medicion", clear_on_submit=True):
+            col_eq1, col_eq2 = st.columns(2)
+            with col_eq1:
+                eq_codigo = st.text_input(t("settings", "lbl_eq_code", "Código / ID de Calibración Interno"), placeholder="Ej. EQ-ESD-001")
+                eq_nombre = st.text_input(t("settings", "lbl_eq_name", "Nombre / Instrumento"), placeholder="Ej. Megóhmetro Digital High-Resistance")
+                eq_marca = st.text_input(t("settings", "lbl_eq_brand", "Marca / Modelo"), placeholder="Ej. Fluke 1587 / Megger MIT420")
+            with col_eq2:
+                eq_serie = st.text_input(t("settings", "lbl_eq_serial", "Número de Serie"), placeholder="Ej. SN-8893410")
+                eq_f_calib = st.date_input(t("settings", "lbl_eq_calib_date", "Fecha de Última Calibración"), value=datetime.date.today())
+                eq_f_venc = st.date_input(t("settings", "lbl_eq_next_calib", "Fecha de Próxima Calibración / Vencimiento"), value=datetime.date.today() + datetime.timedelta(days=365))
+            
+            eq_estatus = st.selectbox(
+                t("settings", "lbl_eq_status", "Estatus Inicial del Equipo:"),
+                ["VIGENTE", "POR_VENCER", "EN_CALIBRACION", "FUERA_DE_SERVICIO"]
+            )
+            
+            if st.form_submit_button(t("settings", "btn_save_equipment", "💾 Guardar Equipo de Medición"), type="primary"):
+                if not eq_codigo or not eq_nombre:
+                    st.warning(t("settings", "msg_fill_required", "Por favor completa el código y el nombre del equipo."))
+                else:
+                    try:
+                        supabase.table("catalogo_equipos").insert({
+                            "company_id": comp_id_gestion,
+                            "site_id": site_id_gestion,
+                            "codigo_equipo": eq_codigo.strip().upper(),
+                            "nombre_equipo": eq_nombre.strip(),
+                            "marca_modelo": eq_marca.strip() if eq_marca else None,
+                            "numero_serie": eq_serie.strip() if eq_serie else None,
+                            "fecha_ultima_calibracion": str(eq_f_calib),
+                            "fecha_proxima_calibracion": str(eq_f_venc),
+                            "estatus": eq_estatus
+                        }).execute()
+                        st.success(f"✅ {t('settings', 'msg_eq_saved', 'Equipo de medición registrado exitosamente.')}")
+                        st.rerun()
+                    except Exception as e:
+                        if "PGRST205" in str(e) or "catalogo_equipos" in str(e):
+                            st.error("⚠️ La tabla 'catalogo_equipos' aún no existe en Supabase. Ejecuta el script SQL en Supabase Editor.")
+                        elif "duplicate key" in str(e) or "23505" in str(e):
+                            st.error("❌ El código de equipo ya está registrado en este site.")
+                        else:
+                            st.error(f"Error al guardar equipo: {e}")
+
+    st.divider()
+    st.markdown(f"##### 📋 {t('settings', 'hdr_eq_directory', 'Directorio de Equipos de Medición Registrados')}")
+    try:
+        if site_id_gestion:
+            resp_eq = supabase.table("catalogo_equipos").select("*").eq("site_id", site_id_gestion).order("codigo_equipo").execute()
+        else:
+            resp_eq = supabase.table("catalogo_equipos").select("*").order("codigo_equipo").execute()
+            
+        list_eq_data = resp_eq.data if resp_eq.data else []
+        
+        if list_eq_data:
+            df_eq = pd.DataFrame(list_eq_data)
+            cols_show_eq = ["codigo_equipo", "nombre_equipo", "marca_modelo", "numero_serie", "fecha_proxima_calibracion", "estatus"]
+            cols_exist_eq = [c for c in cols_show_eq if c in df_eq.columns]
+            st.dataframe(df_eq[cols_exist_eq], use_container_width=True)
+            
+            st.markdown("##### ✏️ Editar / Actualizar Calibración de Equipo")
+            for eq_item in list_eq_data:
+                eq_id = eq_item["id"]
+                eq_cod = eq_item.get("codigo_equipo", "N/A")
+                eq_nom = eq_item.get("nombre_equipo", "Sin Nombre")
+                eq_st = eq_item.get("estatus", "VIGENTE")
+                eq_pv = eq_item.get("fecha_proxima_calibracion", "N/A")
+                
+                badge_st = "🟢" if eq_st == "VIGENTE" else ("🟡" if eq_st == "POR_VENCER" else "🔴")
+                
+                with st.expander(f"{badge_st} **{eq_cod}** — {eq_nom} | Vence: `{eq_pv}` | Estatus: `{eq_st}`", expanded=False):
+                    with st.form(f"form_edit_eq_{eq_id}"):
+                        ce1, ce2 = st.columns(2)
+                        with ce1:
+                            edit_nom = st.text_input(t("settings", "lbl_eq_name", "Nombre / Instrumento"), value=eq_nom)
+                            edit_mar = st.text_input(t("settings", "lbl_eq_brand", "Marca / Modelo"), value=eq_item.get("marca_modelo") or "")
+                            edit_ser = st.text_input(t("settings", "lbl_eq_serial", "Número de Serie"), value=eq_item.get("numero_serie") or "")
+                        with ce2:
+                            try:
+                                d_ult = datetime.datetime.strptime(eq_item.get("fecha_ultima_calibracion"), "%Y-%m-%d").date() if eq_item.get("fecha_ultima_calibracion") else datetime.date.today()
+                            except: d_ult = datetime.date.today()
+                            
+                            try:
+                                d_prox = datetime.datetime.strptime(eq_item.get("fecha_proxima_calibracion"), "%Y-%m-%d").date() if eq_item.get("fecha_proxima_calibracion") else datetime.date.today()
+                            except: d_prox = datetime.date.today()
+                            
+                            edit_f_ult = st.date_input(t("settings", "lbl_eq_calib_date", "Última Calibración"), value=d_ult, key=f"f_ult_{eq_id}")
+                            edit_f_prox = st.date_input(t("settings", "lbl_eq_next_calib", "Próxima Calibración"), value=d_prox, key=f"f_prox_{eq_id}")
+                        
+                        estatus_opts = ["VIGENTE", "POR_VENCER", "VENCIDO", "EN_CALIBRACION", "FUERA_DE_SERVICIO"]
+                        idx_st = estatus_opts.index(eq_st) if eq_st in estatus_opts else 0
+                        edit_st = st.selectbox(t("settings", "lbl_eq_status", "Estatus del Equipo"), estatus_opts, index=idx_st, key=f"st_{eq_id}")
+                        
+                        col_btn1, col_btn2 = st.columns(2)
+                        with col_btn1:
+                            if st.form_submit_button(t("settings", "btn_save_changes", "💾 Guardar Cambios")):
+                                try:
+                                    supabase.table("catalogo_equipos").update({
+                                        "nombre_equipo": edit_nom.strip(),
+                                        "marca_modelo": edit_mar.strip() if edit_mar else None,
+                                        "numero_serie": edit_ser.strip() if edit_ser else None,
+                                        "fecha_ultima_calibracion": str(edit_f_ult),
+                                        "fecha_proxima_calibracion": str(edit_f_prox),
+                                        "estatus": edit_st
+                                    }).eq("id", eq_id).execute()
+                                    st.success(f"✅ {t('settings', 'msg_eq_updated', 'Equipo actualizado correctamente.')}")
+                                    st.rerun()
+                                except Exception as ex:
+                                    st.error(f"Error: {ex}")
+                        with col_btn2:
+                            if st.form_submit_button("🗑️ " + t("settings", "btn_delete_eq", "Eliminar Equipo"), type="secondary"):
+                                try:
+                                    supabase.table("catalogo_equipos").delete().eq("id", eq_id).execute()
+                                    st.success("✅ Equipo eliminado del catálogo.")
+                                    st.rerun()
+                                except Exception as ex:
+                                    st.error(f"Error al eliminar: {ex}")
+        else:
+            st.info(t("settings", "msg_no_eq_found", "Sin equipos de medición registrados actualmente en esta planta."))
+    except Exception as e:
+        if "PGRST205" in str(e) or "catalogo_equipos" in str(e):
+            st.info("💡 **Configuración Requerida en Supabase**: Crea la tabla `catalogo_equipos` en el SQL Editor de Supabase:")
+            st.code("""CREATE TABLE IF NOT EXISTS public.catalogo_equipos (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+    company_id UUID REFERENCES public.companies(id) ON DELETE CASCADE,
+    site_id UUID REFERENCES public.sites(id) ON DELETE CASCADE,
+    codigo_equipo TEXT NOT NULL,
+    nombre_equipo TEXT NOT NULL,
+    marca_modelo TEXT,
+    numero_serie TEXT,
+    fecha_ultima_calibracion DATE,
+    fecha_proxima_calibracion DATE,
+    estatus TEXT DEFAULT 'VIGENTE',
+    CONSTRAINT unique_site_codigo_equipo UNIQUE (site_id, codigo_equipo)
+);""", language="sql")
+        else:
+            st.error(f"Error al cargar equipos: {e}")
