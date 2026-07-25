@@ -115,14 +115,21 @@ with tab_lang:
     
     opciones_idioma = {
         "es": "Español (Spanish)",
-        "en": "English (Inglés)"
+        "en": "English (Inglés)",
+        "zh": "中文 (Chinese / Chino)",
+        "de": "Deutsch (German / Alemán)",
+        "it": "Italiano (Italian / Italiano)",
+        "ro": "Română (Romanian / Rumano)"
     }
+    
+    opciones_keys = list(opciones_idioma.keys())
+    idx_lang = opciones_keys.index(lang_actual) if lang_actual in opciones_keys else 0
     
     sel_lang = st.radio(
         t("settings", "lbl_select_lang", "Idioma de la plataforma / Platform Language:"),
-        options=["es", "en"],
+        options=opciones_keys,
         format_func=lambda x: opciones_idioma[x],
-        index=0 if lang_actual == "es" else 1
+        index=idx_lang
     )
     
     if sel_lang != lang_actual:
