@@ -4,6 +4,7 @@ import plotly.express as px
 from PIL import Image
 import os
 import base64
+import ast
 import math
 from datetime import datetime, timedelta
 from dateutil.relativedelta import relativedelta
@@ -148,11 +149,647 @@ def obtener_catalogo_lineas():
         return [x['nombre_linea'] for x in resp.data] if resp.data else ["Sin Ubicaciones"]
     except:
         return ["Sin Ubicaciones"]
+
+def registrar_en_catalogo_maestro(id_activo, tipo_categoria, clasificacion, linea_ubicacion, estatus_operativo="OPERATIVO"):
+    """
+    Guarda o actualiza automáticamente el activo en el Catálogo Maestro
+    al momento de crearlo en los formularios de Alta o Maquinaria.
+    """
+    try:
+        datos = {
+            "id_activo": str(id_activo).strip(),
+            "tipo_categoria": "Maquinaria" if "MAQ" in str(tipo_categoria).upper() else "Mobiliario",
+            "clasificacion": str(clasificacion).strip(),
+            "linea_ubicacion": str(linea_ubicacion).strip(),
+            "estatus_operativo": estatus_operativo
+        }
+        # upsert inserta el registro o actualiza sus datos si ya existe el id_activo
+        supabase.table("catalogo_maestro_activos").upsert(datos, on_conflict="id_activo").execute()
+    except Exception as e:
+        print(f"Error al sincronizar con catalogo_maestro_activos: {e}")
         
 def limpiar_id(texto):
     if not texto: return ""
     # Convierte a texto, quita espacios raros, borra espacios al inicio/fin y lo hace mayúscula
     return str(texto).replace('\xa0', ' ').strip().upper()
+
+# ==========================================
+# VISTA: GESTIÓN DE RUTAS Y PRODUCTOS
+# ==========================================
+def gestionar_rutas_producto():
+    st.markdown("### 📦 Alta, Enrutamiento y Secuencia de Productos")
+    st.info("Registra productos y define el orden secuencial estricto de las líneas/estaciones por las que transita (de primera a última).")
+    
+    # 1. Obtener las líneas disponibles desde tu catálogo maestro
+    try:
+        lineas_disponibles = obtener_catalogo_lineas()
+    except Exception:
+        lineas_disponibles = ["SMT9", "ICT 22", "Router 9", "Ford SCCM", "Conformal Coating", "Final Assembly", "Empaque"]
+
+    # 2. Formulario de captura con previsualización secuencial
+    with st.form("form_alta_producto", clear_on_submit=True):
+        nombre_producto_input = st.text_input("Nombre del Producto", placeholder="Ej. SCCM Ford")
+        
+        st.markdown("**Selección de Secuencia del Proceso:**")
+        st.caption("💡 *Tip: Selecciona las líneas en el orden exacto en que pasa el producto (de la primera operación a la última).*")
+        
+        lineas_seleccionadas = st.multiselect(
+            "Selecciona y ordena la ruta de líneas:",
+            options=lineas_disponibles,
+            help="El orden en que selecciones las líneas determinará la secuencia oficial del proceso."
+        )
+        
+        # Previsualización del flujo en tiempo real dentro del formulario
+        if lineas_seleccionadas:
+            st.markdown("##### 🔍 Previsualización de la Secuencia:")
+            pasos_html = " ➡️ ".join([f"**[{i+1}] {linea}**" for i, linea in enumerate(lineas_seleccionadas)])
+            st.success(pasos_html)
+            
+        submit_btn = st.form_submit_button("💾 Guardar Ruta de Producto")
+        
+        # 3. Guardado en Supabase
+        if submit_btn:
+            nombre_limpio = limpiar_id(nombre_producto_input) if 'limpiar_id' in globals() else nombre_producto_input.strip()
+            
+            if not nombre_limpio:
+                st.warning("⚠️ Debes ingresar un nombre válido para el producto.")
+            elif not lineas_seleccionadas:
+                st.warning("⚠️ Debes seleccionar al menos una línea o estación.")
+            else:
+                try:
+                    datos_insercion = {
+                        "nombre_producto": nombre_limpio,
+                        "lineas_asociadas": lineas_seleccionadas # Preserva el orden secuencial array
+                    }
+                    
+                    respuesta = supabase.table("catalogo_productos").insert(datos_insercion).execute() 
+                    
+                    if respuesta.data:
+                        st.success(f"✅ Producto '{nombre_limpio}' registrado exitosamente con una ruta de {len(lineas_seleccionadas)} estaciones.")
+                        st.rerun()
+                except Exception as e:
+                    if "duplicate key value" in str(e) or "23505" in str(e):
+                        st.error(f"❌ El producto '{nombre_limpio}' ya está registrado.")
+                    else:
+                        st.error(f"❌ Error al guardar en la base de datos: {e}")
+
+    st.divider()
+
+    # 4. Visualización de Productos y Rutas Secuenciales Registradas
+    st.markdown("#### 🗺️ Diagrama y Reportes de Rutas por Producto")
+    
+    # Cargar coordenadas (Asegúrate de que RUTA_COORDENADAS esté definida)
+    try:
+        df_coordenadas = pd.read_csv(RUTA_COORDENADAS)
+    except:
+        df_coordenadas = pd.DataFrame()
+        
+    try:
+        resp_prod = supabase.table("catalogo_productos").select("*").order("created_at", desc=True).execute()
+        
+        if resp_prod.data:
+            for prod in resp_prod.data:
+                nombre = prod.get("nombre_producto", "Sin Nombre")
+                ruta_actual = prod.get("lineas_asociadas", [])
+                
+                with st.expander(f"📦 **{nombre}** ({len(ruta_actual)} Estaciones)", expanded=False):
+                    
+                    # --- PESTAÑAS INTERNAS DE LA TARJETA ---
+                    tab_visual, tab_editar = st.tabs(["👁️ Visualizar Ruta", "✏️ Editar Secuencia"])
+                    
+                    with tab_visual:
+                        if isinstance(ruta_actual, list) and len(ruta_actual) > 0:
+                            # 1. Indicadores Métricos
+                            st.markdown("**Secuencia de Producción:**")
+                            cols = st.columns(min(len(ruta_actual), 6))
+                            for idx, estacion in enumerate(ruta_actual):
+                                col_idx = idx % 6
+                                with cols[col_idx]:
+                                    # Si es una lista, la unimos con diagonales
+                                    valor_mostrar = " / ".join(estacion) if isinstance(estacion, list) else estacion
+                                    st.metric(label=f"Paso {idx + 1}", value=valor_mostrar)
+                            
+                            # 2. Mapa Interactivo Plotly
+                            if not df_coordenadas.empty:
+                                fig_mapa = crear_mapa_ruta(ruta_actual, df_coordenadas)
+                                if fig_mapa:
+                                    st.markdown("##### 📍 Layout de la Planta")
+                                    st.plotly_chart(fig_mapa, use_container_width=True, config={'displayModeBar': False})
+                                else:
+                                    st.caption("No se pudieron trazar las coordenadas en el mapa.")
+                            
+                            # 3. Reporte PDF
+                            st.divider()
+                            col_info, col_boton = st.columns([2, 1])
+                            with col_info:
+                                st.caption("Genera un reporte del estado ESD actual de esta ruta (Incluye mapa).")
+                            with col_boton:
+                                if st.button(f"📊 Preparar Reporte", key=f"btn_prep_{nombre}"):
+                                    with st.spinner('Procesando mapa y consultando estatus...'):
+                                        df_ruta_status = obtener_datos_ruta_producto(ruta_actual)
+                                        
+                                        # ----- CAMBIO AQUÍ: PASAR fig_mapa a la función -----
+                                        html_reporte = generar_html_reporte_ruta(
+                                            nombre_producto=nombre, 
+                                            df_ruta=df_ruta_status, 
+                                            fig_mapa=fig_mapa if 'fig_mapa' in locals() else None, 
+                                            auditor=st.session_state.get("usuario_nombre", "Auditor")
+                                        )
+                                        # ----------------------------------------------------
+                                        
+                                        st.download_button(
+                                            label=f"📥 Descargar PDF/HTML",
+                                            data=html_reporte,
+                                            file_name=f"Ruta_{nombre.replace(' ', '_')}.html",
+                                            mime="text/html",
+                                            key=f"dl_btn_{nombre}"
+                                        )
+                        else:
+                            st.warning("Sin ruta definida.")
+                            
+                    with tab_editar:
+                        st.info("💡 **Edita la ruta:** Agrega los pasos en orden. Si en un paso hay varias máquinas equivalentes (ej. Router 1, 2 y 3), selecciónalas todas dentro de ese mismo paso.")
+                        
+                        # Convertir a lista de listas si viene plana del pasado
+                        ruta_editable = ruta_actual if (ruta_actual and isinstance(ruta_actual[0], list)) else [[e] for e in ruta_actual]
+                        
+                        with st.form(f"form_editar_{nombre}"):
+                            # Selector de cuántos pasos tiene el proceso
+                            num_pasos = st.number_input("Cantidad de Pasos en el Proceso", min_value=1, max_value=20, value=max(1, len(ruta_editable)))
+                            
+                            nueva_ruta_agrupada = []
+                            for i in range(int(num_pasos)):
+                                # Si ya existía este paso, cargamos sus datos por defecto
+                                default_vals = ruta_editable[i] if i < len(ruta_editable) else []
+                                # Filtramos para evitar errores si una línea fue borrada del catálogo general
+                                default_vals = [val for val in default_vals if val in lineas_disponibles]
+                                
+                                paso_seleccion = st.multiselect(
+                                    f"⚙️ PASO {i + 1} (Selecciona una o más estaciones equivalentes):",
+                                    options=lineas_disponibles,
+                                    default=default_vals,
+                                    key=f"paso_{nombre}_{i}"
+                                )
+                                if paso_seleccion:
+                                    nueva_ruta_agrupada.append(paso_seleccion)
+                            
+                            if st.form_submit_button("💾 Guardar Nueva Secuencia", type="primary"):
+                                if not nueva_ruta_agrupada:
+                                    st.error("⚠️ La ruta no puede estar vacía.")
+                                else:
+                                    try:
+                                        # Guardamos el JSON (array de arrays) en Supabase
+                                        supabase.table("catalogo_productos").update(
+                                            {"lineas_asociadas": nueva_ruta_agrupada}
+                                        ).eq("nombre_producto", nombre).execute()
+                                        st.success("✅ Ruta actualizada exitosamente con estaciones paralelas.")
+                                        st.rerun()
+                                    except Exception as e:
+                                        st.error(f"Error al actualizar: {e}")
+
+        else:
+            st.info("Aún no hay productos ni rutas registradas.")
+            
+    except Exception as e:
+        st.error(f"Error al cargar las rutas de productos: {e}")
+
+def crear_mapa_ruta(ruta_grupos, df_coords):
+    """
+    Genera el mapa de la ruta. Incluye autodiagnóstico y reparación 
+    de formatos corruptos de listas provenientes de SQL.
+    """
+    try:
+        img = Image.open(RUTA_MAPA)
+        img_w, img_h = img.size
+    except Exception as e:
+        st.error(f"Error cargando la imagen del mapa: {e}")
+        return None
+
+    # --- 1. REPARACIÓN DE FORMATOS DE BASE DE DATOS ---
+    # Si Supabase devuelve la ruta como texto en lugar de array/json, lo reparamos
+    if isinstance(ruta_grupos, str):
+        try:
+            ruta_grupos = ast.literal_eval(ruta_grupos)
+        except Exception:
+            st.error("El formato de la ruta en la base de datos está corrupto.")
+            return None
+
+    # Si por alguna razón sigue sin ser una lista, abortamos
+    if not isinstance(ruta_grupos, list) or len(ruta_grupos) == 0:
+        return None
+
+    # Si es una ruta vieja (plana) la convertimos al nuevo formato de grupos
+    if not isinstance(ruta_grupos[0], list):
+        ruta_grupos = [[estacion] for estacion in ruta_grupos]
+
+    # --- 2. DETECCIÓN DE COLUMNAS DEL CSV ---
+    columnas_csv = [c.lower() for c in df_coords.columns]
+    col_nombre = next((c for c in ['ubicacion', 'nombre_ubicacion', 'línea', 'name'] if c in columnas_csv), None)
+    
+    if not col_nombre:
+        st.warning(f"Tu CSV no tiene la columna 'ubicacion'. Columnas detectadas: {df_coords.columns.tolist()}")
+        return None
+        
+    col_nombre_real = df_coords.columns[columnas_csv.index(col_nombre)]
+    col_x = 'X' if 'X' in df_coords.columns else ('x' if 'x' in df_coords.columns else df_coords.columns[1])
+    col_y = 'Y' if 'Y' in df_coords.columns else ('y' if 'y' in df_coords.columns else df_coords.columns[2])
+
+    # --- 3. CRUCE DE COORDENADAS ---
+    coords_por_paso = []
+    
+    for paso_idx, grupo in enumerate(ruta_grupos):
+        coords_grupo = []
+        for estacion in grupo:
+            # Búsqueda exacta omitiendo mayúsculas y espacios extra
+            match = df_coords[df_coords[col_nombre_real].astype(str).str.strip().str.upper() == str(estacion).strip().upper()]
+            
+            if not match.empty:
+                cx = float(match.iloc[0][col_x])
+                cy = float(match.iloc[0][col_y])
+                coords_grupo.append({"estacion": estacion, "x": cx, "y": cy, "paso": paso_idx + 1})
+        
+        if coords_grupo:
+            coords_por_paso.append(coords_grupo)
+
+    # 🚨 AQUÍ ESTÁ LA MAGIA DEL DIAGNÓSTICO
+    if not coords_por_paso:
+        st.warning(f"⚠️ Las estaciones guardadas no hacen 'match' con el archivo `coordenadas.csv`.\n\n**Buscando:** {ruta_grupos}\n**Disponibles en CSV:** {df_coords[col_nombre_real].head(8).tolist()}...")
+        return None
+
+    fig = go.Figure()
+
+    # --- 4. TRAZADO DE LÍNEAS CONECTIVAS ---
+    x_lines, y_lines = [], []
+    for i in range(len(coords_por_paso) - 1):
+        grupo_actual = coords_por_paso[i]
+        grupo_siguiente = coords_por_paso[i+1]
+        
+        for origen in grupo_actual:
+            for destino in grupo_siguiente:
+                x_lines.extend([origen["x"], destino["x"], None])
+                y_lines.extend([origen["y"], destino["y"], None])
+
+    if x_lines:
+        fig.add_trace(go.Scatter(
+            x=x_lines, y=y_lines,
+            mode='lines',
+            line=dict(width=3, color='#003366', dash='solid'),
+            hoverinfo='skip',
+            showlegend=False
+        ))
+
+    # --- 5. TRAZADO DE PUNTOS (ESTACIONES) ---
+    x_nodes, y_nodes, text_labels, hover_texts = [], [], [], []
+    for grupo in coords_por_paso:
+        for nodo in grupo:
+            x_nodes.append(nodo["x"])
+            y_nodes.append(nodo["y"])
+            text_labels.append(str(nodo["paso"]))
+            hover_texts.append(f"Paso {nodo['paso']}: {nodo['estacion']}")
+
+    fig.add_trace(go.Scatter(
+        x=x_nodes, y=y_nodes,
+        mode='markers+text',
+        text=text_labels,
+        textposition='middle center',
+        textfont=dict(color='white', size=14, weight='bold'),
+        marker=dict(size=30, color='#003366', symbol='circle'),
+        hovertext=hover_texts,
+        hoverinfo='text',
+        name='Estaciones'
+    ))
+
+    # --- 6. LAYOUT ---
+    fig.update_layout(
+        images=[dict(
+            source=img, xref="x", yref="y",
+            x=0, y=0, sizex=img_w, sizey=img_h,
+            sizing="stretch", opacity=0.85, layer="below"
+        )],
+        xaxis=dict(visible=False, range=[0, img_w]),
+        yaxis=dict(visible=False, range=[img_h, 0], scaleanchor="x", scaleratio=1),
+        margin=dict(l=0, r=0, t=0, b=0),
+        height=500,
+        showlegend=False
+    )
+    
+    return fig
+    
+def obtener_datos_ruta_producto(ruta_grupos):
+    """
+    Consulta en el catálogo maestro y el historial para construir el reporte de ruta,
+    soportando estaciones paralelas (grupos/bifurcaciones).
+    """
+    datos_ruta = []
+    
+    # 1. Asegurar que es una lista de listas (incluso si era una ruta simple antigua)
+    if ruta_grupos and not isinstance(ruta_grupos[0], list):
+        ruta_grupos = [[e] for e in ruta_grupos]
+        
+    for paso_idx, grupo in enumerate(ruta_grupos):
+        try:
+            # Unimos los nombres del grupo para el reporte (Ej: "Router 1 / Router 2")
+            nombre_paso = f"Paso {paso_idx + 1}: " + " / ".join(grupo)
+            
+            # -------------------------------------------------------------
+            # 2. OBTENER EL "DEBER SER": EL CATÁLOGO MAESTRO PARA TODO EL GRUPO
+            # -------------------------------------------------------------
+            resp_master = supabase.table("catalogo_maestro_activos") \
+                .select("*") \
+                .in_("linea_ubicacion", grupo) \
+                .eq("estatus_operativo", "OPERATIVO") \
+                .order("tipo_categoria", desc=False) \
+                .execute()
+                
+            activos_maestros = resp_master.data if resp_master.data else []
+            
+            # Si el grupo no tiene activos maestros registrados
+            if not activos_maestros:
+                datos_ruta.append({
+                    "Operación": nombre_paso,
+                    "Última Medición": "<i style='color:#888; font-size:11px;'>No hay equipos asignados a estas estaciones en el Catálogo Maestro.</i>",
+                    "Estatus": "SIN DATOS",
+                    "Próxima Validación": "N/A"
+                })
+                continue
+
+            # -------------------------------------------------------------
+            # 3. OBTENER LAS MEDICIONES MÁS RECIENTES (Historial)
+            # -------------------------------------------------------------
+            resp_maq = supabase.table("mediciones_maquinaria").select("*").in_("linea_ubicacion", grupo).order("fecha_medicion", desc=True).execute()
+            resp_inv = supabase.table("inventario_esd").select("*").in_("linea_ubicacion", grupo).order("fecha_ultima_verif", desc=True).execute()
+            
+            # Crear un diccionario unificado para búsqueda rápida de mediciones
+            mediciones_recientes = {}
+            if resp_maq.data:
+                for item in resp_maq.data:
+                    id_m = item.get("id_maquinaria")
+                    if id_m and id_m not in mediciones_recientes:
+                        mediciones_recientes[id_m] = item
+                        
+            if resp_inv.data:
+                for item in resp_inv.data:
+                    id_p = item.get("id_producto")
+                    if id_p and id_p not in mediciones_recientes:
+                        mediciones_recientes[id_p] = item
+
+            # -------------------------------------------------------------
+            # 4. CRUZAR CATÁLOGO VS MEDICIONES REALES
+            # -------------------------------------------------------------
+            filas_activos = []
+            elementos_evaluados = []
+            
+            for activo in activos_maestros:
+                id_activo = activo.get("id_activo")
+                tipo_cat = str(activo.get("tipo_categoria", "MAQUINARIA")).upper()
+                clasif = str(activo.get("clasificacion", "")).strip()
+                ubic_activo = str(activo.get("linea_ubicacion", ""))
+                prefijo = "[MAQ]" if "MAQ" in tipo_cat else "[MOB]"
+                
+                # Buscar si el activo maestro tiene una medición real
+                medicion = mediciones_recientes.get(id_activo)
+
+                if medicion:
+                    # ✅ EL EQUIPO SÍ FUE MEDIDO
+                    if "MAQ" in tipo_cat:
+                        val_ohms = medicion.get("resistencia_tierra")
+                        try: str_ohms = f"{float(val_ohms):.2f} Ω" if val_ohms not in [None, "", "N/D"] else "N/D Ω"
+                        except (ValueError, TypeError): str_ohms = f"{val_ohms} Ω"
+                        
+                        val_volts = medicion.get("campo_estatico_voltaje")
+                        try: str_volts = f"{float(val_volts):.1f} V" if val_volts not in [None, "", "N/D"] else "N/D V"
+                        except (ValueError, TypeError): str_volts = f"{val_volts} V"
+                        
+                        estatus_item = str(medicion.get("resultado_estatus", "PENDIENTE")).strip().upper()
+                        fecha_prox = medicion.get("fecha_proxima")
+                    else:
+                        val_ohms = medicion.get("valor_actual")
+                        try: str_ohms = f"{float(val_ohms):.2e}".replace("e+0", "e+").replace("e-0", "e-") + " Ω" if val_ohms not in [None, "", "N/D"] else "N/D Ω"
+                        except (ValueError, TypeError): str_ohms = f"{val_ohms} Ω"
+                        
+                        val_volts = medicion.get("balance_ionizador")
+                        try: str_volts = f"{float(val_volts):.1f} V" if val_volts not in [None, "", "N/D"] else "N/D V"
+                        except (ValueError, TypeError): str_volts = f"{val_volts} V"
+                        
+                        estatus_item = str(medicion.get("estatus_verificacion", "PENDIENTE")).strip().upper()
+                        fecha_prox = medicion.get("fecha_proxima_verif")
+
+                    if "VIGENTE" in estatus_item or "PASA" in estatus_item:
+                        badge_color, est_badge = "#16a34a", "VIGENTE"
+                    else:
+                        badge_color, est_badge = "#dc2626", "VENCIDO"
+                
+                else:
+                    # ❌ EL EQUIPO ESTÁ EN EL CATÁLOGO PERO NUNCA SE HA MEDIDO
+                    str_ohms = "<span style='color:#dc2626;'>SIN MEDIR</span>"
+                    str_volts = "<span style='color:#dc2626;'>SIN MEDIR</span>"
+                    badge_color, est_badge = "#ea580c", "SIN DATOS" 
+                    fecha_prox = None
+                
+                # Insertar fila tabular (Añadí la ubicación del activo en gris para más claridad)
+                filas_activos.append(f"""
+                <tr style="border-bottom: 1px dashed #e5e7eb;">
+                    <td style="padding: 3px 5px; text-align: left;"><b>{prefijo} {id_activo}</b> <span style="font-size:10px; color:#6b7280;">({ubic_activo})</span></td>
+                    <td style="padding: 3px 5px; text-align: right; font-family: monospace;">{str_ohms}</td>
+                    <td style="padding: 3px 5px; text-align: right; font-family: monospace;">{str_volts}</td>
+                    <td style="padding: 3px 5px; text-align: center; font-weight: bold; color: {badge_color};">{est_badge}</td>
+                </tr>
+                """)
+                
+                elementos_evaluados.append({"estatus": est_badge, "proxima_fecha": fecha_prox})
+
+            # -------------------------------------------------------------
+            # 5. EVALUAR ESTATUS GLOBAL DEL PASO
+            # -------------------------------------------------------------
+            estatus_global = "VIGENTE"
+            fechas_validas = []
+            
+            for el in elementos_evaluados:
+                if el["estatus"] == "VENCIDO":
+                    estatus_global = "VENCIDO" 
+                elif el["estatus"] == "SIN DATOS" and estatus_global != "VENCIDO":
+                    estatus_global = "INCOMPLETO"
+                
+                if el["proxima_fecha"] and str(el["proxima_fecha"]).strip() not in ["None", "N/D", ""]:
+                    fechas_validas.append(str(el["proxima_fecha"])[:10])
+            
+            proxima_val = min(fechas_validas) if fechas_validas else "N/A"
+            
+            tabla_detalle_html = f"""
+            <table style="width:100%; border-collapse:collapse; font-size:11px; margin: 2px 0;">
+                <thead>
+                    <tr style="border-bottom: 1.5px solid #003366; color: #003366; background-color: #f8fafc;">
+                        <th style="padding: 3px 5px; text-align: left; width: 42%;">Activo (Ubicación)</th>
+                        <th style="padding: 3px 5px; text-align: right; width: 23%;">Resistencia</th>
+                        <th style="padding: 3px 5px; text-align: right; width: 17%;">Voltaje</th>
+                        <th style="padding: 3px 5px; text-align: center; width: 18%;">Estatus</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {"".join(filas_activos)}
+                </tbody>
+            </table>
+            """
+            
+            datos_ruta.append({
+                "Operación": nombre_paso,
+                "Última Medición": tabla_detalle_html,
+                "Estatus": estatus_global,
+                "Próxima Validación": proxima_val
+            })
+                
+        except Exception as e:
+            st.error(f"Error al procesar el paso {paso_idx + 1}: {e}")
+            
+    return pd.DataFrame(datos_ruta)
+
+def generar_html_reporte_ruta(nombre_producto, df_ruta, fig_mapa=None, auditor="Sistema ESD", comentarios="Sin observaciones.", db_id=1):
+    año_actual = datetime.today().strftime("%y")
+    fecha_hoy = datetime.today().strftime("%d-%b-%Y")
+    fecha_pie = datetime.today().strftime("%Y/%m/%d")
+    
+    # ---------------------------------------------------------
+    # 1. CONVERTIR EL MAPA DE PLOTLY A IMAGEN ESTÁTICA (BASE64)
+    # ---------------------------------------------------------
+    mapa_html = ""
+    if fig_mapa is not None:
+        try:
+            # Alternativa 1: Exportación estática sin Kaleido (usando orca o el renderizador interno)
+            # A veces to_image() falla si el engine no está bien configurado en el server.
+            # En Streamlit Cloud, la forma más segura de meter un Plotly en un HTML crudo
+            # es generar el DIV interactivo de Plotly en lugar de una imagen estática.
+            
+            html_grafica = fig_mapa.to_html(full_html=False, include_plotlyjs='cdn')
+            
+            mapa_html = f"""
+            <div class="mt-4 mb-6 [page-break-inside:avoid]">
+                <div class="bg-[#003366] text-white font-bold px-2 py-1 uppercase text-xs print:bg-black">Diagrama de Flujo Físico en Planta</div>
+                <div class="border border-gray-300 p-2 bg-gray-50 print:border-black print:bg-transparent">
+                    {html_grafica}
+                </div>
+                <div class="text-[10px] text-gray-500 mt-1 italic print:hidden">Nota: El mapa es interactivo en la versión digital. Al imprimir, el navegador capturará la vista actual.</div>
+            </div>
+            """
+        except Exception as e:
+            mapa_html = f"<div class='text-red-500 text-xs mb-4'>⚠️ No se pudo inyectar el mapa. Error: {e}</div>"
+
+    # ---------------------------------------------------------
+    # 2. CONSTRUIR FILAS DE LA TABLA DE OPERACIONES
+    # ---------------------------------------------------------
+    filas_html = ""
+    for i, row in enumerate(df_ruta.to_dict('records'), 1):
+        operacion = str(row.get('Operación', 'N/D'))
+        detalle_activos = str(row.get('Última Medición', 'N/D')) 
+        vencimiento = str(row.get('Próxima Validación', 'N/D'))
+        estatus_raw = str(row.get('Estatus', '')).upper()
+        
+        estatus_limpio = estatus_raw.replace('🟢', '').replace('🔴', '').replace('🟡', '').strip()
+        
+        if "VIGENTE" in estatus_limpio or "PASA" in estatus_limpio or "APROBADO" in estatus_limpio:
+            color_txt = "text-green-600"
+        elif "VENCIDO" in estatus_limpio or "FALLA" in estatus_limpio or "RECHAZADO" in estatus_limpio:
+            color_txt = "text-red-600"
+        else:
+            color_txt = "text-yellow-600"
+        
+        filas_html += f"""
+        <tr class="text-center border-b border-gray-300 print:border-black">
+            <td class="border-r border-gray-300 p-2 print:border-black text-lg font-bold text-gray-400">{i}</td>
+            <td class="border-r border-gray-300 p-2 font-bold text-left print:border-black text-[#003366]">{operacion}</td>
+            <td class="border-r border-gray-300 p-2 text-left print:border-black">{detalle_activos}</td>
+            <td class="border-r border-gray-300 p-2 font-mono print:border-black">{vencimiento}</td>
+            <td class="p-2 font-bold {color_txt}">{estatus_limpio}</td>
+        </tr>
+        """
+        
+    # ---------------------------------------------------------
+    # 3. ENSAMBLAR DOCUMENTO FINAL
+    # ---------------------------------------------------------
+    html = f"""<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>BCS-RUT-{db_id:03d}-{año_actual}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>@media print {{ body {{ -webkit-print-color-adjust: exact; }} }}</style>
+</head>
+<body class="bg-gray-100 p-4 md:p-8 font-sans text-sm print:bg-white print:p-0">
+    <div class="max-w-5xl mx-auto mb-6 bg-white p-4 rounded-lg shadow flex justify-end print:hidden">
+        <button onclick="window.print()" class="bg-blue-600 text-white px-6 py-2 rounded font-bold shadow-sm">🖨️ Imprimir / Guardar PDF</button>
+    </div>
+    <div class="max-w-5xl mx-auto bg-white shadow-xl print:shadow-none print:w-full print:border print:border-black">
+        <div class="border-b-2 border-gray-800 p-6 flex items-start justify-between print:border-black">
+            <div class="w-1/3">
+                <img src="https://github.com/aldoaoa/Visualizador-BCS-IDS/blob/main/BCS%20LOGO.png?raw=true" alt="BCS Logo" class="h-16 object-contain" />
+            </div>
+            <div class="w-1/3 text-center">
+                <h1 class="text-lg font-bold text-gray-800">REPORTE DE VALIDACIÓN DE RUTA (ESD)</h1>
+                <p class="text-xs text-gray-600">Cumplimiento Integral ANSI/ESD S20.20</p>
+            </div>
+            <div class="w-1/3 text-right text-sm">
+                <div class="font-bold text-red-700 text-lg mb-2">Folio: BCS-RUT-{db_id:03d}-{año_actual}</div>
+                <div class="flex justify-end gap-2 mb-1">
+                    <span class="font-bold">Fecha de Emisión:</span><span>{fecha_hoy}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-6">
+            <div class="bg-gray-100 p-4 border border-gray-300 rounded print:border-black print:bg-transparent">
+                <div class="grid grid-cols-2 gap-4">
+                    <div><span class="font-bold text-[#003366]">Producto Evaluado:</span> <span class="text-lg font-bold">{nombre_producto}</span></div>
+                    <div><span class="font-bold text-[#003366]">Generado por:</span> {auditor}</div>
+                </div>
+            </div>
+
+            {mapa_html}
+
+            <div class="mt-4 [page-break-inside:auto]">
+                <div class="bg-[#003366] text-white font-bold px-2 py-1 uppercase text-xs print:bg-black">Secuencia de Operaciones y Estatus de Estaciones</div>
+                <table class="w-full text-sm border-collapse border border-gray-300 print:border-black">
+                    <tr class="bg-gray-200 border-b border-gray-300 print:bg-transparent print:border-black">
+                        <th class="p-2 border-r border-gray-300 print:border-black w-10">Paso</th>
+                        <th class="p-2 border-r border-gray-300 print:border-black text-left">Línea / Operación</th>
+                        <th class="p-2 border-r border-gray-300 print:border-black text-left">Detalle de Activos Evaluados</th>
+                        <th class="p-2 border-r border-gray-300 print:border-black">Próx. Vencimiento</th>
+                        <th class="p-2 border-r border-gray-300 print:border-black w-32">Estatus Global</th>
+                    </tr>
+                    {filas_html}
+                </table>
+            </div>
+
+            <div class="mt-4 border border-gray-300 p-3 bg-gray-50 print:border-black print:bg-transparent [page-break-inside:avoid]">
+                <div class="font-bold text-[#003366] text-xs uppercase mb-1 print:text-black">Comentarios / Observaciones de la Ruta:</div>
+                <div class="text-sm">{comentarios}</div>
+            </div>
+
+            <div class="mt-16 mb-8 pt-8 [page-break-inside:avoid]">
+                <div class="w-1/2 mx-auto text-center border-t-2 border-gray-800 pt-2 print:border-black">
+                    <div class="font-bold uppercase text-sm mb-1">REVISADO POR:</div>
+                    <div class="text-center font-bold text-gray-700 print:text-black">{auditor}</div>
+                    <div class="text-xs text-gray-500">Aseguramiento de Calidad / ESD</div>
+                </div>
+            </div>
+            
+            <div class="border-t-[3px] border-b-[3px] border-black mt-16 py-1 text-[11px] font-sans [page-break-inside:avoid]">
+                <div class="flex justify-between items-end">
+                    <div class="text-left leading-tight">
+                        <div>B_010_4_013_QRO_SP Rev. A</div>
+                        <div>Registro de trazabilidad de ruta.</div>
+                    </div>
+                    <div class="text-center leading-tight">
+                        <div>Fecha: {fecha_pie}</div>
+                    </div>
+                    <div class="text-right leading-tight">
+                        <div>Ref.B_010_3_002_QRO_SP</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>"""
+    return html
 
 def generar_html_reporte_calificaciones(df_calif, auditor):
     año_actual = datetime.today().strftime("%y")
@@ -728,6 +1365,81 @@ def limpiar_url_escaneo():
     if "qr_baja" in st.query_params:
         del st.query_params["qr_baja"]
 
+def gestionar_catalogo_maestro_activos():
+    st.markdown("### 📋 Catálogo Maestro de Activos por Línea")
+    st.info("Administra la lista maestra de todos los equipos y mobiliarios que pertenecen a cada estación. Los activos aquí registrados son los que se exigirán en los reportes de ruta.")
+
+    try:
+        lineas_disponibles = obtener_catalogo_lineas()
+    except:
+        lineas_disponibles = []
+
+    # A) Formulario de Alta / Asignación Manual
+    with st.expander("➕ Registrar / Asignar Activo al Catálogo Maestro", expanded=False):
+        with st.form("form_alta_activo_maestro", clear_on_submit=True):
+            col1, col2 = st.columns(2)
+            with col1:
+                id_activo_input = st.text_input("ID del Activo / Equipo", placeholder="Ej: CONV-SMT9-01 o MES-SMT9-01")
+                tipo_cat_input = st.selectbox("Categoría", ["Maquinaria", "Mobiliario"])
+            with col2:
+                clasif_input = st.text_input("Clasificación", placeholder="Ej: Conveyor, Mesa ESD, Ionizador")
+                linea_input = st.selectbox("Línea / Ubicación Asignada", options=lineas_disponibles if lineas_disponibles else ["SMT9"])
+            
+            submit_btn = st.form_submit_button("💾 Guardar en Catálogo Maestro")
+            
+            if submit_btn:
+                id_limpio = id_activo_input.strip()
+                if not id_limpio:
+                    st.warning("⚠️ Debes ingresar un ID de activo válido.")
+                else:
+                    registrar_en_catalogo_maestro(
+                        id_activo=id_limpio,
+                        tipo_categoria=tipo_cat_input,
+                        clasificacion=clasif_input,
+                        linea_ubicacion=linea_input
+                    )
+                    st.success(f"✅ Activo '{id_limpio}' registrado/actualizado en el Catálogo Maestro.")
+                    st.rerun()
+
+    st.divider()
+
+    # B) Tabla de Consulta y Filtrado
+    col_f1, col_f2 = st.columns(2)
+    with col_f1:
+        linea_filtro = st.selectbox("Filtrar por Línea:", options=["TODAS"] + lineas_disponibles if lineas_disponibles else ["TODAS"])
+    with col_f2:
+        estatus_filtro = st.selectbox("Filtrar por Estatus Operativo:", ["TODOS", "OPERATIVO", "NO OPERATIVO", "BAJA"])
+
+    try:
+        query = supabase.table("catalogo_maestro_activos").select("*")
+        if linea_filtro != "TODAS":
+            # ANTES: query = query.eq("linea_ubicacion", linea_filtro)
+            query = query.ilike("linea_ubicacion", linea_filtro) # <-- AHORA
+        if estatus_filtro != "TODOS":
+            query = query.eq("estatus_operativo", estatus_filtro)
+            
+        resp = query.order("linea_ubicacion").order("tipo_categoria").execute()
+        
+        if resp.data:
+            df_activos = pd.DataFrame(resp.data)
+            df_activos = df_activos.rename(columns={
+                "id_activo": "ID Activo",
+                "tipo_categoria": "Categoría",
+                "clasificacion": "Clasificación",
+                "linea_ubicacion": "Línea / Ubicación",
+                "estatus_operativo": "Estatus"
+            })
+            
+            st.dataframe(
+                df_activos[["ID Activo", "Categoría", "Clasificación", "Línea / Ubicación", "Estatus"]],
+                use_container_width=True,
+                hide_index=True
+            )
+        else:
+            st.info("No se encontraron activos registrados con los filtros seleccionados.")
+    except Exception as e:
+        st.error(f"Error al cargar el Catálogo Maestro de Activos: {e}")
+
 def subir_evidencia_storage(img_file, id_elemento):
     """Sube la imagen a Supabase Storage y retorna la URL pública."""
     if img_file is not None:
@@ -1002,7 +1714,8 @@ with st.sidebar:
                     ("📱 Escáner QR", "Escáner"),
                     ("✅ Validación Integral", "Validación"),
                     ("🆕 Alta/Baja de Equipos", "Alta"),
-                    ("🏭 Maquinaria", "Maquinaria")
+                    ("🏭 Maquinaria", "Maquinaria"),
+                    (" Rutas de producto", "Rutas de Producto")
                 ],
                 "🧪 Pruebas y análisis": [
                     ("⚡ Event Meter", "Event Meter"),
@@ -1447,6 +2160,19 @@ if st.session_state.vista_actual == "Alta" and not st.session_state.modo_lectura
                         
                         try:
                             supabase.table("inventario_esd").insert(data_insert).execute()
+                            
+                            # --- NUEVO: REGISTRO EN CATÁLOGO MAESTRO (ALTA) ---
+                            # Si existe la función, sincronizamos automáticamente el activo maestro
+                            if 'registrar_en_catalogo_maestro' in globals():
+                                registrar_en_catalogo_maestro(
+                                    id_activo=id_limpio_alta,
+                                    tipo_categoria="Mobiliario", # Se asume mobiliario para inventario_esd
+                                    clasificacion=nuevo_tipo,
+                                    linea_ubicacion=nueva_linea,
+                                    estatus_operativo="OPERATIVO"
+                                )
+                            # --------------------------------------------------
+
                             st.success(f"✅ ¡Activo {nuevo_id} registrado con éxito en estatus: {estatus_final}!")
                             st.balloons()
                             st.cache_data.clear()
@@ -1607,6 +2333,15 @@ if st.session_state.vista_actual == "Alta" and not st.session_state.modo_lectura
                                             "estatus_verificacion": "PENDIENTE" # Estandarizado a PENDIENTE, como es baja, no debe ser VIGENTE ni VENCIDO.
                                         }).eq("id_producto", id_exacto_db).execute()
                                         
+                                        # --- NUEVO: ACTUALIZAR ESTATUS EN CATÁLOGO MAESTRO (BAJA) ---
+                                        try:
+                                            supabase.table("catalogo_maestro_activos").update({
+                                                "estatus_operativo": "NO OPERATIVO"
+                                            }).eq("id_activo", id_exacto_db).execute()
+                                        except Exception as sub_e:
+                                            print(f"Aviso: No se pudo actualizar el catálogo maestro: {sub_e}")
+                                        # -----------------------------------------------------------
+
                                         st.success("✅ ¡Desactivado de Inventario!")
                                         st.cache_data.clear()
                                         limpiar_url_escaneo()
@@ -1635,6 +2370,16 @@ if st.session_state.vista_actual == "Alta" and not st.session_state.modo_lectura
                                             "status_operativo": "NO OPERATIVO",
                                             "resultado_estatus": "PENDIENTE" # Estandarizado a PENDIENTE.
                                         }).eq("id_maquinaria", id_limpio_baja).execute()
+                                        
+                                        # --- NUEVO: ACTUALIZAR ESTATUS EN CATÁLOGO MAESTRO (BAJA) ---
+                                        try:
+                                            supabase.table("catalogo_maestro_activos").update({
+                                                "estatus_operativo": "NO OPERATIVO"
+                                            }).eq("id_activo", id_limpio_baja).execute()
+                                        except Exception as sub_e:
+                                            print(f"Aviso: No se pudo actualizar el catálogo maestro: {sub_e}")
+                                        # -----------------------------------------------------------
+
                                         st.success("✅ ¡Desactivado de Maquinaria!")
                                         st.cache_data.clear()
                                         limpiar_url_escaneo()
@@ -2718,7 +3463,26 @@ elif st.session_state.vista_actual == "Escáner":
                                             id_exacto_db = str(equipo.get('Id de producto', id_limpio))
                                             
                                             res_upd = supabase.table("inventario_esd").update(update_data).eq("id_producto", id_exacto_db).execute()
+# ... (código existente) ...
+                                            # --- EL TRUCO ESTÁ AQUÍ: Extraer el ID literal de la base de datos ---
+                                            id_exacto_db = str(equipo.get('Id de producto', id_limpio))
                                             
+                                            res_upd = supabase.table("inventario_esd").update(update_data).eq("id_producto", id_exacto_db).execute()
+                                            
+                                            # --- NUEVO: SINCRONIZAR REUBICACIÓN EN CATÁLOGO MAESTRO ---
+                                            if 'registrar_en_catalogo_maestro' in globals():
+                                                try:
+                                                    registrar_en_catalogo_maestro(
+                                                        id_activo=id_exacto_db,
+                                                        tipo_categoria="Mobiliario",
+                                                        clasificacion=nueva_clasif_upd,
+                                                        linea_ubicacion=nueva_linea_upd, # <--- La línea que seleccionó el auditor
+                                                        estatus_operativo="OPERATIVO"
+                                                    )
+                                                except Exception as cat_err:
+                                                    print(f"Error al sincronizar catálogo maestro: {cat_err}")
+                                            # --------------------------------------------------------
+
                                             # Verificación de seguridad: ¿Se actualizó realmente alguna fila?
                                             if len(res_upd.data) == 0:
                                                 st.error(f"❌ Fallo silencioso evitado: El ID '{id_exacto_db}' tiene un formato especial (minúsculas o espacios) en la base de datos que impidió la actualización. Búscalo en la pestaña de Alta/Baja para corregirlo.")
@@ -2737,9 +3501,9 @@ elif st.session_state.vista_actual == "Escáner":
                         st.divider()
                         st.markdown(f"#### 📍 Otros equipos en la línea: `{ub_actual_lista}`")
                         
-                        # Filtramos el inventario por la misma línea, quitamos el equipo actual y los que estén dados de baja
+                        # Filtramos el inventario por la misma línea ignorando mayúsculas/minúsculas
                         df_otros = df_inv_full[
-                            (df_inv_full['Línea'].astype(str).str.strip() == ub_actual_lista) & 
+                            (df_inv_full['Línea'].astype(str).str.strip().str.upper() == ub_actual_lista.upper()) & 
                             (df_inv_full['Id de producto'].astype(str).str.strip().str.upper() != id_limpio) &
                             (df_inv_full['Estatus operativo'].astype(str).str.strip().str.upper() != 'NO OPERATIVO')
                         ]
@@ -2942,6 +3706,19 @@ elif st.session_state.vista_actual == "Escáner":
                                                 }
                                                 
                                                 supabase.table("mediciones_maquinaria").insert(data_insert).execute()
+                                                # --- NUEVO: SINCRONIZAR REUBICACIÓN EN CATÁLOGO MAESTRO ---
+                                                if 'registrar_en_catalogo_maestro' in globals():
+                                                    try:
+                                                        registrar_en_catalogo_maestro(
+                                                            id_activo=maquina_sel,
+                                                            tipo_categoria="Maquinaria",
+                                                            clasificacion=clasificacion_equipo,
+                                                            linea_ubicacion=linea_ubicacion, # <--- La línea actual
+                                                            estatus_operativo=status_maq
+                                                        )
+                                                    except Exception as cat_err:
+                                                        print(f"Error al sincronizar catálogo maestro: {cat_err}")
+                                                # --------------------------------------------------------
                                                 st.success(f"✅ ¡Validación guardada exitosamente para {maquina_sel}!")
                                                 st.cache_data.clear()
                                                 time.sleep(1.5)
@@ -2991,7 +3768,6 @@ elif st.session_state.vista_actual == "Escáner":
                         
                         freq = st.selectbox("Frecuencia de Verificación Normativa", ["Anual", "Semestral", "Trimestral", "Mensual", "Semanal", "Diario"])
                         
-                        # Usamos 'stretch' para cumplir con los nuevos estándares de Streamlit
                         if st.form_submit_button("💾 Guardar y Registrar en Base de Datos", type="primary", use_container_width=True):
                             if not clasificacion.strip():
                                 st.error("⚠️ La clasificación es un campo obligatorio.")
@@ -3020,6 +3796,18 @@ elif st.session_state.vista_actual == "Escáner":
                                                 "auditor": st.session_state.usuario_nombre
                                             }
                                             supabase.table("mediciones_maquinaria").insert(payload).execute()
+                                            
+                                            # --- NUEVO: REGISTRO EN CATÁLOGO MAESTRO (MAQUINARIA) ---
+                                            if 'registrar_en_catalogo_maestro' in globals():
+                                                registrar_en_catalogo_maestro(
+                                                    id_activo=id_limpio,
+                                                    tipo_categoria="Maquinaria",
+                                                    clasificacion=clasificacion,
+                                                    linea_ubicacion=linea,
+                                                    estatus_operativo="OPERATIVO"
+                                                )
+                                            # --------------------------------------------------------
+
                                         else:
                                             payload = {
                                                 "id_producto": id_limpio,
@@ -3035,6 +3823,17 @@ elif st.session_state.vista_actual == "Escáner":
                                                 "auditor_responsable": st.session_state.usuario_nombre
                                             }
                                             supabase.table("inventario_esd").insert(payload).execute()
+                                            
+                                            # --- NUEVO: REGISTRO EN CATÁLOGO MAESTRO (MOBILIARIO/INVENTARIO) ---
+                                            if 'registrar_en_catalogo_maestro' in globals():
+                                                registrar_en_catalogo_maestro(
+                                                    id_activo=id_limpio,
+                                                    tipo_categoria="Mobiliario", # Ajusta según el tipo si es necesario
+                                                    clasificacion=clasificacion,
+                                                    linea_ubicacion=linea,
+                                                    estatus_operativo="OPERATIVO"
+                                                )
+                                            # -------------------------------------------------------------------
                                             
                                         st.success(f"✅ ¡El equipo {id_limpio} ha sido dado de alta oficialmente!")
                                         st.cache_data.clear()
@@ -4714,7 +5513,7 @@ elif st.session_state.vista_actual == "Ajustes" and not st.session_state.modo_le
     st.markdown("### ⚙️ Ajustes del Sistema (Catálogos)")
     st.info("Administra de forma centralizada las Líneas/Ubicaciones y los Equipos de Medición para que estén disponibles en todos los módulos de captura.")
 
-    tab_ubicaciones, tab_equipos, tab_maquinaria, tab_exportar, tab_usuarios = st.tabs(["📍 Líneas y Ubicaciones", "🛠️ Equipos de Medición", "🏭 Maquinaria (Operaciones)", "💾 Administracion de Datos", "🔐 Usuarios"])
+    tab_ubicaciones, tab_equipos, tab_maquinaria, tab_exportar, tab_usuarios, tab_catalogo= st.tabs(["📍 Líneas y Ubicaciones", "🛠️ Equipos de Medición", "🏭 Maquinaria (Operaciones)", "💾 Administracion de Datos", "🔐 Usuarios", "Catálogo"])
 
 # --- PESTAÑA 1: UBICACIONES ---
     with tab_ubicaciones:
@@ -4838,6 +5637,9 @@ elif st.session_state.vista_actual == "Ajustes" and not st.session_state.modo_le
                 else:
                     st.error("Por favor, selecciona una línea válida.")
 
+    with tab_catalogo:
+        gestionar_catalogo_maestro_activos()
+    
     # --- PESTAÑA 2: EQUIPOS DE MEDICIÓN ---
     with tab_equipos:
         st.markdown("#### ➕ Agregar Nuevo Equipo de Medición")
@@ -6634,37 +7436,90 @@ elif st.session_state.vista_actual == "Maquinaria" and not st.session_state.modo
                     if estado_toma == "FALLA":
                         comentario_toma = col_t2.text_input("Comentario de Falla (Requerido)", placeholder="Ej: Polaridad invertida...")
 
-                st.markdown("##### 🧲 3. Medición de Campo Electrostático")
+                st.markdown("##### 🧲 3. Medición de Campo Electrostático (Principal)")
                 c_campo1, c_campo2 = st.columns(2)
                 voltaje_campo = c_campo1.number_input("Voltaje Detectado (V)", min_value=0.0, format="%.2f", step=1.0)
                 comentario_campo = ""
                 if voltaje_campo > 0:
                     comentario_campo = c_campo2.text_input("Ubicación de la carga (Requerido)", placeholder="Ej: En la banda...")
-            
+                
+                # ==============================================================
+                # ⚡ NUEVO CÓDIGO: MEDICIONES DINÁMICAS CON DATA EDITOR
+                # ==============================================================
+                st.markdown("##### ⚡ Capturas Adicionales (Opcional)")
+                st.caption("Añade capturas extra. Haz clic en la tabla inferior para escribir y usa la última fila vacía (con el '+') para agregar nuevas mediciones.")
+                
+                # Definir estructura inicial vacía para la tabla
+                if "df_mediciones_extra" not in st.session_state:
+                    st.session_state.df_mediciones_extra = pd.DataFrame(columns=["Tipo", "Valor", "Ubicación / Comentario"])
+
+                # Renderizar tabla editable que soporta agregar/borrar filas dinámicamente
+                # Renderizar tabla editable que soporta agregar/borrar filas dinámicamente
+                editor_mediciones = st.data_editor(
+                    st.session_state.df_mediciones_extra,
+                    column_config={
+                        "Tipo": st.column_config.SelectboxColumn(
+                            "Tipo de Medición",
+                            help="Elige Voltaje o Resistencia",
+                            options=["Voltaje", "Resistencia"],
+                            required=True
+                        ),
+                        "Valor": st.column_config.NumberColumn(
+                            "Valor Numérico",
+                            help="Formato automático (admite notación científica Ej: 1e6)",
+                            format="%g", 
+                            required=True
+                        ),
+                        "Ubicación / Comentario": st.column_config.TextColumn(
+                            "Ubicación / Comentario",
+                            # placeholder="Ej. Fricción en rodillos..."  <-- ¡ESTA LÍNEA CAUSABA EL ERROR!
+                            required=True
+                        )
+                    },
+                    num_rows="dynamic", 
+                    use_container_width=True,
+                    hide_index=True,
+                    key="editor_dyn_maq"
+                )
+                # ==============================================================
+
                 obs_maq = st.text_area("Notas / Observaciones Generales")
             
                 submit_maq = st.form_submit_button("💾 Guardar Nueva Validación en Historial", use_container_width=True)
             
                 if submit_maq:
+                    # 1. Transformar el DataFrame del editor a una lista de diccionarios (JSON)
+                    mediciones_finales = []
+                    for _, row in editor_mediciones.iterrows():
+                        if pd.notna(row["Tipo"]) and pd.notna(row["Valor"]):
+                            mediciones_finales.append({
+                                "tipo": str(row["Tipo"]).lower(),
+                                "valor": float(row["Valor"]),
+                                "comentario": str(row["Ubicación / Comentario"]) if pd.notna(row["Ubicación / Comentario"]) else ""
+                            })
+
+                    # 2. Validar que no haya comentarios vacíos en las capturas extra
+                    errores_dinamicos = any(m["comentario"].strip() == "" for m in mediciones_finales)
+
                     if aplica_toma and estado_toma == "FALLA" and not comentario_toma.strip():
                         st.error("⚠️ Debes escribir un comentario justificando la falla del tomacorriente.")
                     elif voltaje_campo > 0 and not comentario_campo.strip():
-                        st.error("⚠️ Como detectaste voltaje, debes indicar dónde se encontró la carga electrostática.")
+                        st.error("⚠️ Como detectaste voltaje en el campo principal, debes indicar dónde se encontró.")
+                    elif errores_dinamicos:
+                        st.error("⚠️ Has agregado capturas adicionales. Debes indicar la 'Ubicación / Comentario' en todas ellas.")
                     else:
                         with st.spinner("Actualizando registro transaccional en SQL..."):
                             try:
                                 fecha_hoy = datetime.today().date()
                                 proxima_fecha = calcular_proxima_fecha(fecha_hoy, frecuencia_maq)
 
-                                # Implementación de la nueva lógica de negocio
                                 if resistencia is None or resistencia == 0.0: 
-                                # Si dejas la resistencia vacía o en 0 en el number_input
                                     estatus_calculado = "PENDIENTE"
                                 elif proxima_fecha < fecha_hoy:
                                     estatus_calculado = "VENCIDO"
                                 else:
                                     estatus_calculado = "VIGENTE"
-                            
+                                
                                 data_insert = {
                                     "linea_ubicacion": linea_sel,
                                     "id_maquinaria": maquina_sel,
@@ -6673,7 +7528,7 @@ elif st.session_state.vista_actual == "Maquinaria" and not st.session_state.modo
                                     "status_operativo": status_maq,
                                     "temperatura": temperatura_maq,
                                     "humedad":  humedad_maq,
-                                    "frecuencia_verificacion": "Anual",              # Forzado a "Anual" como solicitaste
+                                    "frecuencia_verificacion": "Anual",              
                                     "fecha_proxima": proxima_fecha.isoformat(),
                                     "resistencia_tierra": float(resistencia) if resistencia > 0 else None,
                                     "resistencia_max": limite_fijo, 
@@ -6682,14 +7537,22 @@ elif st.session_state.vista_actual == "Maquinaria" and not st.session_state.modo
                                     "tomacorriente_comentario": comentario_toma,
                                     "campo_estatico_voltaje": float(voltaje_campo),
                                     "campo_estatico_comentario": comentario_campo,
+                                    
+                                    # INYECCIÓN DEL JSONB (LISTA DE DICCIONARIOS)
+                                    "mediciones_extra": mediciones_finales, 
+                                    
                                     "observaciones": obs_maq,
                                     "fecha_medicion": datetime.now().isoformat(),
                                     "auditor": st.session_state.usuario_nombre,
-                                    "resultado_estatus": estatus_calculado           # Tu nueva lógica automatizada
+                                    "resultado_estatus": estatus_calculado           
                                 }
-                            
+                                
                                 supabase.table("mediciones_maquinaria").insert(data_insert).execute()
-                            
+                                
+                                # Limpiamos la tabla extra para el próximo escaneo
+                                if "editor_dyn_maq" in st.session_state:
+                                    del st.session_state["editor_dyn_maq"]
+
                                 st.success(f"✅ ¡Medición guardada! Próxima verificación calculada para: {proxima_fecha.strftime('%d-%b-%Y')}")
                                 st.balloons()
                                 time.sleep(1)
@@ -6697,7 +7560,6 @@ elif st.session_state.vista_actual == "Maquinaria" and not st.session_state.modo
                                 st.rerun()
                             except Exception as e:
                                 st.error(f"Error al guardar: {e}")
-
     # ==========================================
     # MODO 2: CAPTURA EN LOTE (RESPONSIVA PARA TABLET/MÓVIL)
     # ==========================================
@@ -9284,3 +10146,9 @@ elif st.session_state.vista_actual == "Entrenamiento" and not st.session_state.m
                                 st.success("✅ ¡Registros actualizados!")
                                 st.session_state.anomalias_entrenamiento = None
                                 st.rerun()
+
+# ==========================================
+# GESTIÓN DE PROYECTOS POR LÍNEAS DE PRODUCCIÓN
+# ==========================================
+elif st.session_state.vista_actual == "Rutas de Producto" and not st.session_state.modo_lectura:
+    gestionar_rutas_producto()
