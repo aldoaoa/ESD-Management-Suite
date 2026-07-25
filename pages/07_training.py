@@ -386,7 +386,8 @@ with tab_dash:
                                 nota_intento = round((sum([1.0 for v in detalle_json.values() if float(v) > 0]) / len(detalle_json)) * 10.0, 2)
                             else:
                                 try: nota_intento = min(float(row['calificacion_total']), 10.0)
-                                catch: nota_intento = 0.0
+                                except Exception:
+                                nota_intento = 0.0
                             
                             icono_intento = "🟢" if nota_intento > 7.0 else "🔴"
                             
