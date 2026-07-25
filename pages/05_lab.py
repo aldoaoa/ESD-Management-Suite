@@ -1,170 +1,115 @@
 # pages/05_lab.py
-
+"""
+Módulo de Laboratorio ESD: Gestión de Sensibilidad por Producto/Componente (HBM / CDM)
+Mapeado a catalogo_sensibilidad y componentes_sensibilidad.
+"""
 import streamlit as st
 import pandas as pd
-import re
-import io
-import fitz  # PyMuPDF
-import pytesseract
-from PIL import Image
 from core.i18n import t
 from core.db import get_supabase_client
 
-# ==========================================
-# 1. BARRERA DE SEGURIDAD MULTI-TENANT
-# ==========================================
+# Barrera de seguridad
 if st.session_state.get("modo_lectura", True):
-    st.warning(t("auth", "login_required"))
+    st.warning(t("auth", "login_required", default="Debes iniciar sesión para acceder a este módulo."))
     st.stop()
 
 supabase = get_supabase_client()
 site_id = st.session_state.site_id
-user_id = st.session_state.user_id
 
-st.markdown(f"### {t('lab', 'title')}")
-st.caption(f"{t('lab', 'subtitle')} - **{st.session_state.site_name}**")
+st.markdown("### 🔬 Módulo de Laboratorio: Sensibilidad ESD por Componente (HBM / CDM)")
+st.caption("Clasificación de nivel de sensibilidad de productos y análisis de susceptibilidad a descargas electrostáticas.")
 
-tab_event, tab_walking = st.tabs([t('lab', 'tab_event'), t('lab', 'tab_walking')])
+tab1, tab2 = st.tabs(["📦 Catálogo de Productos y Sensibilidad", "🧩 Componentes Sensibles (BOM/ESD)"])
 
-# ==========================================
-# 2. EVENT METER (ESTUDIO DE DESCARGAS)
-# ==========================================
-with tab_event:
-    st.markdown("#### Registro de Event Meter (PCBA)")
-    st.info("Mide descargas electrostáticas y transitorios durante la operación normal de la maquinaria.")
+with tab1:
+    st.markdown("#### Catálogo General de Productos y Nivel de Sensibilidad")
     
-    with st.form("form_event_meter", clear_on_submit=True):
-        c1, c2 = st.columns(2)
-        
-        # En una versión completa, aquí traeríamos las "Locations" de Supabase
-        linea = c1.text_input(t("lab", "em_location"))
-        operacion = c2.text_input(t("lab", "em_operation"))
-        
-        c3, c4, c5 = st.columns([2, 1, 1])
-        contacto = c3.selectbox(t("lab", "em_contact"), ["Maquinaria", "EOLT", "AOI", "Herramienta Manual", "Humano", "Otro"])
-        temp = c4.number_input("Temp (°C)", value=23.5)
-        hum = c5.number_input("Humedad (%)", value=45)
-        
-        c6, c7 = st.columns(2)
-        eventos = c6.number_input(t("lab", "em_events"), min_value=0, step=1)
-        voltaje = c7.number_input(t("lab", "em_voltage"), min_value=0.0, step=0.1)
-        
-        if st.form_submit_button(t("lab", "em_save"), type="primary", use_container_width=True):
-            if not linea or not operacion:
-                st.error("Línea y Operación son obligatorios.")
+    with st.form("form_alta_sensibilidad", clear_on_submit=True):
+        st.markdown("**Registrar Producto para Análisis de Sensibilidad**")
+        col1, col2 = st.columns(2)
+        with col1:
+            num_parte = st.text_input("Número de Parte", placeholder="Ej. PN-998877")
+            nombre_prod = st.text_input("Nombre del Producto", placeholder="Ej. Módulo Control Motor")
+        with col2:
+            cliente = st.text_input("Cliente / OEM", placeholder="Ej. Ford / BMW")
+            nivel_sens = st.selectbox("Nivel de Sensibilidad ESD", ["Class 0 (<100V)", "Class 1A (100V-500V)", "Class 1B (500V-1000V)", "Class 1C (1000V-2000V)", "Class 2 (2000V-4000V)", "No Sensible"])
+            
+        if st.form_submit_button("💾 Registrar Producto"):
+            if num_parte and nombre_prod:
+                try:
+                    supabase.table("catalogo_sensibilidad").insert({
+                        "numero_parte": num_parte.strip().upper(),
+                        "nombre_producto": nombre_prod.strip(),
+                        "cliente": cliente.strip(),
+                        "nivel_sensibilidad": nivel_sens
+                    }).execute()
+                    st.success("✅ Producto registrado correctamente en el catálogo de sensibilidad.")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Error al guardar: {e}")
             else:
-                with st.spinner("Guardando..."):
-                    # Límite normativo típico para Event Meter
-                    status = "PASS" if voltaje <= 100.0 else "FAIL"
-                    
-                    try:
-                        supabase.table("event_meter_logs").insert({
-                            "site_id": site_id,
-                            "location": linea.strip().upper(),
-                            "operation_id": operacion.strip().upper(),
-                            "contact_type": contacto,
-                            "events_count": int(eventos),
-                            "max_voltage": float(voltaje),
-                            "temperature": float(temp),
-                            "humidity": int(hum),
-                            "status_result": status,
-                            "auditor_id": user_id
-                        }).execute()
-                        st.success(f"¡Registro guardado! Estatus: {status}")
-                    except Exception as e:
-                        st.error(f"Error SQL: {e}")
+                st.warning("⚠️ Completa los campos obligatorios.")
 
-# ==========================================
-# 3. WALKING TEST (EXTRACCIÓN OCR DE PDF)
-# ==========================================
-with tab_walking:
-    st.markdown("#### Análisis OCR de Walking Test")
-    archivo_pdf = st.file_uploader(t("lab", "wt_upload"), type=["pdf"])
+    st.divider()
     
-    if archivo_pdf:
-        with st.expander(f"📄 Documento: {archivo_pdf.name}", expanded=True):
-            try:
-                # 1. Extracción de imagen del PDF
-                doc = fitz.open(stream=archivo_pdf.read(), filetype="pdf")
-                pagina = doc[0]
-                imagenes_pdf = pagina.get_images(full=True)
-                
-                if imagenes_pdf:
-                    xref = imagenes_pdf[0][0]
-                    base_image = doc.extract_image(xref)
-                    imagen_grafica = Image.open(io.BytesIO(base_image["image"]))
-                    
-                    # 2. Análisis OCR
-                    with st.spinner(t("lab", "wt_extracting")):
-                        texto_ocr = pytesseract.image_to_string(imagen_grafica)
-                    
-                    # 3. Expresiones Regulares (Lógica de tu código original)
-                    hum_match = re.search(r"(\d{1,3}(?:\.\d+)?)\s*%?\s*RH", texto_ocr, re.IGNORECASE)
-                    humedad = float(hum_match.group(1)) if hum_match else 45.0
-                    
-                    temp_match = re.search(r"(\d{1,3}(?:\.\d+)?)\s*[^C]*C", texto_ocr, re.IGNORECASE)
-                    temperatura = float(temp_match.group(1)) if temp_match else 23.5
-                    
-                    peaks_match = re.search(r"highest peaks:\s*(.*?)(?:\(|Arithmetic|\n|$)", texto_ocr, re.IGNORECASE)
-                    picos = peaks_match.group(1).strip() if peaks_match else ""
-                    
-                    valleys_match = re.search(r"highest valleys:\s*(.*?)(?:\(|Arithmetic|\n|$)", texto_ocr, re.IGNORECASE)
-                    valles = valleys_match.group(1).strip() if valleys_match else ""
-                    
-                    # Calcular absolutos matemáticos
-                    max_abs = 0.0
-                    promedio_picos = 0.0
-                    try:
-                        p_vals = [float(x) for x in re.findall(r"[-+]?\d*\.\d+|\d+", picos)]
-                        v_vals = [float(x) for x in re.findall(r"[-+]?\d*\.\d+|\d+", valles)]
-                        todos = p_vals + v_vals
-                        if todos: max_abs = max(abs(x) for x in todos)
-                        if p_vals: promedio_picos = sum(p_vals) / len(p_vals)
-                    except: pass
+    try:
+        resp = supabase.table("catalogo_sensibilidad").select("*").order("created_at", desc=True).execute()
+        if resp.data:
+            df = pd.DataFrame(resp.data)
+            st.dataframe(df, use_container_width=True)
+        else:
+            st.info("Sin registros en el catálogo de sensibilidad.")
+    except Exception as e:
+        st.error(f"Error al cargar catálogo de sensibilidad: {e}")
 
-                    # Mostrar extracción y gráfica
-                    col_ocr1, col_ocr2 = st.columns(2)
-                    col_ocr1.metric("Voltaje Máx (Absoluto)", f"{max_abs:.2f} V")
-                    col_ocr2.metric("Promedio Picos", f"{promedio_picos:.2f} V")
-                    st.image(imagen_grafica, use_container_width=True)
+with tab2:
+    st.markdown("#### Detalle de Componentes Sensibles por Producto")
+    try:
+        resp_prods = supabase.table("catalogo_sensibilidad").select("id, numero_parte, nombre_producto").execute()
+        if resp_prods.data:
+            dict_prods = {f"{p['numero_parte']} - {p['nombre_producto']}": p['id'] for p in resp_prods.data}
+            sel_prod_name = st.selectbox("Selecciona Producto para Ver/Agregar Componentes:", list(dict_prods.keys()))
+            sel_prod_id = dict_prods[sel_prod_name]
+            
+            with st.form("form_alta_componente", clear_on_submit=True):
+                col_a, col_b, col_c = st.columns(3)
+                with col_a:
+                    part_num = st.text_input("Part Number Componente", placeholder="Ej. IC-RES-100")
+                    desc = st.text_input("Descripción", placeholder="Ej. Microcontrolador 32bit")
+                with col_b:
+                    ref_desig = st.text_input("Ref Designator", placeholder="Ej. U101 / C24")
+                    qty = st.number_input("Cantidad", min_value=1, value=1)
+                with col_c:
+                    hbm = st.text_input("ESD HBM (Human Body Model)", placeholder="Ej. <250V")
+                    cdm = st.text_input("ESD CDM (Charged Device Model)", placeholder="Ej. <500V")
                     
-                    # 4. Formulario de confirmación y guardado
-                    st.divider()
-                    with st.form("form_wt_save", clear_on_submit=True):
-                        st.write("**Confirma y asigna los datos:**")
-                        c_wt1, c_wt2 = st.columns(2)
-                        
-                        loc_wt = c_wt1.text_input("Ubicación / Área (Ej: SMT-01)")
-                        operador_wt = c_wt2.text_input("Nombre del Operador Evaluado")
-                        
-                        # Permitimos editar lo extraído por si el OCR falló
-                        c_wt3, c_wt4, c_wt5 = st.columns(3)
-                        temp_final = c_wt3.number_input("Temp (°C)", value=temperatura)
-                        hum_final = c_wt4.number_input("Humedad (%)", value=humedad)
-                        vmax_final = c_wt5.number_input("Voltaje Máx (V)", value=max_abs)
-                        
-                        if st.form_submit_button(t("lab", "wt_save"), type="primary", use_container_width=True):
-                            if not loc_wt:
-                                st.error("La ubicación es requerida.")
-                            else:
-                                status = "PASS" if vmax_final < 100.0 else "FAIL"
-                                try:
-                                    supabase.table("walking_test_logs").insert({
-                                        "site_id": site_id,
-                                        "location": loc_wt.strip().upper(),
-                                        "operator_name": operador_wt.strip(),
-                                        "temperature": temp_final,
-                                        "humidity": hum_final,
-                                        "max_voltage_abs": vmax_final,
-                                        "peak_average": promedio_picos,
-                                        "status_result": status,
-                                        "auditor_id": user_id
-                                    }).execute()
-                                    st.success(f"¡Walking Test guardado! Estatus: {status}")
-                                except Exception as e:
-                                    st.error(f"Error de base de datos: {e}")
-                                    
-                else:
-                    st.error("No se encontró ninguna gráfica en la primera página del PDF.")
-            except Exception as e:
-                st.error(f"Error procesando el PDF: {e}")
+                comentarios = st.text_area("Comentarios / Precauciones Especiales")
+                
+                if st.form_submit_button("➕ Agregar Componente"):
+                    if part_num:
+                        try:
+                            supabase.table("componentes_sensibilidad").insert({
+                                "id_producto": sel_prod_id,
+                                "part_number": part_num.strip(),
+                                "descripcion": desc,
+                                "ref_designator": ref_desig,
+                                "qty": qty,
+                                "esd_hbm": hbm,
+                                "esd_cdm": cdm,
+                                "comentarios": comentarios
+                            }).execute()
+                            st.success("✅ Componente guardado exitosamente.")
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"Error al registrar componente: {e}")
+
+            st.divider()
+            resp_comps = supabase.table("componentes_sensibilidad").select("*").eq("id_producto", sel_prod_id).execute()
+            if resp_comps.data:
+                st.dataframe(pd.DataFrame(resp_comps.data), use_container_width=True)
+            else:
+                st.info("No hay componentes registrados para este producto.")
+        else:
+            st.info("Primero debes dar de alta productos en la pestaña anterior.")
+    except Exception as e:
+        st.error(f"Error al cargar componentes: {e}")
