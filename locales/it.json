@@ -137,7 +137,23 @@
     "lbl_scan": "Scansiona Codice QR Risorsa",
     "asset_info": "Dettagli Risorsa",
     "status": "Stato Operativo",
-    "new_record": "Registra Nuova Misurazione"
+    "new_record": "Registra Nuova Misurazione",
+    "waiting": "🔍 Scansiona o inserisci il codice QR / ID per avviare l'audit.",
+    "history": "📜 Cronologia Audit Recenti",
+    "lbl_manual": "Oppure inserisci manualmente il codice / ID:",
+    "btn_close": "Chiudi Scanner QR",
+    "loc": "Posizione / Linea",
+    "class": "Classificazione ESD",
+    "msg_not_found": "❌ Nessuna risorsa trovata con il codice inserito.",
+    "mode_quick": "Ispezione Rapida (1 Punto)",
+    "mode_integral": "Validazione Integrale S20.20",
+    "lbl_temp": "Temperatura Ambiente (°C)",
+    "lbl_hum": "Umidità Relativa (%RH)",
+    "lbl_res": "Resistenza Misurata (Ohm)",
+    "lbl_volts": "Tensione Elettrostatica (V)",
+    "btn_save": "💾 Salva Audit",
+    "btn_save_integral": "💾 Salva e Genera Report",
+    "msg_success": "✅ Audit registrato con successo."
   },
   "routes": {
     "title": "Registrazione Prodotto, Percorsi e Sequenza"
