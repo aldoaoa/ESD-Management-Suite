@@ -106,7 +106,24 @@
     "tab_locations": "Line Locations",
     "tab_equipment": "Measurement Equipment",
     "loc_add": "➕ Register New Location",
-    "eq_add": "➕ Register New Measurement Equipment"
+    "eq_add": "Register New Measurement Equipment",
+    "btn_delete_eq": "Delete Equipment",
+    "btn_save_equipment": "💾 Save Measurement Equipment",
+    "eq_caption": "Register ESD testing instruments (Megohmmeters, Voltmeters, Terohmeters) and control calibration dates.",
+    "eq_title": "Audit Measurement Equipment Management",
+    "hdr_eq_directory": "Registered Measurement Equipment Directory",
+    "info_own_account_msg": "For security reasons and to prevent accidental lockout, you cannot delete or deactivate your own account while logged in.",
+    "info_own_account_title": "Current Session Account",
+    "lbl_eq_brand": "Make / Model",
+    "lbl_eq_calib_date": "Last Calibration",
+    "lbl_eq_code": "Internal Calibration Code / ID",
+    "lbl_eq_name": "Name / Instrument",
+    "lbl_eq_next_calib": "Next Calibration",
+    "lbl_eq_serial": "Serial Number",
+    "lbl_eq_status": "Equipment Status",
+    "msg_eq_saved": "Measurement equipment registered successfully.",
+    "msg_eq_updated": "Equipment updated successfully.",
+    "msg_no_eq_found": "No measurement equipment currently registered at this plant."
   },
   "dashboard": {
     "title": "ESD Compliance Overview",
@@ -124,5 +141,26 @@
   },
   "routes": {
     "title": "Product Registration, Routing & Sequence"
+  },
+  "training": {
+    "title": "ESD Training & Certification",
+    "subtitle": "Personnel training control, validity, and evaluations",
+    "tab_dash": "📊 Certification Dashboard",
+    "tab_weekly": "📅 Weekly Summary",
+    "tab_historical": "📜 Evaluation History",
+    "tab_audit": "🔍 Personnel Verification"
+  },
+  "schedule": {
+    "title": "Verification Schedule & TR53 Frequencies",
+    "subtitle": "Normative audit frequency control by line and station",
+    "tab_general": "📅 Scheduled Audits",
+    "tab_urgents": "🚨 Overdue / Urgent Audits"
+  },
+  "sensitivity": {
+    "title": "ESD Sensitivity Matrix by Product & Component",
+    "subtitle": "HBM and CDM sensitivity levels by product model",
+    "tab_overview": "🌍 Plant Overview",
+    "tab_query": "🔍 Product Search",
+    "tab_import": "📥 Component Classification"
   }
 }
