@@ -137,7 +137,23 @@
     "lbl_scan": "Scan Asset QR Code",
     "asset_info": "Asset Details",
     "status": "Operational Status",
-    "new_record": "Log New Measurement"
+    "new_record": "Log New Measurement",
+    "waiting": "🔍 Scan or enter asset QR code / ID to start the audit.",
+    "history": "📜 Recent Audit History",
+    "lbl_manual": "Or enter asset code / ID manually:",
+    "btn_close": "Close QR Scanner",
+    "loc": "Location / Line",
+    "class": "ESD Classification",
+    "msg_not_found": "❌ No registered asset found with the entered code.",
+    "mode_quick": "Quick Inspection (1 Point)",
+    "mode_integral": "Full S20.20 Validation",
+    "lbl_temp": "Ambient Temperature (°C)",
+    "lbl_hum": "Relative Humidity (%RH)",
+    "lbl_res": "Measured Resistance (Ohms)",
+    "lbl_volts": "Electrostatic Voltage (V)",
+    "btn_save": "💾 Save Audit",
+    "btn_save_integral": "💾 Save and Generate Report",
+    "msg_success": "✅ Audit logged successfully."
   },
   "routes": {
     "title": "Product Registration, Routing & Sequence"
