@@ -1,141 +1,66 @@
 {
-    "auth": {
-        "login_required": "Please sign in to access this module."
-    },
-    "inventory": {
-        "title": "📦 ESD Inventory Management",
-        "tab_dir": "📋 Asset Directory",
-        "tab_add": "➕ Register New",
-        "tab_retire": "🗑️ Retire Asset",
-        "lbl_id": "Asset ID (e.g., SMT-01)",
-        "lbl_category": "Category",
-        "lbl_class": "Classification (e.g., Table, Mat)",
-        "lbl_location": "Location / Line",
-        "btn_save": "Save Asset",
-        "msg_success": "Asset registered successfully!",
-        "msg_duplicate": "Error: Asset ID already exists in this site."
-    },
-    "lab": {
-        "title": "🧪 Testing Laboratory",
-        "subtitle": "Advanced Analysis: Event Meter & Walking Test",
-        "tab_event": "⚡ Event Meter",
-        "tab_walking": "🚶‍♂️ Walking Test",
-        "em_location": "Location / Line",
-        "em_operation": "Operation ID (e.g., OP-50)",
-        "em_contact": "Contact Type",
-        "em_events": "Event Count",
-        "em_voltage": "Max Voltage (V)",
-        "em_save": "💾 Save Event Meter",
-        "wt_upload": "📄 Upload Walking Test PDF",
-        "wt_extracting": "Analyzing image with OCR...",
-        "wt_save": "💾 Confirm and Save Walking Test"
-    },
-    "infra": {
-        "title": "🌍 EPA Infrastructure",
-        "subtitle": "Grounding, Floor, and Isolated Conductors Control",
-        "tab_ground": "🔌 Grounding & Connections",
-        "tab_floor": "🗺️ ESD Floor",
-        "tab_iso": "⚡ Isolated Conductors",
-        "tab_checkers": "🛂 Entrance Checkers",
-        "gr_type": "Point Type",
-        "gr_loc": "Line / Location",
-        "gr_id": "Point ID",
-        "gr_ohms": "Resistance (Ohms)",
-        "gr_save": "💾 Save Ground Measurement",
-        "fl_room": "Room / Area",
-        "fl_point": "Point Number",
-        "fl_save": "💾 Save Floor Point",
-        "iso_op": "Operation",
-        "iso_volt": "Max Voltage (V)",
-        "iso_save": "💾 Save Isolated Conductor",
-        "msg_pass": "Measurement Passed (PASS)",
-        "msg_fail": "Measurement Failed (FAIL) - Exceeds limits"
-    },
-    "login": {
-        "title": "Welcome to ESD Management Suite",
-        "email_ph": "Email address",
-        "pwd_ph": "Password",
-        "btn_submit": "Sign In",
-        "error_creds": "Invalid credentials or inactive account."
-    },
-    "settings": {
-        "title": "⚙️ System Settings",
-        "subtitle": "Catalog and access management",
-        "tab_locations": "📍 Locations",
-        "tab_equipment": "🛠️ Measurement Equipment",
-        "tab_users": "🔐 Users",
-        "loc_add": "➕ Add New Location",
-        "loc_name": "Area or Line Name",
-        "btn_save": "Save",
-        "eq_add": "➕ Register Equipment",
-        "eq_id": "Equipment ID",
-        "eq_type": "Type (e.g., Megohmmeter)",
-        "eq_cal": "Next Calibration",
-        "us_title": "Access Management",
-        "us_warning": "Only administrators can manage users."
-    },
-    "sidebar": {
-        "menu": "Main Menu",
-        "dashboard": "Dashboard & Metrics",
-        "logout": "Sign Out"
-    },
-    "audit": {
-        "title": "📱 Fast Inspection & Audit",
-        "lbl_scan": "Point at the QR Code",
-        "lbl_manual": "Or enter ID manually:",
-        "btn_close": "❌ Close Scanner",
-        "asset_info": "📊 Asset Identity",
-        "loc": "Location",
-        "class": "Classification",
-        "status": "Current Status",
-        "history": "🕰️ Measurement History",
-        "new_record": "⚡ New Measurement Record",
-        "lbl_temp": "Temp (°C)",
-        "lbl_hum": "Humidity (%)",
-        "lbl_res": "Ground Resistance (Ω)",
-        "lbl_volts": "Static Field / Balance (V)",
-        "btn_save": "💾 Save Measurement",
-        "msg_success": "Measurement saved and status updated successfully!",
-        "msg_not_found": "ID not found in this site's registry.",
-        "waiting": "👈 Scan or enter a code on the left to begin.",
-        "mode_quick": "Quick Inspection (1 Point)",
-        "mode_integral": "S20.20 Comprehensive Validation",
-        "btn_save_integral": "💾 Save & Generate Report"
-    },
-    "dashboard": {
-        "title": "📊 Dashboard & Metrics",
-        "subtitle": "Overview of ESD compliance status",
-        "kpi_total": "Total Assets",
-        "kpi_comp": "Overall Compliance",
-        "kpi_pass": "Active / Passed",
-        "kpi_fail": "Expired / Failed",
-        "chart_status": "Status Distribution",
-        "chart_category": "Assets by Category",
-        "alerts_title": "🚨 Critical Alerts (Action Required)",
-        "col_asset": "Asset ID",
-        "col_category": "Category",
-        "col_date": "Date",
-        "col_status": "Status"
-    },
-    "training": {
-        "title": "🎓 Training & ESD Certification Management",
-        "subtitle": "Manage training history, scores, and analyze areas of opportunity.",
-        "tab_dash": "📊 Results Dashboard",
-        "tab_historical": "📥 Load Historical (Forms)",
-        "tab_weekly": "🔄 Weekly Update",
-        "tab_audit": "🕵️ Chronological Audit"
-    },
-    "sensitivity": {
-        "title": "🔌 Component Sensitivity Analysis (HBM / CDM)",
-        "subtitle": "Query and manage assembly susceptibility limits.",
-        "tab_overview": "📈 Global Overview",
-        "tab_query": "📊 Query Reports",
-        "tab_import": "📥 Import Historical"
-    },
-    "schedule": {
-        "title": "📅 ESD Verification Schedule",
-        "subtitle": "Integrated view of asset and infrastructure expiration dates.",
-        "tab_general": "📅 General Schedule",
-        "tab_urgents": "🚨 Pending & Expired (Direct Edit)"
-    }
+  "nav": {
+    "cat_monitoring": "MONITORING & METRICS",
+    "dashboard": "Main Dashboard",
+    "cat_verification": "VERIFICATION & FLOOR",
+    "audit": "Floor Audit",
+    "schedule": "Verification Schedule",
+    "cat_assets_training": "ASSETS & TRAINING",
+    "inventory": "Asset Directory",
+    "lab": "Testing Lab",
+    "infrastructure": "Infrastructure (EPA)",
+    "training": "Training & Certification",
+    "sensitivity": "Sensitivity Analysis",
+    "routes": "Product Routes",
+    "cat_settings": "CONFIGURATION",
+    "settings": "System Settings",
+    "logout": "Log Out"
+  },
+  "login": {
+    "title": "ESD Management Suite - System Login",
+    "account_access": "User Login",
+    "email": "Email Address",
+    "password": "Password",
+    "submit": "Log In",
+    "account_inactive": "Your user account is inactive.",
+    "invalid_password": "The entered password is incorrect.",
+    "user_not_found": "No user account found with this email."
+  },
+  "auth": {
+    "login_required": "Please log in to access this module.",
+    "logout": "Log Out"
+  },
+  "settings": {
+    "title": "System Settings & Configuration",
+    "tab_language": "Language / Idioma",
+    "lang_heading": "Language Preferences",
+    "lang_caption": "Select the preferred language for the interface and all system texts.",
+    "lbl_select_lang": "Platform Language:",
+    "lang_updated": "Language updated successfully.",
+    "tab_companies": "Companies (Global)",
+    "tab_admins": "Company Admins",
+    "tab_sites": "Plants (Sites)",
+    "tab_users": "User Management",
+    "tab_locations": "Line Locations",
+    "tab_equipment": "Measurement Equipment",
+    "loc_add": "➕ Register New Location",
+    "eq_add": "➕ Register New Measurement Equipment"
+  },
+  "dashboard": {
+    "title": "ESD Compliance Overview",
+    "subtitle": "Global status of ANSI/ESD S20.20 compliance",
+    "chart_status": "Asset Operational Status",
+    "chart_category": "Distribution by Category",
+    "alerts_title": "Critical Alerts & Expirations"
+  },
+  "audit": {
+    "title": "ESD Audit & Verification Module",
+    "lbl_scan": "Scan Asset QR Code",
+    "asset_info": "Asset Details",
+    "status": "Operational Status",
+    "new_record": "Log New Measurement"
+  },
+  "routes": {
+    "title": "Product Registration, Routing & Sequence"
+  }
 }
