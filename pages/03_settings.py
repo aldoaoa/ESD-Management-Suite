@@ -2,6 +2,7 @@
 import streamlit as st
 import pandas as pd
 import datetime
+import json
 from werkzeug.security import generate_password_hash
 from core.i18n import t
 from core.db import get_supabase_client
@@ -82,7 +83,7 @@ if is_global_admin:
         "🏢 " + t("settings", "tab_companies", "Empresas (Global)"), 
         "🔐 " + t("settings", "tab_admins", "Admins de Empresa"), 
         "🏭 " + t("settings", "tab_sites", "Plantas (Sites)"), 
-        "🔐 " + t("settings", "tab_users", "Usuarios de Planta"), 
+        "👥 " + t("settings", "tab_users", "Gestión de Usuarios"), 
         "📍 " + t("settings", "tab_locations", "Ubicaciones de Línea"),
         "🛠️ " + t("settings", "tab_equipment", "Equipos de Medición")
     ])
@@ -91,7 +92,7 @@ elif is_company_admin:
     tabs = st.tabs([
         "🌐 " + t("settings", "tab_language", "Idioma / Language"),
         "🏭 " + t("settings", "tab_sites", "Plantas (Sites)"), 
-        "🔐 " + t("settings", "tab_users", "Gestión de Usuarios"), 
+        "👥 " + t("settings", "tab_users", "Gestión de Usuarios"), 
         "📍 " + t("settings", "tab_locations", "Ubicaciones de Línea"),
         "🛠️ " + t("settings", "tab_equipment", "Equipos de Medición")
     ])
@@ -140,7 +141,7 @@ with tab_lang:
         st.rerun()
 
 # ==========================================
-# PESTAÑA: GESTIÓN DE PLANTAS (SITES), USUARIOS Y PERMISOS
+# PESTAÑA: GESTIÓN DE PLANTAS (SITES)
 # ==========================================
 if is_global_admin or is_company_admin:
     with tab_sites:
@@ -314,6 +315,221 @@ if is_global_admin or is_company_admin:
                         st.info(t("settings", "msg_no_assigned_users", "Sin usuarios asignados a esta planta actualmente."))
                 except Exception as e:
                     st.error(f"Error: {e}")
+
+# ==========================================
+# PESTAÑA: GESTIÓN DE USUARIOS (ALTA, EDICIÓN, PASSWORD, PERMISOS Y ELIMINACIÓN)
+# ==========================================
+if is_global_admin or is_company_admin:
+    with tab_usr_comp:
+        st.markdown(f"#### 👥 {t('settings', 'users_title', 'Gestión Integral de Usuarios de la Organización')}")
+        st.caption(t("settings", "users_caption", "Administra usuarios registrados, otorga o edita permisos modulares granulares, restablece contraseñas y gestiona sus estados."))
+
+        # 1. Cargar plantas/sites de la empresa para selección
+        try:
+            if comp_id_gestion:
+                resp_s_u = supabase.table("sites").select("id, name").eq("company_id", comp_id_gestion).order("name").execute()
+            else:
+                resp_s_u = supabase.table("sites").select("id, name").order("name").execute()
+            sites_user_dict = {s["id"]: s["name"] for s in resp_s_u.data} if resp_s_u.data else {}
+        except:
+            sites_user_dict = {}
+
+        # --- FORMULARIO 1: ALTA DE NUEVO USUARIO ---
+        with st.expander(f"➕ **{t('settings', 'btn_create_new_user', 'Registrar Nuevo Usuario')}**", expanded=False):
+            with st.form("form_alta_usuario_org", clear_on_submit=True):
+                col_u1, col_u2 = st.columns(2)
+                with col_u1:
+                    nu_nombre = st.text_input(t("settings", "lbl_full_name", "Nombre Completo"), placeholder="Ej. Juan Pérez")
+                    nu_email = st.text_input(t("settings", "lbl_email", "Correo Electrónico"), placeholder="usuario@empresa.com")
+                    nu_pass = st.text_input(t("settings", "lbl_password", "Contraseña"), type="password")
+                
+                with col_u2:
+                    nu_rol = st.selectbox(
+                        t("settings", "lbl_user_role", "Rol Principal:"),
+                        ["ADMIN", "SUPERVISOR", "AUDITOR", "READONLY", "CompanyAdmin"]
+                    )
+                    
+                    nu_site = None
+                    if sites_user_dict:
+                        nu_site = st.selectbox(
+                            t("settings", "lbl_assign_site", "Planta / Site Principal:"),
+                            options=list(sites_user_dict.keys()),
+                            format_func=lambda x: sites_user_dict[x]
+                        )
+                    
+                    nu_active = st.checkbox(t("settings", "chk_active_user", "Cuenta Activa"), value=True)
+
+                st.markdown(f"##### 🔑 {t('settings', 'hdr_module_permissions', 'Permisos Modulares Granulares')}")
+                p_col1, p_col2, p_col3, p_col4, p_col5 = st.columns(5)
+                with p_col1:
+                    p_audit = st.checkbox(t("settings", "perm_audit", "Auditorías en Piso"), value=True)
+                with p_col2:
+                    p_view = st.checkbox(t("settings", "perm_view", "Consultas y Tableros"), value=True)
+                with p_col3:
+                    p_inv = st.checkbox(t("settings", "perm_inventory", "Alta/Baja Inventario"), value=True)
+                with p_col4:
+                    p_rep = st.checkbox(t("settings", "perm_reports", "Generación Reportes"), value=True)
+                with p_col5:
+                    p_sett = st.checkbox(t("settings", "perm_settings", "Configuración Sistema"), value=False)
+
+                if st.form_submit_button(t("settings", "btn_submit_create_user", "💾 Registrar Usuario"), type="primary"):
+                    if not nu_email or not nu_pass:
+                        st.warning(t("settings", "msg_fill_required", "Por favor completa el correo y la contraseña."))
+                    else:
+                        try:
+                            dict_permisos = {
+                                "audit": p_audit,
+                                "view": p_view,
+                                "inventory": p_inv,
+                                "reports": p_rep,
+                                "settings": p_sett
+                            }
+                            
+                            nuevo_user_payload = {
+                                "company_id": comp_id_gestion,
+                                "site_id": nu_site,
+                                "email": nu_email.strip().lower(),
+                                "password_hash": generate_password_hash(nu_pass),
+                                "full_name": nu_nombre.strip() if nu_nombre else nu_email.split('@')[0],
+                                "role": nu_rol,
+                                "is_active": nu_active,
+                                "permissions": json.dumps(dict_permisos)
+                            }
+                            
+                            res_ins = supabase.table("users").insert(nuevo_user_payload).execute()
+                            if res_ins.data:
+                                st.success(f"✅ {t('settings', 'msg_user_created', 'Usuario registrado exitosamente.')}")
+                                st.rerun()
+                        except Exception as ex:
+                            if "duplicate key" in str(ex) or "23505" in str(ex):
+                                st.error(t("settings", "msg_user_exists", "❌ El correo electrónico ya está registrado."))
+                            else:
+                                st.error(f"Error al registrar usuario: {ex}")
+
+        st.divider()
+
+        # --- LISTA Y EDICIÓN DE USUARIOS EXISTENTES ---
+        st.markdown(f"##### 📋 {t('settings', 'hdr_user_directory', 'Directorio de Usuarios de la Empresa')}")
+        try:
+            if comp_id_gestion:
+                u_q = supabase.table("users").select("*, sites(name)").eq("company_id", comp_id_gestion).order("email").execute()
+            else:
+                u_q = supabase.table("users").select("*, sites(name)").order("email").execute()
+                
+            list_u_data = u_q.data if u_q.data else []
+            
+            if list_u_data:
+                for usr in list_u_data:
+                    usr_id = usr["id"]
+                    usr_email = usr.get("email", "Sin Email")
+                    usr_name = usr.get("full_name") or usr_email
+                    usr_role = usr.get("role", "USER")
+                    usr_active = usr.get("is_active", True)
+                    usr_site_id = usr.get("site_id")
+                    site_name_disp = usr.get("sites", {}).get("name") if isinstance(usr.get("sites"), dict) else "Sin Site"
+
+                    badge_active = "🟢" if usr_active else "🔴"
+                    
+                    with st.expander(f"{badge_active} **{usr_name}** (`{usr_email}`) | Rol: `{usr_role}` | Site: `{site_name_disp}`", expanded=False):
+                        tab_e1, tab_e2, tab_e3 = st.tabs([
+                            "✏️ " + t("settings", "tab_edit_details", "Editar Detalles y Permisos"),
+                            "🔑 " + t("settings", "tab_change_pass", "Cambiar Contraseña"),
+                            "🗑️ " + t("settings", "tab_delete_user", "Eliminar / Desactivar")
+                        ])
+                        
+                        # Sub-tab 1: Editar Detalles y Permisos
+                        with tab_e1:
+                            with st.form(f"form_edit_usr_{usr_id}"):
+                                c_e1, c_e2 = st.columns(2)
+                                with c_e1:
+                                    e_fn = st.text_input(t("settings", "lbl_full_name", "Nombre Completo"), value=usr_name)
+                                    e_rl = st.selectbox(
+                                        t("settings", "lbl_user_role", "Rol Principal:"),
+                                        ["ADMIN", "SUPERVISOR", "AUDITOR", "READONLY", "CompanyAdmin"],
+                                        index=["ADMIN", "SUPERVISOR", "AUDITOR", "READONLY", "CompanyAdmin"].index(usr_role) if usr_role in ["ADMIN", "SUPERVISOR", "AUDITOR", "READONLY", "CompanyAdmin"] else 0
+                                    )
+                                with c_e2:
+                                    s_idx = 0
+                                    if sites_user_dict and usr_site_id in sites_user_dict:
+                                        s_idx = list(sites_user_dict.keys()).index(usr_site_id)
+                                    
+                                    e_st = st.selectbox(
+                                        t("settings", "lbl_assign_site", "Planta / Site Principal:"),
+                                        options=list(sites_user_dict.keys()) if sites_user_dict else [None],
+                                        format_func=lambda x: sites_user_dict.get(x, "Sin Site") if sites_user_dict else "N/A",
+                                        index=s_idx
+                                    )
+                                    e_act = st.checkbox(t("settings", "chk_active_user", "Cuenta Activa"), value=usr_active)
+
+                                # Parsear permisos existentes
+                                perm_raw = usr.get("permissions")
+                                p_dict = {}
+                                if isinstance(perm_raw, str):
+                                    try: p_dict = json.loads(perm_raw)
+                                    except: pass
+                                elif isinstance(perm_raw, dict):
+                                    p_dict = perm_raw
+                                
+                                st.markdown(f"**{t('settings', 'hdr_module_permissions', 'Permisos Modulares Granulares')}:**")
+                                pe1, pe2, pe3, pe4, pe5 = st.columns(5)
+                                with pe1: ep_audit = st.checkbox("Auditorías", value=p_dict.get("audit", True), key=f"paud_{usr_id}")
+                                with pe2: ep_view = st.checkbox("Consultas", value=p_dict.get("view", True), key=f"pvw_{usr_id}")
+                                with pe3: ep_inv = st.checkbox("Inventario", value=p_dict.get("inventory", True), key=f"pinv_{usr_id}")
+                                with pe4: ep_rep = st.checkbox("Reportes", value=p_dict.get("reports", True), key=f"prep_{usr_id}")
+                                with pe5: ep_sett = st.checkbox("Ajustes", value=p_dict.get("settings", False), key=f"pset_{usr_id}")
+
+                                if st.form_submit_button(t("settings", "btn_save_changes", "💾 Guardar Cambios")):
+                                    try:
+                                        nuevos_perms = {
+                                            "audit": ep_audit,
+                                            "view": ep_view,
+                                            "inventory": ep_inv,
+                                            "reports": ep_rep,
+                                            "settings": ep_sett
+                                        }
+                                        supabase.table("users").update({
+                                            "full_name": e_fn.strip(),
+                                            "role": e_rl,
+                                            "site_id": e_st,
+                                            "is_active": e_act,
+                                            "permissions": json.dumps(nuevos_perms)
+                                        }).eq("id", usr_id).execute()
+                                        st.success(f"✅ {t('settings', 'msg_user_updated', 'Usuario actualizado correctamente.')}")
+                                        st.rerun()
+                                    except Exception as ex:
+                                        st.error(f"Error: {ex}")
+
+                        # Sub-tab 2: Cambiar Contraseña
+                        with tab_e2:
+                            with st.form(f"form_reset_pass_{usr_id}"):
+                                new_pass_inp = st.text_input(t("settings", "lbl_new_password", "Nueva Contraseña"), type="password")
+                                if st.form_submit_button(t("settings", "btn_change_password", "🔐 Restablecer Contraseña"), type="primary"):
+                                    if not new_pass_inp or len(new_pass_inp) < 4:
+                                        st.warning(t("settings", "msg_pass_short", "La contraseña debe tener al menos 4 caracteres."))
+                                    else:
+                                        try:
+                                            supabase.table("users").update({
+                                                "password_hash": generate_password_hash(new_pass_inp)
+                                            }).eq("id", usr_id).execute()
+                                            st.success(f"✅ {t('settings', 'msg_pass_changed', 'Contraseña restablecida exitosamente.')}")
+                                            st.rerun()
+                                        except Exception as ex:
+                                            st.error(f"Error: {ex}")
+
+                        # Sub-tab 3: Eliminar o Desactivar Usuario
+                        with tab_e3:
+                            st.warning(t("settings", "warn_delete_user", "⚠️ Advertencia: Esta acción eliminará permanentemente la cuenta de usuario."))
+                            if st.button(f"🗑️ {t('settings', 'btn_confirm_delete', 'Eliminar Usuario Definitivamente')}", key=f"del_u_{usr_id}", type="primary"):
+                                try:
+                                    supabase.table("users").delete().eq("id", usr_id).execute()
+                                    st.success(f"✅ {t('settings', 'msg_user_deleted', 'Usuario eliminado exitosamente.')}")
+                                    st.rerun()
+                                except Exception as ex:
+                                    st.error(f"Error al eliminar: {ex}")
+            else:
+                st.info(t("settings", "msg_no_users_found", "No hay usuarios registrados en la empresa."))
+        except Exception as e:
+            st.error(f"Error al cargar usuarios: {e}")
 
 # ==========================================
 # GESTIÓN DE UBICACIONES Y EQUIPOS (PARA TODOS LOS ROLES)
