@@ -207,7 +207,9 @@
     "tbl_weekly_summary": "📅 每周成绩汇总",
     "tbl_critical_questions": "🧠 关键试题分析",
     "scan_history": "🔍 扫描完整历史记录",
-    "btn_save_corrections": "💾 保存更正"
+    "btn_save_corrections": "💾 保存更正",
+    "title": "🎓 ESD 培训与认证",
+    "subtitle": "培训管理、年度有效期及试题审核"
   },
   "schedule": {
     "title": "验证计划与 TR53 频率",
