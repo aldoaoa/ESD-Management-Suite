@@ -1,5 +1,9 @@
 # pages/01_dashboard.py
 import streamlit as st
+try:
+    st.set_page_config(page_title="ESD Management Suite", page_icon="⚡", layout="wide")
+except Exception:
+    pass
 import pandas as pd
 import plotly.express as px
 from core.i18n import t
