@@ -207,7 +207,9 @@
     "tbl_weekly_summary": "📅 Resumen de Calificaciones por Semana",
     "tbl_critical_questions": "🧠 Análisis de Reactivos Críticos (Áreas de Oportunidad Técnica)",
     "scan_history": "🔍 Escanear Historial Completo",
-    "btn_save_corrections": "💾 Guardar Correcciones"
+    "btn_save_corrections": "💾 Guardar Correcciones",
+    "title": "🎓 Entrenamiento y Certificación ESD",
+    "subtitle": "Gestión de capacitaciones, vigencias anuales y auditoría de reactivos"
   },
   "schedule": {
     "title": "Cronograma de Verificación y Frecuencias TR53",
