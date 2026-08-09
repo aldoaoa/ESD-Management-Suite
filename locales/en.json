@@ -72,5 +72,17 @@
     "lbl_chk_history": "🥾 Entrance Checkers History",
     "btn_export_csv": "📥 Export Table to CSV",
     "no_records": "No saved infrastructure records found."
+  },
+  "sidebar": {
+    "placeholder_logo": "🖼️ Place logo here"
+  },
+  "settings": {
+    "tab_logo": "Company Logo",
+    "logo_title": "Company / Plant Logo Customization",
+    "logo_subtitle": "Upload your official company logo in PNG or JPG format. It will be displayed at the top of the sidebar.",
+    "lbl_upload_logo": "Select a logo image file (PNG, JPG, JPEG):",
+    "btn_save_logo": "💾 Save New Logo",
+    "btn_remove_logo": "🗑️ Remove Custom Logo",
+    "logo_prompt": "👋 You were redirected from the Sidebar link. Upload your company logo here."
   }
 }
