@@ -189,12 +189,25 @@
     "title": "Product Registration, Routing & Sequence"
   },
   "training": {
-    "title": "ESD Training & Certification",
-    "subtitle": "Personnel training control, validity, and evaluations",
-    "tab_dash": "📊 Certification Dashboard",
-    "tab_weekly": "📅 Weekly Summary",
-    "tab_historical": "📜 Evaluation History",
-    "tab_audit": "🔍 Personnel Verification"
+    "page_title": "🎓 ESD Training & Certification",
+    "page_subtitle": "Training management, annual validity, and question auditing",
+    "tab_dash": "📊 Dashboard & Records",
+    "tab_historical": "📥 Import Historical Data (Forms)",
+    "tab_weekly": "📅 Import Weekly Exams",
+    "tab_audit": "🕵️ Gap Audit & Chronology",
+    "search_ph": "Employee ID...",
+    "btn_search": "🔍 Search Record",
+    "kpi_expired": "🚨 Expired / Overdue",
+    "kpi_month": "📌 Expiring This Month",
+    "kpi_year": "📅 365-Day Projection",
+    "kpi_low": "⚠️ Scores ≤ 80%",
+    "tbl_no_validity": "🚨 Personnel WITHOUT Valid Training",
+    "tbl_low_grades": "🔴 Active Critical Scores (≤ 80%)",
+    "tbl_schedule": "📅 Retraining Schedule",
+    "tbl_weekly_summary": "📅 Weekly Grade Summary",
+    "tbl_critical_questions": "🧠 Critical Questions Analysis (Technical Areas of Opportunity)",
+    "scan_history": "🔍 Scan Complete History",
+    "btn_save_corrections": "💾 Save Corrections"
   },
   "schedule": {
     "title": "Verification Schedule & TR53 Frequencies",
