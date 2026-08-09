@@ -35,7 +35,7 @@
     "select_module": "Vă rugăm să selectați un modul din bara laterală pentru a începe."
   },
   "auth": {
-    "login_required": "Vă rugăm să vă autentificați pentru a accesa acest modul.",
+    "login_required": "🔒 Vă rugăm să vă conectați pentru a accesa acest modul.",
     "logout": "Deconectare"
   },
   "settings": {
