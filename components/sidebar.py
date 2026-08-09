@@ -10,6 +10,23 @@ def hide_sidebar():
         [data-testid="sidebar-nav"] {
             display: none !important;
 
+        /* ELIMINAR LÍMITE DE ANCHO EN STREAMLIT (100% FULL WIDESCREEN REAL) */
+        div[data-testid="stMainBlockContainer"],
+        .stMainBlockContainer,
+        .block-container,
+        div[data-testid="stAppViewBlockContainer"],
+        .stAppViewContainer .main .block-container {
+            max-width: 100% !important;
+            width: 100% !important;
+            padding-left: 2rem !important;
+            padding-right: 2rem !important;
+            padding-top: 1.5rem !important;
+        }
+        div[data-testid="stVerticalBlock"] {
+            width: 100% !important;
+        }
+
+
         /* FORZAR ANCHO COMPLETO (WIDE LAYOUT) EN TODAS LAS PÁGINAS */
         .stAppViewContainer .main .block-container,
         [data-testid="stMainBlockContainer"],
@@ -40,6 +57,23 @@ def render_sidebar():
             <style>
             [data-testid="sidebar-nav"] {
                 display: none !important;
+
+        /* ELIMINAR LÍMITE DE ANCHO EN STREAMLIT (100% FULL WIDESCREEN REAL) */
+        div[data-testid="stMainBlockContainer"],
+        .stMainBlockContainer,
+        .block-container,
+        div[data-testid="stAppViewBlockContainer"],
+        .stAppViewContainer .main .block-container {
+            max-width: 100% !important;
+            width: 100% !important;
+            padding-left: 2rem !important;
+            padding-right: 2rem !important;
+            padding-top: 1.5rem !important;
+        }
+        div[data-testid="stVerticalBlock"] {
+            width: 100% !important;
+        }
+
 
         /* FORZAR ANCHO COMPLETO (WIDE LAYOUT) EN TODAS LAS PÁGINAS */
         .stAppViewContainer .main .block-container,
