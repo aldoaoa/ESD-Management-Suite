@@ -90,16 +90,17 @@ with tab_dash:
         if 'fecha_entrenamiento' in df_merged.columns:
             df_merged['ingreso_dt'] = pd.to_datetime(df_merged['fecha_ingreso'], errors='coerce')
             f_oficial_dt = pd.to_datetime(df_merged['fecha_entrenamiento_oficial'], errors='coerce')
+            f_train_dt = pd.to_datetime(df_merged['fecha_entrenamiento'], errors='coerce')
             
-            cond1 = df_merged['fecha_entrenamiento_oficial'].isna() & df_merged['fecha_entrenamiento'].notna()
-            cond2 = df_merged['fecha_entrenamiento'].notna() & f_oficial_dt.notna() & (f_oficial_dt.dt.date < df_merged['fecha_entrenamiento'].dt.date)
+            cond1 = df_merged['fecha_entrenamiento_oficial'].isna() & f_train_dt.notna()
+            cond2 = f_train_dt.notna() & f_oficial_dt.notna() & (f_oficial_dt < f_train_dt)
             mask_rescate = cond1 | cond2
-            mask_valida = df_merged['ingreso_dt'].isna() | (df_merged['fecha_entrenamiento'] >= df_merged['ingreso_dt'])
+            mask_valida = df_merged['ingreso_dt'].isna() | (f_train_dt >= df_merged['ingreso_dt'])
             mask_rescate = mask_rescate & mask_valida
 
             if mask_rescate.any():
-                df_merged.loc[mask_rescate, 'fecha_entrenamiento_oficial'] = df_merged.loc[mask_rescate, 'fecha_entrenamiento'].dt.date
-                df_merged.loc[mask_rescate, 'fecha_proximo'] = (df_merged.loc[mask_rescate, 'fecha_entrenamiento'] + pd.DateOffset(years=1)).dt.date
+                df_merged.loc[mask_rescate, 'fecha_entrenamiento_oficial'] = f_train_dt.dt.date
+                df_merged.loc[mask_rescate, 'fecha_proximo'] = (f_train_dt + pd.DateOffset(years=1)).dt.date
         
         # Calcular nota real base 10
         def calcular_nota_real(row):
