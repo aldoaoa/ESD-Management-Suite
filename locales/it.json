@@ -35,7 +35,7 @@
     "select_module": "Seleziona un modulo dalla barra laterale per iniziare."
   },
   "auth": {
-    "login_required": "Effettua l'accesso per accedere a questo modulo.",
+    "login_required": "🔒 Effettua il login per accedere a questo modulo.",
     "logout": "Disconnetti"
   },
   "settings": {
