@@ -186,7 +186,30 @@
     "lbl_obs": "Observaciones"
   },
   "routes": {
-    "title": "Alta, Enrutamiento y Secuencia de Productos"
+    "title": "Alta, Enrutamiento y Secuencia de Productos",
+    "subtitle": "Registra productos y define el orden secuencial estricto de las líneas/estaciones por las que transita en la planta.",
+    "btn_new": "Registrar Nuevo Producto y Secuencia de Proceso",
+    "lbl_prod_name": "Nombre / Modelo del Producto",
+    "lbl_sequence": "Selección de Secuencia del Proceso:",
+    "tip_sequence": "Tip: Selecciona las líneas en el orden exacto en que pasa el producto.",
+    "lbl_select_lines": "Selecciona y ordena la ruta de líneas:",
+    "help_sequence": "El orden en que selecciones las líneas determinará la secuencia oficial del proceso.",
+    "preview": "Previsualización de la Secuencia:",
+    "btn_save": "Guardar Ruta de Producto",
+    "warn_name": "⚠️ Debes ingresar un nombre válido para el producto.",
+    "warn_lines": "⚠️ Debes seleccionar al menos una línea o estación.",
+    "sec_title": "Secuencias de Producción Registradas",
+    "tab_view": "Visualizar Ruta",
+    "tab_edit": "Editar Secuencia",
+    "official_seq": "Secuencia Oficial de Producción:",
+    "no_route": "Sin ruta definida.",
+    "edit_tip": "Edita los pasos en orden de proceso.",
+    "num_steps": "Cantidad de Pasos en el Proceso",
+    "select_stations": "Selecciona una o más estaciones",
+    "btn_save_seq": "Guardar Nueva Secuencia",
+    "err_empty_route": "⚠️ La ruta no puede estar vacía.",
+    "succ_updated": "✅ Secuencia de ruta actualizada exitosamente.",
+    "empty_info": "Aún no hay productos ni rutas registradas en este Site."
   },
   "training": {
     "page_title": "🎓 Entrenamiento y Certificación ESD",
