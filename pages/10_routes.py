@@ -1,4 +1,4 @@
-# pages/10_routes.py
+# pages/10_routes.py - Updated 2026-08-09 14:42:45
 """
 Módulo de Alta, Enrutamiento y Secuencia de Productos por Línea/Estación.
 Integrado a la arquitectura Multi-Tenant e i18n de la Suite ESD.
