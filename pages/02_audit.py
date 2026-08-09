@@ -16,7 +16,8 @@ hide_sidebar()
 # 1. BARRERA DE SEGURIDAD
 # ==========================================
 if st.session_state.get("modo_lectura", True):
-    st.warning(t("auth", "login_required"))
+    from core.auth import render_login_screen
+    render_login_screen(t("auth", "login_required", "🔒 Por favor inicia sesión para acceder a este módulo."))
     st.stop()
 
 render_sidebar()
