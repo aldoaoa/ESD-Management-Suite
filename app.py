@@ -1,3 +1,4 @@
+# Full Reboot Trigger testing 2026-08-09 10:38
 # app.py
 import streamlit as st
 from config import inicializar_estado_global
