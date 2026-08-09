@@ -168,7 +168,22 @@
     "lbl_volts": "静电电压 (V)",
     "btn_save": "💾 保存审计记录",
     "btn_save_integral": "💾 保存并生成报告",
-    "msg_success": "✅ 审计记录保存成功。"
+    "msg_success": "✅ 审计记录保存成功。",
+    "last_audit_title": "🕒 Last Recorded Audit",
+    "date_lbl": "📅 Measurement Date",
+    "status_lbl": "📊 Status",
+    "res_lbl": "⚡ Resistance",
+    "volts_lbl": "🧲 Static Field",
+    "no_history_asset": "ℹ️ No previous audit records for this asset.",
+    "history_3_title": "📜 History of Last 3 Validations",
+    "col_datetime": "Date & Time",
+    "col_resistance": "Resistance",
+    "col_field": "Static Field",
+    "col_result": "Result",
+    "col_temp_hum": "Temp / Humidity",
+    "col_obs": "Observations",
+    "no_validations": "ℹ️ This asset has no previous validations in the system.",
+    "lbl_obs": "Observations"
   },
   "routes": {
     "title": "产品注册、路由与工艺顺序"
