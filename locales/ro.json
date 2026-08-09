@@ -207,7 +207,9 @@
     "tbl_weekly_summary": "📅 Sumar Săptămânal Note",
     "tbl_critical_questions": "🧠 Analiza Întrebărilor Critice",
     "scan_history": "🔍 Scanează Istoricul Complet",
-    "btn_save_corrections": "💾 Salvează Corecțiile"
+    "btn_save_corrections": "💾 Salvează Corecțiile",
+    "title": "🎓 Instruire și Certificare ESD",
+    "subtitle": "Gestionarea instruirii, valabilitate anuală și auditul întrebărilor"
   },
   "schedule": {
     "title": "Program de Verificare și Frecvențe TR53",
