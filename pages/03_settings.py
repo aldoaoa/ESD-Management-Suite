@@ -105,6 +105,7 @@ is_site_admin = rol_sesion in ["ADMIN", "SiteAdmin"]
 if is_global_admin:
     tabs = st.tabs([
         "🌐 " + t("settings", "tab_language", "Idioma / Language"),
+        "🖼️ " + t("settings", "tab_logo", "Logotipo"),
         "🏢 " + t("settings", "tab_companies", "Empresas (Global)"), 
         "🔐 " + t("settings", "tab_admins", "Admins de Empresa"), 
         "🏭 " + t("settings", "tab_sites", "Plantas (Sites)"), 
@@ -112,23 +113,25 @@ if is_global_admin:
         "📍 " + t("settings", "tab_locations", "Ubicaciones de Línea"),
         "🛠️ " + t("settings", "tab_equipment", "Equipos de Medición")
     ])
-    tab_lang, tab_companies, tab_admins, tab_sites, tab_usr_comp, tab_loc, tab_eq = tabs
+    tab_lang, tab_logo, tab_companies, tab_admins, tab_sites, tab_usr_comp, tab_loc, tab_eq = tabs
 elif is_company_admin or is_site_admin:
     tabs = st.tabs([
         "🌐 " + t("settings", "tab_language", "Idioma / Language"),
+        "🖼️ " + t("settings", "tab_logo", "Logotipo"),
         "🏭 " + t("settings", "tab_sites", "Plantas (Sites)"), 
         "👥 " + t("settings", "tab_users", "Gestión de Usuarios"), 
         "📍 " + t("settings", "tab_locations", "Ubicaciones de Línea"),
         "🛠️ " + t("settings", "tab_equipment", "Equipos de Medición")
     ])
-    tab_lang, tab_sites, tab_usr_comp, tab_loc, tab_eq = tabs
+    tab_lang, tab_logo, tab_sites, tab_usr_comp, tab_loc, tab_eq = tabs
 else:
     tabs = st.tabs([
         "🌐 " + t("settings", "tab_language", "Idioma / Language"),
+        "🖼️ " + t("settings", "tab_logo", "Logotipo"),
         "📍 " + t("settings", "tab_locations", "Ubicaciones de Línea"), 
         "🛠️ " + t("settings", "tab_equipment", "Equipos de Medición")
     ])
-    tab_lang, tab_loc, tab_eq = tabs
+    tab_lang, tab_logo, tab_loc, tab_eq = tabs
 
 # ==========================================
 # PESTAÑA: PREFERENCIAS DE IDIOMA
@@ -164,6 +167,78 @@ with tab_lang:
         load_locales(force=True)
         st.success(t("settings", "lang_updated", "✅ Idioma actualizado correctamente."))
         st.rerun()
+
+# ==========================================
+# PESTAÑA: PERSONALIZACIÓN DEL LOGOTIPO
+# ==========================================
+with tab_logo:
+    st.markdown(f"#### 🖼️ {t('settings', 'logo_title', 'Personalización del Logotipo de la Empresa / Planta')}")
+    st.caption(t('settings', 'logo_subtitle', 'Carga el logotipo oficial de tu empresa en formato PNG o JPG. Se mostrará en la parte superior del menú lateral.'))
+    
+    if st.session_state.get("open_logo_uploader"):
+        st.info(f"👉 {t('settings', 'logo_prompt', 'Has accedido desde el enlace del Sidebar. Carga la imagen de tu logotipo a continuación.')}")
+        st.session_state.open_logo_uploader = False
+        
+    st.divider()
+    
+    c_logo1, c_logo2 = st.columns([1.5, 1])
+    
+    with c_logo1:
+        st.markdown(f"**{t('settings', 'lbl_upload_logo', 'Selecciona una imagen de logotipo (PNG, JPG, JPEG):')}**")
+        uploaded_logo = st.file_uploader(
+            "Archivo de Logotipo",
+            type=["png", "jpg", "jpeg"],
+            key="settings_logo_file_input",
+            label_visibility="collapsed"
+        )
+        
+        if uploaded_logo is not None:
+            bytes_data = uploaded_logo.read()
+            b64_img = base64.b64encode(bytes_data).decode("utf-8")
+            mime_type = uploaded_logo.type or "image/png"
+            data_uri = f"data:{mime_type};base64,{b64_img}"
+            
+            st.image(data_uri, caption="Previsualización del archivo seleccionado", width=260)
+            
+            if st.button(t("settings", "btn_save_logo", "💾 Guardar Nuevo Logotipo"), type="primary", use_container_width=True):
+                st.session_state.site_logo = data_uri
+                st.session_state.company_logo = data_uri
+                
+                try:
+                    site_id = st.session_state.get("site_id")
+                    if site_id:
+                        supabase.table("site_settings").upsert({
+                            "site_id": site_id,
+                            "logo_base64": data_uri,
+                            "updated_at": datetime.datetime.now().isoformat()
+                        }).execute()
+                except Exception:
+                    pass
+                    
+                st.success("✅ Logotipo actualizado exitosamente. El menú lateral se ha actualizado.")
+                st.rerun()
+                
+    with c_logo2:
+        st.markdown("**Logotipo Configurado Actualmente:**")
+        current_logo = st.session_state.get("site_logo") or st.session_state.get("company_logo")
+        if current_logo:
+            st.image(current_logo, caption="Logotipo Activo", use_container_width=True)
+            st.divider()
+            if st.button(t("settings", "btn_remove_logo", "🗑️ Eliminar Logotipo Personalizado"), type="secondary", use_container_width=True):
+                st.session_state.site_logo = None
+                st.session_state.company_logo = None
+                try:
+                    site_id = st.session_state.get("site_id")
+                    if site_id:
+                        supabase.table("site_settings").delete().eq("site_id", site_id).execute()
+                except Exception:
+                    pass
+                st.success("Logotipo eliminado. Se restableció el estado predeterminado.")
+                st.rerun()
+        else:
+            st.info(f"ℹ️ {t('sidebar', 'placeholder_logo', 'Coloca logotipo aquí')}")
+            st.caption("Aún no se ha cargado una imagen oficial de logotipo.")
+
 
 # ==========================================
 # PESTAÑA: GESTIÓN DE PLANTAS (SITES)
