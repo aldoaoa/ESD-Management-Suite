@@ -72,8 +72,10 @@ with tab_dash:
         df_maestro['num_empleado'] = df_maestro['num_empleado'].astype(str).str.strip().str.replace(r'\.0$', '', regex=True)
         df_maestro = df_maestro.drop_duplicates(subset=['num_empleado'], keep='first')
         
-        df_maestro['fecha_entrenamiento_oficial'] = pd.to_datetime(df_maestro['fecha_ultimo_entrenamiento'], errors='coerce').dt.date
-        df_maestro['fecha_proximo'] = pd.to_datetime(df_maestro['fecha_proximo_entrenamiento'], errors='coerce').dt.date
+        df_maestro['fecha_entrenamiento_oficial_dt'] = pd.to_datetime(df_maestro['fecha_ultimo_entrenamiento'], errors='coerce')
+        df_maestro['fecha_proximo_dt'] = pd.to_datetime(df_maestro['fecha_proximo_entrenamiento'], errors='coerce')
+        df_maestro['fecha_entrenamiento_oficial'] = df_maestro['fecha_entrenamiento_oficial_dt'].dt.date
+        df_maestro['fecha_proximo'] = df_maestro['fecha_proximo_dt'].dt.date
         
         if not df_todo_train.empty:
             df_todo_train['num_empleado'] = df_todo_train['num_empleado'].astype(str).str.strip().str.replace(r'\.0$', '', regex=True)
@@ -90,7 +92,7 @@ with tab_dash:
         # Auto-sanidad de datos
         if 'fecha_entrenamiento' in df_merged.columns:
             df_merged['ingreso_dt'] = pd.to_datetime(df_merged['fecha_ingreso'], errors='coerce')
-            f_oficial_dt = pd.to_datetime(df_merged['fecha_entrenamiento_oficial'], errors='coerce')
+            f_oficial_dt = pd.to_datetime(df_merged.get('fecha_entrenamiento_oficial_dt'), errors='coerce')
             f_train_dt = pd.to_datetime(df_merged['fecha_entrenamiento'], errors='coerce')
             
             cond1 = df_merged['fecha_entrenamiento_oficial'].isna() & f_train_dt.notna()
