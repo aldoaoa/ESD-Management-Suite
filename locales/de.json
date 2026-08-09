@@ -207,7 +207,9 @@
     "tbl_weekly_summary": "📅 Wöchentliche Notenübersicht",
     "tbl_critical_questions": "🧠 Analyse kritischer Fragen",
     "scan_history": "🔍 Gesamte Historie scannen",
-    "btn_save_corrections": "💾 Korrekturen speichern"
+    "btn_save_corrections": "💾 Korrekturen speichern",
+    "title": "🎓 ESD-Schulung & Zertifizierung",
+    "subtitle": "Schulungsverwaltung, jährliche Gültigkeit und Fragenprüfung"
   },
   "schedule": {
     "title": "Verifizierungsplan & TR53-Frequenzen",
