@@ -120,14 +120,19 @@ with tab_dash:
                     
         df_merged['nota_real_base_10'] = df_merged.apply(calcular_nota_real, axis=1)
 
-        # Segmentación para métricas
-        mask_sin_vigencia = df_merged['fecha_proximo'].isna() | (df_merged['fecha_proximo'] < hoy)
+        # Segmentación para métricas (Convertir comparadores a pd.Timestamp para prevenir TypeError)
+        hoy_dt = pd.Timestamp(hoy)
+        limite_365_dt = pd.Timestamp(limite_365)
+        ultimo_dia_mes_dt = pd.Timestamp(ultimo_dia_mes)
+        f_proximo_dt = pd.to_datetime(df_merged['fecha_proximo'], errors='coerce')
+
+        mask_sin_vigencia = f_proximo_dt.isna() | (f_proximo_dt < hoy_dt)
         df_sin_vigencia = df_merged[mask_sin_vigencia]
 
-        mask_proximos_365 = (df_merged['fecha_proximo'] >= hoy) & (df_merged['fecha_proximo'] <= limite_365)
+        mask_proximos_365 = (f_proximo_dt >= hoy_dt) & (f_proximo_dt <= limite_365_dt)
         df_vencen_anio = df_merged[mask_proximos_365]
 
-        mask_mes = (df_merged['fecha_proximo'] >= hoy) & (df_merged['fecha_proximo'] <= ultimo_dia_mes)
+        mask_mes = (f_proximo_dt >= hoy_dt) & (f_proximo_dt <= ultimo_dia_mes_dt)
         df_vencen_mes = df_merged[mask_mes]
 
         mask_tiene_examen = df_merged['fecha_entrenamiento_oficial'].notna()
@@ -176,8 +181,9 @@ with tab_dash:
             
             meses_delta = opciones_tiempo[filtro_meses]
             limite_dinamico = hoy + relativedelta(months=meses_delta)
+            limite_dinamico_dt = pd.Timestamp(limite_dinamico)
             
-            mask_dinamica = (df_merged['fecha_proximo'] >= hoy) & (df_merged['fecha_proximo'] <= limite_dinamico)
+            mask_dinamica = (f_proximo_dt >= hoy_dt) & (f_proximo_dt <= limite_dinamico_dt)
             df_vencen_dinamico = df_merged[mask_dinamica]
 
             if not df_vencen_dinamico.empty:
@@ -203,8 +209,10 @@ with tab_dash:
             df_semanal = df_todo_train.copy()
             df_semanal['fecha_entrenamiento'] = pd.to_datetime(df_semanal['fecha_entrenamiento'], errors='coerce')
             
-            # Filtrar por el rango de fechas seleccionado
-            mask_fechas = (df_semanal['fecha_entrenamiento'].dt.date >= fecha_inicio_filtro) & (df_semanal['fecha_entrenamiento'].dt.date <= fecha_fin_filtro)
+            # Filtrar por el rango de fechas seleccionado (pd.Timestamp seguro)
+            f_inicio_dt = pd.Timestamp(fecha_inicio_filtro)
+            f_fin_dt = pd.Timestamp(fecha_fin_filtro) + pd.Timedelta(days=1)
+            mask_fechas = (df_semanal['fecha_entrenamiento'] >= f_inicio_dt) & (df_semanal['fecha_entrenamiento'] < f_fin_dt)
             df_semanal = df_semanal[mask_fechas]
 
             # Cruzar con df_maestro para que solo muestre datos del site activo
