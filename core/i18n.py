@@ -38,25 +38,27 @@ def load_locales(force=False):
 def t(seccion, clave, default=None):
     """
     Función de traducción rápida con soporte dinámico de todos los idiomas registrados.
-    Uso: t('nav', 'dashboard')
+    Auto-refresca el caché si la llave es nueva.
     """
     locales = load_locales()
-    lang = st.session_state.get("lang", "es")
+    lang = st.session_state.get("lang", "en")
     
-    # Si el idioma solicitado no está en la memoria caché, forzar recarga de locales/
-    if lang not in locales:
-        locales = load_locales(force=True)
-        
+    # 1. Intento directo en idioma activo
     if lang in locales and seccion in locales[lang] and clave in locales[lang][seccion]:
         return locales[lang][seccion][clave]
 
-    # Fallback al idioma español si la clave no existe en el idioma seleccionado
-    if "es" in locales and seccion in locales["es"] and clave in locales["es"][seccion]:
-        return locales["es"][seccion][clave]
+    # 2. Si no se encuentra, forzamos recarga de disco por si fue actualizado en caliente
+    locales = load_locales(force=True)
+    if lang in locales and seccion in locales[lang] and clave in locales[lang][seccion]:
+        return locales[lang][seccion][clave]
 
-    # Fallback al idioma inglés si tampoco está en español
+    # 3. Fallback a inglés
     if "en" in locales and seccion in locales["en"] and clave in locales["en"][seccion]:
         return locales["en"][seccion][clave]
+
+    # 4. Fallback a español
+    if "es" in locales and seccion in locales["es"] and clave in locales["es"][seccion]:
+        return locales["es"][seccion][clave]
 
     if default is not None:
         return default
