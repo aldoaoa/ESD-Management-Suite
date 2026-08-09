@@ -207,7 +207,9 @@
     "tbl_weekly_summary": "📅 Riepilogo Voti Settimanali",
     "tbl_critical_questions": "🧠 Analisi dei Quesiti Critici",
     "scan_history": "🔍 Scansiona Cronologia Completa",
-    "btn_save_corrections": "💾 Salva Correzioni"
+    "btn_save_corrections": "💾 Salva Correzioni",
+    "title": "🎓 Formazione e Certificazione ESD",
+    "subtitle": "Gestione della formazione, validità annuale e analisi dei quesiti"
   },
   "schedule": {
     "title": "Programma di Verifica e Frequenze TR53",
