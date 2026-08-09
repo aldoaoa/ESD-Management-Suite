@@ -9,6 +9,19 @@ def hide_sidebar():
         <style>
         [data-testid="sidebar-nav"] {
             display: none !important;
+
+        /* FORZAR ANCHO COMPLETO (WIDE LAYOUT) EN TODAS LAS PÁGINAS */
+        .stAppViewContainer .main .block-container,
+        [data-testid="stMainBlockContainer"],
+        .block-container,
+        div[data-testid="stAppViewBlockContainer"] {
+            max-width: 96% !important;
+            width: 96% !important;
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
+            padding-top: 1.5rem !important;
+        }
+        
         }
         </style>
         """,
@@ -27,6 +40,19 @@ def render_sidebar():
             <style>
             [data-testid="sidebar-nav"] {
                 display: none !important;
+
+        /* FORZAR ANCHO COMPLETO (WIDE LAYOUT) EN TODAS LAS PÁGINAS */
+        .stAppViewContainer .main .block-container,
+        [data-testid="stMainBlockContainer"],
+        .block-container,
+        div[data-testid="stAppViewBlockContainer"] {
+            max-width: 96% !important;
+            width: 96% !important;
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
+            padding-top: 1.5rem !important;
+        }
+        
             }
             .sidebar-category {
                 font-size: 11px;
