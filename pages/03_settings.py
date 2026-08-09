@@ -1,5 +1,9 @@
 # pages/03_settings.py
 import streamlit as st
+try:
+    st.set_page_config(page_title="ESD Management Suite", page_icon="⚡", layout="wide")
+except Exception:
+    pass
 import pandas as pd
 import datetime
 import json
