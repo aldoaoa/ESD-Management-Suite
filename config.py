@@ -1,3 +1,4 @@
+# Force Streamlit Cloud Container Rebuild - 2026-08-09 10:29
 import streamlit as st
 
 def inicializar_estado_global(st):
