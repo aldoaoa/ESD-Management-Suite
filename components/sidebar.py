@@ -9,8 +9,11 @@ def hide_sidebar():
         <style>
         [data-testid="sidebar-nav"] {
             display: none !important;
+        }
+        div[data-testid="stSidebarNav"] {
+            display: none !important;
+        }
 
-        /* EXPANDIR AL 100% BORDE A BORDE Y ELIMINAR PADDING EXCESIVO DE STREAMLIT */
         div[data-testid="stMainBlockContainer"],
         .stMainBlockContainer,
         .block-container,
@@ -27,8 +30,6 @@ def hide_sidebar():
             width: 100% !important;
         }
 
-
-        /* ELIMINAR LÍMITE DE ANCHO EN STREAMLIT (100% FULL WIDESCREEN REAL) */
         div[data-testid="stMainBlockContainer"],
         .stMainBlockContainer,
         .block-container,
@@ -44,8 +45,6 @@ def hide_sidebar():
             width: 100% !important;
         }
 
-
-        /* FORZAR ANCHO COMPLETO (WIDE LAYOUT) EN TODAS LAS PÁGINAS */
         .stAppViewContainer .main .block-container,
         [data-testid="stMainBlockContainer"],
         .block-container,
@@ -55,8 +54,6 @@ def hide_sidebar():
             padding-left: 1.5rem !important;
             padding-right: 1.5rem !important;
             padding-top: 1.5rem !important;
-        }
-        
         }
         </style>
         """,
@@ -69,60 +66,11 @@ def hide_sidebar():
 
 def render_sidebar():
     with st.sidebar:
-        # --- LOGOTIPO Y ESTILOS CSS PARA OCULTAR MENÚ NATIVO ---
         st.markdown(
             """
             <style>
             [data-testid="sidebar-nav"] {
                 display: none !important;
-
-        /* EXPANDIR AL 100% BORDE A BORDE Y ELIMINAR PADDING EXCESIVO DE STREAMLIT */
-        div[data-testid="stMainBlockContainer"],
-        .stMainBlockContainer,
-        .block-container,
-        div[data-testid="stAppViewBlockContainer"],
-        .stAppViewContainer .main .block-container {
-            max-width: 100% !important;
-            width: 100% !important;
-            padding-left: 1.5rem !important;
-            padding-right: 1.5rem !important;
-            padding-top: 1rem !important;
-            margin: 0 !important;
-        }
-        div[data-testid="stVerticalBlock"] {
-            width: 100% !important;
-        }
-
-
-        /* ELIMINAR LÍMITE DE ANCHO EN STREAMLIT (100% FULL WIDESCREEN REAL) */
-        div[data-testid="stMainBlockContainer"],
-        .stMainBlockContainer,
-        .block-container,
-        div[data-testid="stAppViewBlockContainer"],
-        .stAppViewContainer .main .block-container {
-            max-width: 100% !important;
-            width: 100% !important;
-            padding-left: 2rem !important;
-            padding-right: 2rem !important;
-            padding-top: 1.5rem !important;
-        }
-        div[data-testid="stVerticalBlock"] {
-            width: 100% !important;
-        }
-
-
-        /* FORZAR ANCHO COMPLETO (WIDE LAYOUT) EN TODAS LAS PÁGINAS */
-        .stAppViewContainer .main .block-container,
-        [data-testid="stMainBlockContainer"],
-        .block-container,
-        div[data-testid="stAppViewBlockContainer"] {
-            max-width: 96% !important;
-            width: 96% !important;
-            padding-left: 1.5rem !important;
-            padding-right: 1.5rem !important;
-            padding-top: 1.5rem !important;
-        }
-        
             }
             .sidebar-category {
                 font-size: 11px;
@@ -137,7 +85,35 @@ def render_sidebar():
             unsafe_allow_html=True
         )
         
-        st.image("https://raw.githubusercontent.com/aldoaoa/Visualizador-BCS-IDS/refs/heads/main/Logo_BCS_transparent%20(1).png", use_container_width=True)
+        # --- RENDERIZADO DE LOGOTIPO DINÁMICO ---
+        site_logo = st.session_state.get("site_logo") or st.session_state.get("company_logo")
+        
+        if site_logo:
+            st.image(site_logo, use_container_width=True)
+        else:
+            placeholder_text = t("sidebar", "placeholder_logo", "Coloca logotipo aquí")
+            st.markdown(
+                f"""
+                <div style="
+                    border: 2px dashed #ff4b4b;
+                    border-radius: 10px;
+                    padding: 14px 10px;
+                    text-align: center;
+                    background-color: rgba(255, 75, 75, 0.08);
+                    margin-bottom: 8px;
+                ">
+                    <span style="font-size: 13px; font-weight: 700; color: #ff4b4b;">{placeholder_text}</span>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
+            if st.button("🖼️ " + placeholder_text, use_container_width=True, type="secondary", key="btn_sidebar_logo_placeholder"):
+                st.session_state.open_logo_uploader = True
+                try:
+                    st.switch_page("pages/03_settings.py")
+                except Exception:
+                    pass
+
         st.divider()
 
         # --- INFORMACIÓN DEL USUARIO ---
@@ -173,16 +149,13 @@ def render_sidebar():
             st.divider()
 
             # --- MENÚ DE NAVEGACIÓN AGRUPADO CON TRADUCCIÓN COMPLETA ---
-            # MONITOREO Y MÉTRICAS
             st.markdown(f'<div class="sidebar-category">{t("nav", "cat_monitoring", "MONITOREO Y MÉTRICAS")}</div>', unsafe_allow_html=True)
             st.page_link("pages/01_dashboard.py", label=t("nav", "dashboard", "Dashboard general"), icon="📊")
 
-            # VERIFICACIÓN Y PISO
             st.markdown(f'<div class="sidebar-category">{t("nav", "cat_verification", "VERIFICACIÓN Y PISO")}</div>', unsafe_allow_html=True)
             st.page_link("pages/02_audit.py", label=t("nav", "audit", "Auditoría en piso"), icon="🔍")
             st.page_link("pages/09_schedule.py", label=t("nav", "schedule", "Cronograma de verificación"), icon="📅")
 
-            # ACTIVOS Y CAPACITACIÓN
             st.markdown(f'<div class="sidebar-category">{t("nav", "cat_assets_training", "ACTIVOS Y CAPACITACIÓN")}</div>', unsafe_allow_html=True)
             st.page_link("pages/04_inventory.py", label=t("nav", "inventory", "Directorio de activos"), icon="📦")
             st.page_link("pages/05_lab.py", label=t("nav", "lab", "Laboratorio de pruebas"), icon="🧪")
@@ -191,7 +164,6 @@ def render_sidebar():
             st.page_link("pages/08_sensibilidad.py", label=t("nav", "sensitivity", "Análisis de sensibilidad"), icon="🔌")
             st.page_link("pages/10_routes.py", label=t("nav", "routes", "Rutas de productos"), icon="📦")
 
-            # CONFIGURACIÓN
             st.markdown(f'<div class="sidebar-category">{t("nav", "cat_settings", "CONFIGURACIÓN")}</div>', unsafe_allow_html=True)
             st.page_link("pages/03_settings.py", label=t("nav", "settings", "Ajustes del sistema"), icon="⚙️")
 
