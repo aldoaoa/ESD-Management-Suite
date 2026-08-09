@@ -35,7 +35,7 @@
     "select_module": "Por favor selecciona un módulo del menú lateral para comenzar."
   },
   "auth": {
-    "login_required": "Por favor inicia sesión para acceder a este módulo.",
+    "login_required": "🔒 Por favor inicia sesión para acceder a este módulo.",
     "logout": "Cerrar Sesión"
   },
   "settings": {
