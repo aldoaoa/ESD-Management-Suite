@@ -35,7 +35,7 @@
     "select_module": "请从侧边栏选择一个模块开始。"
   },
   "auth": {
-    "login_required": "请登录以访问此模块。",
+    "login_required": "🔒 请登录以访问此模块。",
     "logout": "退出登录"
   },
   "settings": {
