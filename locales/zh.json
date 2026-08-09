@@ -186,7 +186,30 @@
     "lbl_obs": "Observations"
   },
   "routes": {
-    "title": "产品注册、路由与工艺顺序"
+    "title": "产品路由与工艺流程顺序",
+    "subtitle": "注册产品并定义其在工厂内经过的线体/工位严格顺序。",
+    "btn_new": "注册新产品与工艺顺序",
+    "lbl_prod_name": "产品名称 / 型号",
+    "lbl_sequence": "工艺流程顺序选择：",
+    "tip_sequence": "提示：请按照产品流转的准确顺序选择线体。",
+    "lbl_select_lines": "选择并排序线体路由：",
+    "help_sequence": "选择顺序将决定官方工艺流程。",
+    "preview": "流程顺序预览：",
+    "btn_save": "保存产品路由",
+    "warn_name": "⚠️ 必须输入有效的产品名称。",
+    "warn_lines": "⚠️ 必须至少选择一条线体或工位。",
+    "sec_title": "已注册的生产流程顺序",
+    "tab_view": "查看路由",
+    "tab_edit": "编辑顺序",
+    "official_seq": "官方生产流程顺序：",
+    "no_route": "未定义路由。",
+    "edit_tip": "按工艺顺序编辑步骤。",
+    "num_steps": "工艺步骤数量",
+    "select_stations": "选择一个或多个工位",
+    "btn_save_seq": "保存新流程顺序",
+    "err_empty_route": "⚠️ 路由不能为空。",
+    "succ_updated": "✅ 路由流程顺序更新成功。",
+    "empty_info": "该厂区尚未注册任何产品或路由。"
   },
   "training": {
     "page_title": "🎓 ESD 培训与认证",
