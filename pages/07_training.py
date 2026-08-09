@@ -1,3 +1,4 @@
+# Training & Certification Module - Reload Trigger 2026-08-09
 # pages/07_training.py
 import streamlit as st
 import pandas as pd
