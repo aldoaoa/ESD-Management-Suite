@@ -207,7 +207,9 @@
     "tbl_weekly_summary": "📅 Weekly Grade Summary",
     "tbl_critical_questions": "🧠 Critical Questions Analysis (Technical Areas of Opportunity)",
     "scan_history": "🔍 Scan Complete History",
-    "btn_save_corrections": "💾 Save Corrections"
+    "btn_save_corrections": "💾 Save Corrections",
+    "title": "🎓 ESD Training & Certification",
+    "subtitle": "Training management, annual validity, and question auditing"
   },
   "schedule": {
     "title": "Verification Schedule & TR53 Frequencies",
