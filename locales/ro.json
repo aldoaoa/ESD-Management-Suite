@@ -186,7 +186,30 @@
     "lbl_obs": "Observations"
   },
   "routes": {
-    "title": "Înregistrare Produs, Rute și Secvență"
+    "title": "Rutare Produs & Secvență de Proces",
+    "subtitle": "Înregistrați produsele și definiți ordinea secvențială a liniilor/stațiilor.",
+    "btn_new": "Înregistrare Produs Nou și Secvență de Proces",
+    "lbl_prod_name": "Nume / Model Produs",
+    "lbl_sequence": "Selectare Secvență de Proces:",
+    "tip_sequence": "Sfat: Selectați liniile în ordinea exactă.",
+    "lbl_select_lines": "Selectați și ordonați ruta liniilor:",
+    "help_sequence": "Ordinea va determina secvența oficială.",
+    "preview": "Previzualizare Secvență:",
+    "btn_save": "Salvare Rută Produs",
+    "warn_name": "⚠️ Introduceți un nume de produs valid.",
+    "warn_lines": "⚠️ Selectați cel puțin o linie sau stație.",
+    "sec_title": "Secvențe de Producție Înregistrate",
+    "tab_view": "Vizualizare Rută",
+    "tab_edit": "Editare Secvență",
+    "official_seq": "Secvență Oficială de Producție:",
+    "no_route": "Fără rută definită.",
+    "edit_tip": "Editați pașii în ordinea procesului.",
+    "num_steps": "Număr de Pași în Proces",
+    "select_stations": "Selectați una sau mai multe stații",
+    "btn_save_seq": "Salvare Secvență Nouă",
+    "err_empty_route": "⚠️ Ruta nu poate fi goală.",
+    "succ_updated": "✅ Secvență de rută actualizată cu succes.",
+    "empty_info": "Nu există produse sau rute înregistrate în acest Site."
   },
   "training": {
     "page_title": "🎓 Instruire și Certificare ESD",
