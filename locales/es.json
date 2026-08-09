@@ -189,12 +189,25 @@
     "title": "Alta, Enrutamiento y Secuencia de Productos"
   },
   "training": {
-    "title": "Capacitación y Certificación ESD",
-    "subtitle": "Control de entrenamientos, vigencias y evaluaciones del personal",
-    "tab_dash": "📊 Dashboard de Certificación",
-    "tab_weekly": "📅 Resumen Semanal",
-    "tab_historical": "📜 Historial de Evaluaciones",
-    "tab_audit": "🔍 Verificación de Personal"
+    "page_title": "🎓 Entrenamiento y Certificación ESD",
+    "page_subtitle": "Gestión de capacitaciones, vigencias anuales y auditoría de reactivos",
+    "tab_dash": "📊 Panel de Control y Expedientes",
+    "tab_historical": "📥 Importar Históricos (Forms)",
+    "tab_weekly": "📅 Importar Exámenes Semanales",
+    "tab_audit": "🕵️ Auditoría de Brechas y Cronología",
+    "search_ph": "Número de empleado...",
+    "btn_search": "🔍 Buscar Expediente",
+    "kpi_expired": "🚨 Sin Vigencia / Vencidos",
+    "kpi_month": "📌 Vencen este Mes",
+    "kpi_year": "📅 Proyección 365",
+    "kpi_low": "⚠️ Notas ≤ 80%",
+    "tbl_no_validity": "🚨 Personal SIN Entrenamiento Vigente",
+    "tbl_low_grades": "🔴 Notas Críticas Activas (≤ 80%)",
+    "tbl_schedule": "📅 Cronograma de Reentrenamientos",
+    "tbl_weekly_summary": "📅 Resumen de Calificaciones por Semana",
+    "tbl_critical_questions": "🧠 Análisis de Reactivos Críticos (Áreas de Oportunidad Técnica)",
+    "scan_history": "🔍 Escanear Historial Completo",
+    "btn_save_corrections": "💾 Guardar Correcciones"
   },
   "schedule": {
     "title": "Cronograma de Verificación y Frecuencias TR53",
