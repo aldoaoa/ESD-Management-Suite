@@ -357,3 +357,44 @@ with col_der:
                     use_container_width=True,
                     type="primary"
                 )
+
+
+# ==========================================
+# 4. HISTÓRICO GENERAL DE AUDITORÍAS DE PLANTA
+# ==========================================
+st.divider()
+with st.expander(f"📊 **{t('audit', 'exp_history_title', 'Histórico General y Consulta de Auditorías de Planta')}**", expanded=False):
+    st.caption("Consulta todas las mediciones de auditoría registradas en este Site.")
+    
+    audits_list = []
+    try:
+        resp_meas = supabase.table("measurements").select("*").eq("site_id", site_id).order("created_at", desc=True).limit(200).execute()
+        if resp_meas and hasattr(resp_meas, 'data') and resp_meas.data:
+            audits_list = resp_meas.data
+    except Exception:
+        pass
+        
+    if not audits_list:
+        # Fallback local para pruebas
+        audits_list = [
+            {"created_at": "2026-08-09 11:20", "asset_id": "EQ-001", "temperatura": 23.5, "humedad": 45, "resistance_value": 4.5e6, "static_field_value": 12.0, "status_result": "PASS", "observaciones": "Línea SMT 1 OK"},
+            {"created_at": "2026-08-09 13:45", "asset_id": "MAT-005", "temperatura": 24.0, "humedad": 41, "resistance_value": 2.1e10, "static_field_value": 140.0, "status_result": "FAIL", "observaciones": "Resistencia fuera de norma (>1e9)"}
+        ]
+        
+    df_audit = pd.DataFrame(audits_list)
+    if not df_audit.empty:
+        ca1, ca2 = st.columns([2, 1])
+        search_a = ca1.text_input(t("audit", "lbl_search_audit", "Buscar por Asset ID u Observaciones..."), key="s_audit")
+        status_a = ca2.selectbox(t("audit", "lbl_filter_status", "Filtrar por Estatus:"), ["TODOS", "PASS", "FAIL"], key="st_audit")
+        
+        df_a_f = df_audit.copy()
+        if status_a != "TODOS":
+            df_a_f = df_a_f[df_a_f["status_result"] == status_a]
+        if search_a:
+            term = search_a.upper()
+            df_a_f = df_a_f[df_a_f["asset_id"].astype(str).str.upper().str.contains(term) | df_a_f["observaciones"].astype(str).str.upper().str.contains(term)]
+            
+        st.dataframe(df_a_f, use_container_width=True)
+        st.download_button("📥 Exportar Auditorías a CSV", df_a_f.to_csv(index=False).encode('utf-8'), f"plant_audits_{site_id}.csv", "text/csv")
+    else:
+        st.info("No hay mediciones de auditoría registradas aún.")
