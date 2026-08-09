@@ -157,7 +157,7 @@ with col_izq:
                     st.markdown(f"**{t('audit', 'status')}:** :{color}[{estatus}]")
 
                     st.divider()
-                    st.markdown("##### 🕒 **Última Auditoría Registrada**")
+                    st.markdown(f"##### {t('audit', 'last_audit_title')}")
                     resp_hist_det = supabase.table("measurements").select("*").eq("asset_id", asset_db_id).order("measured_at", desc=True).limit(3).execute()
                     mediciones_recientes = resp_hist_det.data or []
                     
@@ -175,14 +175,14 @@ with col_izq:
                         status_txt = "🟢 PASS" if res_status == "PASS" else "🔴 FAIL"
 
                         cm1, cm2 = st.columns(2)
-                        cm1.metric("📅 Fecha Medición", fecha_str)
-                        cm2.metric("📊 Estatus", status_txt)
+                        cm1.metric(t("audit", "date_lbl"), fecha_str)
+                        cm2.metric(t("audit", "status_lbl"), status_txt)
 
                         cm3, cm4 = st.columns(2)
-                        cm3.metric("⚡ Resistencia", res_txt)
-                        cm4.metric("🧲 Campo Estático", volts_txt)
+                        cm3.metric(t("audit", "res_lbl"), res_txt)
+                        cm4.metric(t("audit", "volts_lbl"), volts_txt)
                     else:
-                        st.caption("ℹ️ Sin auditorías registradas previamente para este activo.")
+                        st.caption(t("audit", "no_history_asset"))
             else:
                 st.error(t("audit", "msg_not_found"))
 
@@ -191,24 +191,31 @@ with col_der:
         st.info(t("audit", "waiting"))
     else:
         # --- 1. HISTORIAL DE LAS ÚLTIMAS 3 VALIDACIONES ---
-        with st.expander("📜 **Historial de las Últimas 3 Validaciones**", expanded=True):
+        with st.expander(t("audit", "history_3_title"), expanded=True):
             resp_hist = supabase.table("measurements").select("*").eq("asset_id", asset_db_id).order("measured_at", desc=True).limit(3).execute()
             mediciones_recientes = resp_hist.data or []
             
             if mediciones_recientes:
                 df_hist = pd.DataFrame(mediciones_recientes)
                 
-                df_hist['Fecha y Hora'] = pd.to_datetime(df_hist['measured_at']).dt.strftime('%Y-%m-%d %H:%M')
-                df_hist['Resistencia'] = df_hist['resistance_value'].apply(lambda x: f"{x:.2e} Ω" if pd.notnull(x) else "N/A")
-                df_hist['Campo Estático'] = df_hist['static_field_value'].apply(lambda x: f"{x:.1f} V" if pd.notnull(x) else "N/A")
-                df_hist['Resultado'] = df_hist['status_result'].apply(lambda x: "🟢 PASS" if x == 'PASS' else "🔴 FAIL")
-                df_hist['Temp / Humedad'] = df_hist.apply(lambda r: f"{r.get('temperatura', 'N/A')}°C / {r.get('humedad', 'N/A')}%", axis=1)
-                df_hist['Observaciones'] = df_hist['observaciones'].fillna('-')
+                col_dt = t("audit", "col_datetime")
+                col_res = t("audit", "col_resistance")
+                col_fld = t("audit", "col_field")
+                col_reslt = t("audit", "col_result")
+                col_th = t("audit", "col_temp_hum")
+                col_o = t("audit", "col_obs")
                 
-                cols_mostrar = ['Fecha y Hora', 'Resistencia', 'Campo Estático', 'Resultado', 'Temp / Humedad', 'Observaciones']
+                df_hist[col_dt] = pd.to_datetime(df_hist['measured_at']).dt.strftime('%Y-%m-%d %H:%M')
+                df_hist[col_res] = df_hist['resistance_value'].apply(lambda x: f"{x:.2e} Ω" if pd.notnull(x) else "N/A")
+                df_hist[col_fld] = df_hist['static_field_value'].apply(lambda x: f"{x:.1f} V" if pd.notnull(x) else "N/A")
+                df_hist[col_reslt] = df_hist['status_result'].apply(lambda x: "🟢 PASS" if x == 'PASS' else "🔴 FAIL")
+                df_hist[col_th] = df_hist.apply(lambda r: f"{r.get('temperatura', 'N/A')}°C / {r.get('humedad', 'N/A')}%", axis=1)
+                df_hist[col_o] = df_hist['observaciones'].fillna('-')
+                
+                cols_mostrar = [col_dt, col_res, col_fld, col_reslt, col_th, col_o]
                 st.dataframe(df_hist[cols_mostrar], use_container_width=True, hide_index=True)
             else:
-                st.info("ℹ️ Este activo no cuenta con validaciones anteriores en el sistema.")
+                st.info(t("audit", "no_validations"))
 
         # --- 2. MODO DE INSPECCIÓN ---
         st.markdown(f"#### {t('audit', 'new_record')}")
@@ -237,7 +244,7 @@ with col_der:
                     val_res = c_val1.number_input(t("audit", "lbl_res"), format="%.2e", min_value=0.0, placeholder="0.0e0")
                     val_volts = c_val2.number_input(t("audit", "lbl_volts"), format="%.1f", placeholder="0.0")
                     
-                obs = st.text_area("Observaciones")
+                obs = st.text_area(t("audit", "lbl_obs"))
                 
                 if st.form_submit_button(t("audit", "btn_save"), type="primary", use_container_width=True):
                     with st.spinner("Guardando..."):
@@ -285,7 +292,7 @@ with col_der:
                     val = cols[col_idx].number_input(f"Punto {i+1}", format="%.2e", min_value=0.0, step=1e5, key=f"med_int_{i}")
                     mediciones_dict[f"m{i+1}"] = val
                     
-                obs = st.text_area("Observaciones")
+                obs = st.text_area(t("audit", "lbl_obs"))
                 
                 str_save_int = t("audit", "btn_save_integral") if t("audit", "btn_save_integral") != "[audit.btn_save_integral]" else "💾 Guardar y Generar Reporte"
                 submitted = st.form_submit_button(str_save_int, type="primary", use_container_width=True)
