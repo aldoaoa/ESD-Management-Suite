@@ -189,12 +189,25 @@
     "title": "Produktregistrierung, Routing & Ablaufsequenz"
   },
   "training": {
-    "title": "ESD-Schulung & Zertifizierung",
-    "subtitle": "Personalschulungskontrolle, Gültigkeit und Prüfungen",
-    "tab_dash": "📊 Zertifizierungs-Dashboard",
-    "tab_weekly": "📅 Wochenübersicht",
-    "tab_historical": "📜 Prüfungsverlauf",
-    "tab_audit": "🔍 Personalüberprüfung"
+    "page_title": "🎓 ESD-Schulung & Zertifizierung",
+    "page_subtitle": "Schulungsverwaltung, jährliche Gültigkeit und Fragenprüfung",
+    "tab_dash": "📊 Dashboard & Akten",
+    "tab_historical": "📥 Historische Daten importieren",
+    "tab_weekly": "📅 Wöchentliche Prüfungen importieren",
+    "tab_audit": "🕵️ Lückenaudit & Chronologie",
+    "search_ph": "Mitarbeiter-ID...",
+    "btn_search": "🔍 Akte suchen",
+    "kpi_expired": "🚨 Abgelaufen / Überfällig",
+    "kpi_month": "📌 Läuft diesen Monat ab",
+    "kpi_year": "📅 365-Tage-Prognose",
+    "kpi_low": "⚠️ Noten ≤ 80%",
+    "tbl_no_validity": "🚨 Personal OHNE gültige Schulung",
+    "tbl_low_grades": "🔴 Aktive kritische Noten (≤ 80%)",
+    "tbl_schedule": "📅 Nachschulungsplan",
+    "tbl_weekly_summary": "📅 Wöchentliche Notenübersicht",
+    "tbl_critical_questions": "🧠 Analyse kritischer Fragen",
+    "scan_history": "🔍 Gesamte Historie scannen",
+    "btn_save_corrections": "💾 Korrekturen speichern"
   },
   "schedule": {
     "title": "Verifizierungsplan & TR53-Frequenzen",
