@@ -168,7 +168,22 @@
     "lbl_volts": "Elektrostatische Spannung (V)",
     "btn_save": "💾 Audit speichern",
     "btn_save_integral": "💾 Speichern und Bericht erstellen",
-    "msg_success": "✅ Audit erfolgreich erfasst."
+    "msg_success": "✅ Audit erfolgreich erfasst.",
+    "last_audit_title": "🕒 Last Recorded Audit",
+    "date_lbl": "📅 Measurement Date",
+    "status_lbl": "📊 Status",
+    "res_lbl": "⚡ Resistance",
+    "volts_lbl": "🧲 Static Field",
+    "no_history_asset": "ℹ️ No previous audit records for this asset.",
+    "history_3_title": "📜 History of Last 3 Validations",
+    "col_datetime": "Date & Time",
+    "col_resistance": "Resistance",
+    "col_field": "Static Field",
+    "col_result": "Result",
+    "col_temp_hum": "Temp / Humidity",
+    "col_obs": "Observations",
+    "no_validations": "ℹ️ This asset has no previous validations in the system.",
+    "lbl_obs": "Observations"
   },
   "routes": {
     "title": "Produktregistrierung, Routing & Ablaufsequenz"
