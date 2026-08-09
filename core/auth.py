@@ -122,12 +122,47 @@ def cerrar_sesion():
 def requires_auth(func):
     """
     Decorador. Envuelve una función (vista) y verifica si el usuario está logueado.
-    Si no lo está, muestra un mensaje de error y detiene la ejecución.
+    Si no lo está, muestra un aviso localizado y el formulario de login embebido.
     """
     def wrapper(*args, **kwargs):
         if st.session_state.get("modo_lectura", True):
             from core.i18n import t
-            st.warning(t("auth", "login_required")) # Necesitamos agregar esto a locales
+            render_login_screen(t("auth", "login_required", "🔒 Por favor inicia sesión para acceder a este módulo."))
             st.stop()
         return func(*args, **kwargs)
     return wrapper
+
+
+def render_login_screen(warning_msg=None):
+    """
+    Muestra el aviso de login requerido (localizado) y el formulario de inicio de sesión embebido.
+    Permite autenticarse directamente al hacer refresh en cualquier subpágina.
+    """
+    from core.i18n import t
+    from core.logger import log_event
+    
+    if warning_msg:
+        st.warning(warning_msg)
+    else:
+        st.warning(t("auth", "login_required", "🔒 Por favor inicia sesión para acceder a este módulo."))
+        
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        with st.container(border=True):
+            with st.form("embedded_login_form"):
+                st.subheader(f"🔒 {t('login', 'account_access', 'Acceso de Usuario')}")
+                email_input = st.text_input(t("login", "email_ph", "Correo Electrónico"), key="emb_email")
+                pwd_input = st.text_input(t("login", "pwd_ph", "Contraseña"), type="password", key="emb_pwd")
+                
+                if st.form_submit_button(t("login", "btn_submit", "Iniciar Sesión"), use_container_width=True, type="primary"):
+                    if email_input and pwd_input:
+                        with st.spinner(t("login", "authenticating", "Autenticando...")):
+                            success, msg = iniciar_sesion(email_input, pwd_input)
+                            if success:
+                                log_event("INFO", "auth.py", f"Successful login from embedded form: {email_input}")
+                                st.rerun()
+                            else:
+                                log_event("WARNING", "auth.py", f"Failed login attempt: {email_input} ({msg})")
+                                st.error(t("login", "error_creds", "❌ Credenciales incorrectas. Verifica tu correo y contraseña."))
+                    else:
+                        st.warning(t("login", "fill_all", "Por favor completa todos los campos."))
