@@ -4,6 +4,27 @@ Módulo de Laboratorio ESD: Gestión de Sensibilidad por Producto/Componente (HB
 Mapeado a catalogo_sensibilidad y componentes_sensibilidad.
 """
 import streamlit as st
+
+# FORZAR 100% ANCHO COMPLETO EN STREAMLIT
+st.markdown('''
+    <style>
+    .stAppViewContainer .main .block-container,
+    div[data-testid="stMainBlockContainer"],
+    .stMainBlockContainer,
+    .block-container,
+    div[data-testid="stAppViewBlockContainer"] {
+        max-width: 100% !important;
+        width: 100% !important;
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+        padding-top: 1.5rem !important;
+    }
+    [data-testid="stVerticalBlock"] {
+        width: 100% !important;
+    }
+    </style>
+''', unsafe_allow_html=True)
+
 try:
     st.set_page_config(page_title="ESD Management Suite", page_icon="⚡", layout="wide")
 except Exception:
