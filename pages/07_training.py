@@ -27,8 +27,8 @@ render_sidebar()
 supabase = get_supabase_client()
 site_id = st.session_state.site_id
 
-st.markdown(f"### {t('training', 'title')}")
-st.caption(f"{t('training', 'subtitle')} - **{st.session_state.site_name}**")
+st.markdown(f"### {t('training', 'title', '🎓 Entrenamiento y Certificación ESD')}")
+st.caption(f"{t('training', 'subtitle', 'Gestión de capacitaciones, vigencias anuales y auditoría de reactivos')} - **{st.session_state.site_name}**")
 
 tab_dash, tab_historico, tab_semanal, tab_auditoria = st.tabs([
     t("training", "tab_dash", "📊 Panel de Control y Expedientes"), 
