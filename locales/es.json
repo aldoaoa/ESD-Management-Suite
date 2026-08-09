@@ -168,7 +168,22 @@
     "lbl_volts": "Voltaje Electrostático (V)",
     "btn_save": "💾 Guardar Auditoría",
     "btn_save_integral": "💾 Guardar y Generar Reporte",
-    "msg_success": "✅ Auditoría registrada exitosamente."
+    "msg_success": "✅ Auditoría registrada exitosamente.",
+    "last_audit_title": "🕒 Última Auditoría Registrada",
+    "date_lbl": "📅 Fecha Medición",
+    "status_lbl": "📊 Estatus",
+    "res_lbl": "⚡ Resistencia",
+    "volts_lbl": "🧲 Campo Estático",
+    "no_history_asset": "ℹ️ Sin auditorías registradas previamente para este activo.",
+    "history_3_title": "📜 Historial de las Últimas 3 Validaciones",
+    "col_datetime": "Fecha y Hora",
+    "col_resistance": "Resistencia",
+    "col_field": "Campo Estático",
+    "col_result": "Resultado",
+    "col_temp_hum": "Temp / Humedad",
+    "col_obs": "Observaciones",
+    "no_validations": "ℹ️ Este activo no cuenta con validaciones anteriores en el sistema.",
+    "lbl_obs": "Observaciones"
   },
   "routes": {
     "title": "Alta, Enrutamiento y Secuencia de Productos"
