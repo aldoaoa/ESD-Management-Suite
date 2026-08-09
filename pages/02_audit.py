@@ -137,6 +137,10 @@ with col_izq:
             if resp_asset.data and len(resp_asset.data) > 0:
                 asset_data = resp_asset.data[0]
                 asset_db_id = asset_data["id"] # UUID interno real de la base de datos
+
+                # Obtenemos mediciones recientes para mostrar dentro del cuadro Asset Details
+                resp_hist = supabase.table("measurements").select("*").eq("asset_id", asset_db_id).order("measured_at", desc=True).limit(3).execute()
+                mediciones_recientes = resp_hist.data or []
                 
                 st.markdown(f"#### {t('audit', 'asset_info')}")
                 with st.container(border=True):
@@ -147,6 +151,31 @@ with col_izq:
                     estatus = asset_data.get("status", "UNKNOWN")
                     color = "green" if estatus == "ACTIVE" else "red"
                     st.markdown(f"**{t('audit', 'status')}:** :{color}[{estatus}]")
+
+                    st.divider()
+                    st.markdown("##### 🕒 **Última Auditoría Registrada**")
+                    if mediciones_recientes:
+                        ultima = mediciones_recientes[0]
+                        fecha_str = pd.to_datetime(ultima.get("measured_at")).strftime('%Y-%m-%d %H:%M') if ultima.get("measured_at") else "N/A"
+                        
+                        res_val = ultima.get("resistance_value")
+                        res_txt = f"{res_val:.2e} Ω" if res_val is not None else "N/A"
+                        
+                        volts_val = ultima.get("static_field_value")
+                        volts_txt = f"{volts_val:.1f} V" if volts_val is not None else "N/A"
+                        
+                        res_status = ultima.get("status_result", "PASS")
+                        status_txt = "🟢 PASS" if res_status == "PASS" else "🔴 FAIL"
+
+                        cm1, cm2 = st.columns(2)
+                        cm1.metric("📅 Fecha Medición", fecha_str)
+                        cm2.metric("📊 Estatus", status_txt)
+
+                        cm3, cm4 = st.columns(2)
+                        cm3.metric("⚡ Resistencia", res_txt)
+                        cm4.metric("🧲 Campo Estático", volts_txt)
+                    else:
+                        st.caption("ℹ️ Sin auditorías registradas previamente para este activo.")
             else:
                 st.error(t("audit", "msg_not_found"))
 
@@ -154,18 +183,56 @@ with col_der:
     if not asset_data:
         st.info(t("audit", "waiting"))
     else:
-        # --- 1. HISTORIAL DEL ACTIVO ---
-        with st.expander(t("audit", "history"), expanded=False):
-            # Extraemos el historial usando el UUID interno del activo
-            resp_hist = supabase.table("measurements").select("*").eq("asset_id", asset_db_id).order("measured_at", desc=True).limit(5).execute()
-            df_hist = pd.DataFrame(resp_hist.data)
+        # --- 1. DATOS DE LA ÚLTIMA AUDITORÍA E HISTORIAL DE ÚLTIMAS 3 VALIDACIONES ---
+        resp_hist = supabase.table("measurements").select("*").eq("asset_id", asset_db_id).order("measured_at", desc=True).limit(3).execute()
+        mediciones_recientes = resp_hist.data or []
+        
+        st.markdown("#### 🕒 Datos de la Última Auditoría")
+        with st.container(border=True):
+            m1, m2, m3, m4 = st.columns(4)
             
-            if not df_hist.empty:
-                df_mostrar = df_hist[['measured_at', 'resistance_value', 'static_field_value', 'status_result']].copy()
-                df_mostrar['measured_at'] = pd.to_datetime(df_mostrar['measured_at']).dt.strftime('%Y-%m-%d %H:%M')
-                st.dataframe(df_mostrar, use_container_width=True, hide_index=True)
+            if mediciones_recientes:
+                ultima = mediciones_recientes[0]
+                fecha_str = pd.to_datetime(ultima.get("measured_at")).strftime('%Y-%m-%d %H:%M') if ultima.get("measured_at") else "N/A"
+                
+                res_val = ultima.get("resistance_value")
+                res_txt = f"{res_val:.2e} Ω" if res_val is not None else "N/A"
+                
+                volts_val = ultima.get("static_field_value")
+                volts_txt = f"{volts_val:.1f} V" if volts_val is not None else "N/A"
+                
+                res_status = ultima.get("status_result", "PASS")
+                status_txt = "🟢 PASS" if res_status == "PASS" else "🔴 FAIL"
+                
+                m1.metric("📅 Fecha Medición", fecha_str)
+                m2.metric("⚡ Resistencia Medida", res_txt)
+                m3.metric("🧲 Campo Estático", volts_txt)
+                m4.metric("📊 Estatus Último", status_txt)
             else:
-                st.write("No hay registros previos.")
+                m1.metric("📅 Fecha Medición", "Sin registro")
+                m2.metric("⚡ Resistencia Medida", "N/A")
+                m3.metric("🧲 Campo Estático", "N/A")
+                m4.metric("📊 Estatus Último", "⚪ PENDIENTE")
+
+        # --- HISTORIAL DE LAS ÚLTIMAS 3 VALIDACIONES ---
+        with st.expander("📜 **Historial de las Últimas 3 Validaciones**", expanded=True):
+            if mediciones_recientes:
+                df_hist = pd.DataFrame(mediciones_recientes)
+                
+                # Columnas a formatear
+                df_hist['Fecha y Hora'] = pd.to_datetime(df_hist['measured_at']).dt.strftime('%Y-%m-%d %H:%M')
+                df_hist['Resistencia'] = df_hist['resistance_value'].apply(lambda x: f"{x:.2e} Ω" if pd.notnull(x) else "N/A")
+                df_hist['Campo Estático'] = df_hist['static_field_value'].apply(lambda x: f"{x:.1f} V" if pd.notnull(x) else "N/A")
+                df_hist['Resultado'] = df_hist['status_result'].apply(lambda x: "🟢 PASS" if x == 'PASS' else "🔴 FAIL")
+                df_hist['Temp / Humedad'] = df_hist.apply(lambda r: f"{r.get('temperatura', 'N/A')}°C / {r.get('humedad', 'N/A')}%", axis=1)
+                df_hist['Observaciones'] = df_hist['observaciones'].fillna('-')
+                
+                cols_mostrar = ['Fecha y Hora', 'Resistencia', 'Campo Estático', 'Resultado', 'Temp / Humedad', 'Observaciones']
+                st.dataframe(df_hist[cols_mostrar], use_container_width=True, hide_index=True)
+            else:
+                st.info("ℹ️ Este activo no cuenta con validaciones anteriores en el sistema.")
+
+        st.divider()
 
         # --- 2. FORMULARIO DE CAPTURA RÁPIDA ---
         st.markdown(f"#### {t('audit', 'new_record')}")
