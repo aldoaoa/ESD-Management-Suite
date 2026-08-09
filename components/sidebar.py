@@ -10,6 +10,24 @@ def hide_sidebar():
         [data-testid="sidebar-nav"] {
             display: none !important;
 
+        /* EXPANDIR AL 100% BORDE A BORDE Y ELIMINAR PADDING EXCESIVO DE STREAMLIT */
+        div[data-testid="stMainBlockContainer"],
+        .stMainBlockContainer,
+        .block-container,
+        div[data-testid="stAppViewBlockContainer"],
+        .stAppViewContainer .main .block-container {
+            max-width: 100% !important;
+            width: 100% !important;
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
+            padding-top: 1rem !important;
+            margin: 0 !important;
+        }
+        div[data-testid="stVerticalBlock"] {
+            width: 100% !important;
+        }
+
+
         /* ELIMINAR LÍMITE DE ANCHO EN STREAMLIT (100% FULL WIDESCREEN REAL) */
         div[data-testid="stMainBlockContainer"],
         .stMainBlockContainer,
@@ -57,6 +75,24 @@ def render_sidebar():
             <style>
             [data-testid="sidebar-nav"] {
                 display: none !important;
+
+        /* EXPANDIR AL 100% BORDE A BORDE Y ELIMINAR PADDING EXCESIVO DE STREAMLIT */
+        div[data-testid="stMainBlockContainer"],
+        .stMainBlockContainer,
+        .block-container,
+        div[data-testid="stAppViewBlockContainer"],
+        .stAppViewContainer .main .block-container {
+            max-width: 100% !important;
+            width: 100% !important;
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
+            padding-top: 1rem !important;
+            margin: 0 !important;
+        }
+        div[data-testid="stVerticalBlock"] {
+            width: 100% !important;
+        }
+
 
         /* ELIMINAR LÍMITE DE ANCHO EN STREAMLIT (100% FULL WIDESCREEN REAL) */
         div[data-testid="stMainBlockContainer"],
