@@ -35,7 +35,7 @@
     "select_module": "Please select a module from the sidebar to begin."
   },
   "auth": {
-    "login_required": "Please log in to access this module.",
+    "login_required": "🔒 Please log in to access this module.",
     "logout": "Log Out"
   },
   "settings": {
