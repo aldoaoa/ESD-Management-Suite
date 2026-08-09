@@ -168,7 +168,22 @@
     "lbl_volts": "Tensiune Electrostatică (V)",
     "btn_save": "💾 Salvare Audit",
     "btn_save_integral": "💾 Salvare și Generare Raport",
-    "msg_success": "✅ Audit înregistrat cu succes."
+    "msg_success": "✅ Audit înregistrat cu succes.",
+    "last_audit_title": "🕒 Last Recorded Audit",
+    "date_lbl": "📅 Measurement Date",
+    "status_lbl": "📊 Status",
+    "res_lbl": "⚡ Resistance",
+    "volts_lbl": "🧲 Static Field",
+    "no_history_asset": "ℹ️ No previous audit records for this asset.",
+    "history_3_title": "📜 History of Last 3 Validations",
+    "col_datetime": "Date & Time",
+    "col_resistance": "Resistance",
+    "col_field": "Static Field",
+    "col_result": "Result",
+    "col_temp_hum": "Temp / Humidity",
+    "col_obs": "Observations",
+    "no_validations": "ℹ️ This asset has no previous validations in the system.",
+    "lbl_obs": "Observations"
   },
   "routes": {
     "title": "Înregistrare Produs, Rute și Secvență"
