@@ -26,24 +26,6 @@ try:
     render_sidebar()
 
 # FORZAR 100% ANCHO COMPLETO EN STREAMLIT
-st.markdown('''
-    <style>
-    .stAppViewContainer .main .block-container,
-    div[data-testid="stMainBlockContainer"],
-    .stMainBlockContainer,
-    .block-container,
-    div[data-testid="stAppViewBlockContainer"] {
-        max-width: 100% !important;
-        width: 100% !important;
-        padding-left: 2rem !important;
-        padding-right: 2rem !important;
-        padding-top: 1.5rem !important;
-    }
-    [data-testid="stVerticalBlock"] {
-        width: 100% !important;
-    }
-    </style>
-''', unsafe_allow_html=True)
 
 
     # 4. Lógica de Enrutamiento (Router)
