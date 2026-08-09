@@ -1,6 +1,10 @@
 # Training & Certification Module - Reload Trigger 2026-08-09
 # pages/07_training.py
 import streamlit as st
+try:
+    st.set_page_config(page_title="ESD Management Suite", page_icon="⚡", layout="wide")
+except Exception:
+    pass
 import pandas as pd
 import plotly.express as px
 from datetime import datetime, timedelta, date
