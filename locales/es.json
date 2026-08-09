@@ -72,5 +72,17 @@
     "lbl_chk_history": "🥾 Histórico de Calibración de Checadores",
     "btn_export_csv": "📥 Exportar Tabla a CSV",
     "no_records": "No se encontraron registros guardados de infraestructura."
+  },
+  "sidebar": {
+    "placeholder_logo": "🖼️ Coloca logotipo aquí"
+  },
+  "settings": {
+    "tab_logo": "Logotipo",
+    "logo_title": "Personalización del Logotipo de la Empresa / Planta",
+    "logo_subtitle": "Carga el logotipo oficial de tu empresa en formato PNG o JPG. Se mostrará en la parte superior del menú lateral.",
+    "lbl_upload_logo": "Selecciona una imagen de logotipo (PNG, JPG, JPEG):",
+    "btn_save_logo": "💾 Guardar Nuevo Logotipo",
+    "btn_remove_logo": "🗑️ Eliminar Logotipo Personalizado",
+    "logo_prompt": "👋 Has accedido desde el enlace del Sidebar. Carga la imagen de tu logotipo aquí."
   }
 }
