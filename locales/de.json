@@ -186,7 +186,30 @@
     "lbl_obs": "Observations"
   },
   "routes": {
-    "title": "Produktregistrierung, Routing & Ablaufsequenz"
+    "title": "Produkt-Routing & Prozesssequenz",
+    "subtitle": "Registrieren Sie Produkte und definieren Sie die strikte Reihenfolge der Linien/Stationen.",
+    "btn_new": "Neues Produkt & Prozesssequenz registrieren",
+    "lbl_prod_name": "Produktname / Modell",
+    "lbl_sequence": "Auswahl der Prozesssequenz:",
+    "tip_sequence": "Tipp: Wählen Sie die Linien in der exakten Reihenfolge aus.",
+    "lbl_select_lines": "Linienroute auswählen und ordnen:",
+    "help_sequence": "Die Reihenfolge bestimmt die offizielle Prozesssequenz.",
+    "preview": "Vorschau der Sequenz:",
+    "btn_save": "Produktroute speichern",
+    "warn_name": "⚠️ Bitte einen gültigen Produktnamen eingeben.",
+    "warn_lines": "⚠️ Bitte mindestens eine Linie auswählen.",
+    "sec_title": "Registrierte Produktionssequenzen",
+    "tab_view": "Route anzeigen",
+    "tab_edit": "Sequenz bearbeiten",
+    "official_seq": "Offizielle Produktionssequenz:",
+    "no_route": "Keine Route definiert.",
+    "edit_tip": "Bearbeiten Sie die Schritte in Prozessreihenfolge.",
+    "num_steps": "Anzahl der Prozessschritte",
+    "select_stations": "Eine oder mehrere Stationen auswählen",
+    "btn_save_seq": "Neue Sequenz speichern",
+    "err_empty_route": "⚠️ Die Route darf nicht leer sein.",
+    "succ_updated": "✅ Routensequenz erfolgreich aktualisiert.",
+    "empty_info": "Noch keine Produkte oder Routen in dieser Anlage registriert."
   },
   "training": {
     "page_title": "🎓 ESD-Schulung & Zertifizierung",
