@@ -1,9 +1,12 @@
+from components.sidebar import render_sidebar, hide_sidebar
 # pages/05_lab.py
 """
 Módulo de Laboratorio ESD: Gestión de Sensibilidad por Producto/Componente (HBM / CDM)
 Mapeado a catalogo_sensibilidad y componentes_sensibilidad.
 """
 import streamlit as st
+from components.sidebar import render_sidebar, hide_sidebar
+
 
 # FORZAR 100% ANCHO COMPLETO EN STREAMLIT
 
@@ -19,6 +22,8 @@ from core.db import get_supabase_client
 if st.session_state.get("modo_lectura", True):
     st.warning(t("auth", "login_required", default="Debes iniciar sesión para acceder a este módulo."))
     st.stop()
+
+render_sidebar()
 
 supabase = get_supabase_client()
 site_id = st.session_state.site_id
