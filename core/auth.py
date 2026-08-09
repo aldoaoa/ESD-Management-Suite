@@ -6,24 +6,13 @@ from core.db import get_supabase_client
 def iniciar_sesion(email, password):
     """
     Verifica las credenciales del usuario y carga sus datos de acceso.
-    Resuelve la ambigüedad de relaciones FK en Supabase (PGRST201).
     """
     supabase = get_supabase_client()
     clean_email = email.strip().lower()
     
     try:
-        # Intentar consulta con especificación explícita de clave foránea FK
-        try:
-            response = supabase.table("users").select("*, sites!users_site_id_fkey(name, timezone), companies(name)").eq("email", clean_email).execute()
-        except Exception:
-            # Fallback seguro si la FK se llama distinto o no está incrustada directamente
-            response = supabase.table("users").select("*, companies(name)").eq("email", clean_email).execute()
-            if response.data and len(response.data) > 0:
-                user_rec = response.data[0]
-                if user_rec.get("site_id"):
-                    s_resp = supabase.table("sites").select("name, timezone").eq("id", user_rec["site_id"]).execute()
-                    if s_resp.data:
-                        user_rec["sites"] = s_resp.data[0]
+        # Consulta limpia a la tabla usuarios
+        response = supabase.table("users").select("*").eq("email", clean_email).execute()
 
         if response.data and len(response.data) > 0:
             user_data = response.data[0]
@@ -46,11 +35,26 @@ def iniciar_sesion(email, password):
                 st.session_state["site_id"] = user_data.get("site_id")
                 st.session_state["company_id"] = user_data.get("company_id")
                 
-                site_info = user_data.get("sites") or {}
-                company_info = user_data.get("companies") or {}
+                # Cargar nombre de site de forma segura
+                site_name = "Planta Principal"
+                if user_data.get("site_id"):
+                    try:
+                        s_resp = supabase.table("sites").select("name").eq("id", user_data["site_id"]).execute()
+                        if s_resp.data and len(s_resp.data) > 0:
+                            site_name = s_resp.data[0].get("name", site_name)
+                    except Exception: pass
+
+                # Cargar nombre de empresa de forma segura
+                company_name = "ESD Enterprise"
+                if user_data.get("company_id"):
+                    try:
+                        c_resp = supabase.table("companies").select("name").eq("id", user_data["company_id"]).execute()
+                        if c_resp.data and len(c_resp.data) > 0:
+                            company_name = c_resp.data[0].get("name", company_name)
+                    except Exception: pass
                 
-                st.session_state["site_name"] = site_info.get("name", "Site Principal")
-                st.session_state["company_name"] = company_info.get("name", "ESD Enterprise")
+                st.session_state["site_name"] = site_name
+                st.session_state["company_name"] = company_name
                 
                 return True, user_data
             else:
