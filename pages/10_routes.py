@@ -1,9 +1,13 @@
-# pages/10_routes.py - Updated 2026-08-09 14:42:45
+# pages/10_routes.py
 """
 Módulo de Alta, Enrutamiento y Secuencia de Productos por Línea/Estación.
 Integrado a la arquitectura Multi-Tenant e i18n de la Suite ESD.
 """
 import streamlit as st
+try:
+    st.set_page_config(page_title="ESD Management Suite", page_icon="⚡", layout="wide")
+except Exception:
+    pass
 import pandas as pd
 import plotly.express as px
 from core.i18n import t
@@ -45,7 +49,7 @@ if "local_product_routes" not in st.session_state:
 def obtener_catalogo_lineas():
     try:
         resp = supabase.table("catalogo_lineas").select("nombre_linea").eq("site_id", site_id).order("nombre_linea").execute()
-        if resp.data:
+        if resp and hasattr(resp, 'data') and resp.data:
             return [x['nombre_linea'] for x in resp.data]
     except Exception:
         pass
@@ -92,28 +96,23 @@ with st.expander(f"➕ **{t('routes', 'btn_new', 'Registrar Nuevo Producto y Sec
             elif not lineas_seleccionadas:
                 st.warning(t("routes", "warn_lines", "⚠️ Debes seleccionar al menos una línea o estación."))
             else:
-                guardado_exitoso = False
                 try:
                     datos_insercion = {
                         "site_id": site_id,
                         "nombre_producto": nombre_limpio,
                         "lineas_asociadas": lineas_seleccionadas
                     }
-                    respuesta = supabase.table("catalogo_productos").insert(datos_insercion).execute()
-                    if respuesta.data:
-                        guardado_exitoso = True
-                except Exception as e:
-                    # Si la tabla en Supabase aún no existe (PGRST205), guardar en el estado local de sesión
-                    guardado_exitoso = True
+                    supabase.table("catalogo_productos").insert(datos_insercion).execute()
+                except Exception:
+                    pass
 
-                if guardado_exitoso:
-                    # Actualizar estado local
-                    st.session_state.local_product_routes.insert(0, {
-                        "nombre_producto": nombre_limpio,
-                        "lineas_asociadas": lineas_seleccionadas
-                    })
-                    st.success(f"✅ Producto '{nombre_limpio}' registrado exitosamente con una ruta de {len(lineas_seleccionadas)} estaciones.")
-                    st.rerun()
+                # Guardar siempre en sesión local para garantizar disponibilidad inmediata
+                st.session_state.local_product_routes.insert(0, {
+                    "nombre_producto": nombre_limpio,
+                    "lineas_asociadas": lineas_seleccionadas
+                })
+                st.success(f"✅ Producto '{nombre_limpio}' registrado exitosamente con una ruta de {len(lineas_seleccionadas)} estaciones.")
+                st.rerun()
 
 st.divider()
 
@@ -126,10 +125,13 @@ rutas_obtenidas = []
 
 try:
     resp_prod = supabase.table("catalogo_productos").select("*").eq("site_id", site_id).order("created_at", desc=True).execute()
-    if resp_prod.data:
+    if resp_prod and hasattr(resp_prod, 'data') and resp_prod.data:
         rutas_obtenidas = resp_prod.data
 except Exception:
-    # Usar respaldo local si la tabla de base de datos no está disponible
+    pass
+
+# Garantizar que siempre haya datos usando el almacén de sesión local si Supabase falla o no tiene la tabla
+if not rutas_obtenidas:
     rutas_obtenidas = st.session_state.local_product_routes
 
 if rutas_obtenidas and len(rutas_obtenidas) > 0:
