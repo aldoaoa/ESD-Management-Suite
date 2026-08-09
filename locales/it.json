@@ -189,12 +189,25 @@
     "title": "Registrazione Prodotto, Percorsi e Sequenza"
   },
   "training": {
-    "title": "Formazione e Certificazione ESD",
-    "subtitle": "Controllo formazione del personale, validità e valutazioni",
-    "tab_dash": "📊 Dashboard Certificazioni",
-    "tab_weekly": "📅 Riepilogo Settimanale",
-    "tab_historical": "📜 Cronologia Valutazioni",
-    "tab_audit": "🔍 Verifica Personale"
+    "page_title": "🎓 Formazione e Certificazione ESD",
+    "page_subtitle": "Gestione della formazione, validità annuale e analisi dei quesiti",
+    "tab_dash": "📊 Dashboard e Cartelle",
+    "tab_historical": "📥 Importa Dati Storici",
+    "tab_weekly": "📅 Importa Esami Settimanali",
+    "tab_audit": "🕵️ Audit dei Gap e Cronologia",
+    "search_ph": "ID Dipendente...",
+    "btn_search": "🔍 Cerca Cartella",
+    "kpi_expired": "🚨 Scaduto / In Ritardo",
+    "kpi_month": "📌 In Scadenza Questo Mese",
+    "kpi_year": "📅 Proiezione 365 Giorni",
+    "kpi_low": "⚠️ Punteggi ≤ 80%",
+    "tbl_no_validity": "🚨 Personale SENZA Formazione Valida",
+    "tbl_low_grades": "🔴 Punteggi Critici Attivi (≤ 80%)",
+    "tbl_schedule": "📅 Programma di Riformazione",
+    "tbl_weekly_summary": "📅 Riepilogo Voti Settimanali",
+    "tbl_critical_questions": "🧠 Analisi dei Quesiti Critici",
+    "scan_history": "🔍 Scansiona Cronologia Completa",
+    "btn_save_corrections": "💾 Salva Correzioni"
   },
   "schedule": {
     "title": "Programma di Verifica e Frequenze TR53",
