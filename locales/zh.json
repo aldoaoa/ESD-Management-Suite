@@ -189,12 +189,25 @@
     "title": "产品注册、路由与工艺顺序"
   },
   "training": {
-    "title": "ESD 培训与认证",
-    "subtitle": "人员培训控制、有效期及评估",
-    "tab_dash": "📊 认证仪表板",
-    "tab_weekly": "📅 每周摘要",
-    "tab_historical": "📜 评估历史记录",
-    "tab_audit": "🔍 人员验证"
+    "page_title": "🎓 ESD 培训与认证",
+    "page_subtitle": "培训管理、年度有效期及试题审核",
+    "tab_dash": "📊 仪表板与档案",
+    "tab_historical": "📥 导入历史数据 (Forms)",
+    "tab_weekly": "📅 导入每周考试",
+    "tab_audit": "🕵️ 差距审核与时间轴",
+    "search_ph": "员工编号...",
+    "btn_search": "🔍 搜索档案",
+    "kpi_expired": "🚨 已过期 / 超期",
+    "kpi_month": "📌 本月到期",
+    "kpi_year": "📅 365天预测",
+    "kpi_low": "⚠️ 分数 ≤ 80%",
+    "tbl_no_validity": "🚨 无有效培训人员",
+    "tbl_low_grades": "🔴 活跃临界分数 (≤ 80%)",
+    "tbl_schedule": "📅 复训计划",
+    "tbl_weekly_summary": "📅 每周成绩汇总",
+    "tbl_critical_questions": "🧠 关键试题分析",
+    "scan_history": "🔍 扫描完整历史记录",
+    "btn_save_corrections": "💾 保存更正"
   },
   "schedule": {
     "title": "验证计划与 TR53 频率",
