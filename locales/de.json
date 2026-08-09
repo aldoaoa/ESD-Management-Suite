@@ -35,7 +35,7 @@
     "select_module": "Bitte wählen Sie ein Modul in der Seitenleiste, um zu beginnen."
   },
   "auth": {
-    "login_required": "Bitte melden Sie sich an, um auf dieses Modul zuzugreifen.",
+    "login_required": "🔒 Bitte melden Sie sich an, um auf dieses Modul zuzugreifen.",
     "logout": "Abmelden"
   },
   "settings": {
