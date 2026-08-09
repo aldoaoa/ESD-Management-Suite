@@ -189,12 +189,25 @@
     "title": "Înregistrare Produs, Rute și Secvență"
   },
   "training": {
-    "title": "Instruire și Certificare ESD",
-    "subtitle": "Controlul instruirii personalului, valabilității și evaluărilor",
-    "tab_dash": "📊 Tablou de Bord Certificări",
-    "tab_weekly": "📅 Sumar Săptămânal",
-    "tab_historical": "📜 Istoric Evaluări",
-    "tab_audit": "🔍 Verificare Personal"
+    "page_title": "🎓 Instruire și Certificare ESD",
+    "page_subtitle": "Gestionarea instruirii, valabilitate anuală și auditul întrebărilor",
+    "tab_dash": "📊 Panou de Control și Dosare",
+    "tab_historical": "📥 Import Date Istorice",
+    "tab_weekly": "📅 Import Examene Săptămânale",
+    "tab_audit": "🕵️ Audit Gap și Cronologie",
+    "search_ph": "ID Angajat...",
+    "btn_search": "🔍 Caută Dosar",
+    "kpi_expired": "🚨 Expirat / Restant",
+    "kpi_month": "📌 Expiră În Această Lună",
+    "kpi_year": "📅 Proiecție 365 Zile",
+    "kpi_low": "⚠️ Note ≤ 80%",
+    "tbl_no_validity": "🚨 Personal FĂRĂ Instruire Valabilă",
+    "tbl_low_grades": "🔴 Note Critice Active (≤ 80%)",
+    "tbl_schedule": "📅 Program de Reinstruire",
+    "tbl_weekly_summary": "📅 Sumar Săptămânal Note",
+    "tbl_critical_questions": "🧠 Analiza Întrebărilor Critice",
+    "scan_history": "🔍 Scanează Istoricul Complet",
+    "btn_save_corrections": "💾 Salvează Corecțiile"
   },
   "schedule": {
     "title": "Program de Verificare și Frecvențe TR53",
