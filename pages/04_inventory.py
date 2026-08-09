@@ -1,6 +1,9 @@
+from components.sidebar import render_sidebar, hide_sidebar
 # pages/03_📦_Inventory.py
 
 import streamlit as st
+from components.sidebar import render_sidebar, hide_sidebar
+
 
 # FORZAR 100% ANCHO COMPLETO EN STREAMLIT
 
@@ -18,6 +21,8 @@ from core.db import get_supabase_client
 if st.session_state.get("modo_lectura", True):
     st.warning(t("auth", "login_required"))
     st.stop()
+
+render_sidebar()
 
 # Inicializamos cliente y extraemos credenciales del usuario actual
 supabase = get_supabase_client()
