@@ -186,7 +186,30 @@
     "lbl_obs": "Observations"
   },
   "routes": {
-    "title": "Registrazione Prodotto, Percorsi e Sequenza"
+    "title": "Routing Prodotto & Sequenza di Processo",
+    "subtitle": "Registra prodotti e definisci l'ordine sequenziale delle linee/stazioni nella pianta.",
+    "btn_new": "Registra Nuovo Prodotto e Sequenza di Processo",
+    "lbl_prod_name": "Nome / Modello Prodotto",
+    "lbl_sequence": "Selezione Sequenza di Processo:",
+    "tip_sequence": "Suggerimento: Seleziona le linee nell'ordine esatto.",
+    "lbl_select_lines": "Seleziona e ordina il percorso delle linee:",
+    "help_sequence": "L'ordine determinerà la sequenza ufficiale.",
+    "preview": "Anteprima della Sequenza:",
+    "btn_save": "Salva Percorso Prodotto",
+    "warn_name": "⚠️ Inserire un nome prodotto valido.",
+    "warn_lines": "⚠️ Selezionare almeno una linea o stazione.",
+    "sec_title": "Sequenze di Produzione Registrate",
+    "tab_view": "Visualizza Percorso",
+    "tab_edit": "Modifica Sequenza",
+    "official_seq": "Sequenza Ufficiale di Produzione:",
+    "no_route": "Nessun percorso definito.",
+    "edit_tip": "Modifica i passaggi in ordine di processo.",
+    "num_steps": "Numero di Passaggi nel Processo",
+    "select_stations": "Seleziona una o più stazioni",
+    "btn_save_seq": "Salva Nuova Sequenza",
+    "err_empty_route": "⚠️ Il percorso non può essere vuoto.",
+    "succ_updated": "✅ Sequenza del percorso aggiornata con successo.",
+    "empty_info": "Nessun prodotto o percorso ancora registrato in questo Sito."
   },
   "training": {
     "page_title": "🎓 Formazione e Certificazione ESD",
