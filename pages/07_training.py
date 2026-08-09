@@ -30,10 +30,10 @@ st.markdown(f"### {t('training', 'title')}")
 st.caption(f"{t('training', 'subtitle')} - **{st.session_state.site_name}**")
 
 tab_dash, tab_historico, tab_semanal, tab_auditoria = st.tabs([
-    t("training", "tab_dash"), 
-    t("training", "tab_historical"), 
-    t("training", "tab_weekly"),
-    t("training", "tab_audit")
+    t("training", "tab_dash", "📊 Panel de Control y Expedientes"), 
+    t("training", "tab_historical", "📥 Importar Históricos (Forms)"), 
+    t("training", "tab_weekly", "📅 Importar Exámenes Semanales"),
+    t("training", "tab_audit", "🕵️ Auditoría de Brechas y Cronología")
 ])
 
 # --- PESTAÑA 1: DASHBOARD Y ANÁLISIS ---
