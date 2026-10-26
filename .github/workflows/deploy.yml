@@ -15,9 +15,10 @@ jobs:
       - name: Configure SSH Key
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.ORACLE_SSH_KEY }}" > ~/.ssh/oracle_key
+          printf '%s\n' "${{ secrets.ORACLE_SSH_KEY }}" | tr -d '\r' > ~/.ssh/oracle_key
           chmod 600 ~/.ssh/oracle_key
-          ssh-keyscan -H "${{ secrets.ORACLE_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null || true
+          ssh-keygen -y -f ~/.ssh/oracle_key
+          ssh-keyscan -H "${{ secrets.ORACLE_HOST }}" >> ~/.ssh/known_hosts || true
 
       - name: Deploy & Restart Service on Oracle Cloud
         env:
@@ -26,8 +27,9 @@ jobs:
         run: |
           SSH_OPTS="-i ~/.ssh/oracle_key -o StrictHostKeyChecking=no -o ConnectTimeout=15"
           REMOTE_USER=""
-          for u in ubuntu opc; do
-            if ssh $SSH_OPTS $u@$ORACLE_HOST "echo Connected as $u" 2>/dev/null; then
+          for u in ubuntu opc root; do
+            echo "Trying SSH as $u..."
+            if ssh -v $SSH_OPTS $u@$ORACLE_HOST "echo Connected as $u"; then
               REMOTE_USER=$u
               break
             fi
