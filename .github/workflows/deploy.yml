@@ -1,0 +1,125 @@
+name: Deploy to Oracle Cloud (ESD360)
+
+on:
+  push:
+    branches:
+      - testing
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Pull & Restart on Oracle Cloud
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.ORACLE_SSH_KEY }}" > ~/.ssh/oracle_key
+          chmod 600 ~/.ssh/oracle_key
+          ssh-keyscan -H "${{ secrets.ORACLE_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null || true
+
+      - name: Deploy & Restart Service on Oracle Cloud
+        env:
+          TARGET_BRANCH: ${{ github.ref_name }}
+          ORACLE_HOST: ${{ secrets.ORACLE_HOST }}
+        run: |
+          SSH_OPTS="-i ~/.ssh/oracle_key -o StrictHostKeyChecking=no -o ConnectTimeout=15"
+          REMOTE_USER=""
+          for u in ubuntu opc; do
+            if ssh $SSH_OPTS $u@$ORACLE_HOST "echo Connected as $u" 2>/dev/null; then
+              REMOTE_USER=$u
+              break
+            fi
+          done
+
+          if [ -z "$REMOTE_USER" ]; then
+            echo "❌ Error: Could not connect via SSH as ubuntu or opc to $ORACLE_HOST"
+            exit 1
+          fi
+
+          echo "✅ Connected to $ORACLE_HOST as $REMOTE_USER"
+
+          ssh $SSH_OPTS $REMOTE_USER@$ORACLE_HOST "TARGET_BRANCH='$TARGET_BRANCH' bash -s" << 'EOF'
+          set -e
+          echo "=== 1. Inspecting Server Environment ==="
+          whoami
+          hostname
+          ps -ef | grep -iE "streamlit|docker" | grep -v grep || true
+
+          # Locate the ESD-Management-Suite git repository
+          REPO_DIR=$(find /home /opt /var /srv /root -maxdepth 4 -name "00_home.py" 2>/dev/null | head -n 1 | xargs -r dirname)
+          if [ -z "$REPO_DIR" ]; then
+            REPO_DIR=$(find /home /opt /var /srv -maxdepth 3 -type d -iname "*ESD*Management*Suite*" 2>/dev/null | head -n 1)
+          fi
+
+          if [ -z "$REPO_DIR" ]; then
+            echo "❌ Could not find ESD-Management-Suite repository on server!"
+            exit 1
+          fi
+
+          echo "📂 Found repository at: $REPO_DIR"
+          cd "$REPO_DIR"
+          git config --global --add safe.directory "$REPO_DIR" || true
+
+          echo "=== 2. Pulling Latest Code from GitHub (Branch: $TARGET_BRANCH) ==="
+          git status -s || true
+          git fetch origin "$TARGET_BRANCH"
+          git checkout -B "$TARGET_BRANCH" "origin/$TARGET_BRANCH"
+          git reset --hard "origin/$TARGET_BRANCH"
+
+          echo "📌 Deployed Version:"
+          cat VERSION || true
+
+          echo "=== 3. Updating Dependencies (if venv exists) ==="
+          VENV_PIP=$(find "$REPO_DIR" /home -maxdepth 4 -path "*/bin/pip" 2>/dev/null | head -n 1)
+          if [ -n "$VENV_PIP" ] && [ -f "requirements.txt" ]; then
+            echo "📦 Using pip at: $VENV_PIP"
+            "$VENV_PIP" install -r requirements.txt --quiet || true
+          fi
+
+          echo "=== 4. Restarting Application Service ==="
+          # Check systemd services first
+          SYS_SERVICE=$(systemctl list-units --type=service --all | grep -iE "streamlit|esd" | awk '{print $1}' | head -n 1)
+          if [ -z "$SYS_SERVICE" ]; then
+            # Check systemd unit files in /etc/systemd/system
+            SYS_SERVICE=$(grep -ril "streamlit\|00_home.py\|$REPO_DIR" /etc/systemd/system/ 2>/dev/null | head -n 1 | xargs -r basename)
+          fi
+
+          if [ -n "$SYS_SERVICE" ]; then
+            echo "🔄 Restarting systemd service: $SYS_SERVICE"
+            sudo systemctl daemon-reload || true
+            sudo systemctl restart "$SYS_SERVICE"
+            sleep 2
+            sudo systemctl status "$SYS_SERVICE" --no-pager -l | head -n 20 || true
+          elif command -v docker >/dev/null 2>&1 && [ -n "$(sudo docker ps -q 2>/dev/null)" ]; then
+            echo "🐳 Restarting Docker containers..."
+            if [ -f "docker-compose.yml" ] || [ -f "compose.yml" ]; then
+              sudo docker compose up -d --build || sudo docker-compose up -d --build
+            else
+              CONTAINER_ID=$(sudo docker ps --format "{{.ID}} {{.Names}} {{.Image}}" | grep -iE "esd|streamlit" | awk '{print $1}' | head -n 1)
+              if [ -n "$CONTAINER_ID" ]; then
+                sudo docker restart "$CONTAINER_ID"
+              fi
+            fi
+          else
+            echo "⚠️ No systemd service or docker container found; checking running streamlit process..."
+            ST_PID=$(pgrep -f "streamlit.*run" | head -n 1 || true)
+            if [ -n "$ST_PID" ]; then
+              CMDLINE=$(tr '\0' ' ' < /proc/$ST_PID/cmdline)
+              CWD=$(readlink -f /proc/$ST_PID/cwd)
+              echo "Found running process PID $ST_PID in $CWD: $CMDLINE"
+              # Touch 00_home.py to trigger Streamlit watcher reload, or restart if needed
+              touch "$REPO_DIR/00_home.py"
+            else
+              echo "⚠️ Streamlit process not found running! Attempting to start with nohup..."
+              VENV_ST=$(find "$REPO_DIR" /home -maxdepth 4 -path "*/bin/streamlit" 2>/dev/null | head -n 1)
+              if [ -n "$VENV_ST" ]; then
+                nohup "$VENV_ST" run 00_home.py --server.port 8501 --server.address 0.0.0.0 > streamlit.log 2>&1 &
+                sleep 2
+              fi
+            fi
+          fi
+
+          echo "✅ Deployment complete!"
+          EOF
