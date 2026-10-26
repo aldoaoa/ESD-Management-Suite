@@ -65,6 +65,9 @@ def hide_sidebar():
     load_locales()
 
 def render_sidebar():
+    from core.db import sync_company_logo_in_session
+    sync_company_logo_in_session()
+
     with st.sidebar:
         st.markdown(
             """
@@ -85,11 +88,13 @@ def render_sidebar():
             unsafe_allow_html=True
         )
         
-        # --- RENDERIZADO DE LOGOTIPO DINÁMICO ---
-        site_logo = st.session_state.get("site_logo") or st.session_state.get("company_logo")
+        # --- RENDERIZADO DE LOGOTIPO DINÁMICO POR EMPRESA ---
+        rol_actual = st.session_state.get("rol_usuario", st.session_state.get("user_role", ""))
+        can_manage_logo = not st.session_state.get("modo_lectura", True) and rol_actual in ["SuperAdmin", "admin", "CompanyAdmin"]
+        company_logo = st.session_state.get("company_logo") or st.session_state.get("site_logo")
         
-        if site_logo:
-            st.image(site_logo, use_container_width=True)
+        if company_logo:
+            st.image(company_logo, use_container_width=True)
         else:
             placeholder_text = t("sidebar", "placeholder_logo", "Coloca logotipo aquí")
             st.markdown(
@@ -107,12 +112,13 @@ def render_sidebar():
                 """,
                 unsafe_allow_html=True
             )
-            if st.button("🖼️ " + placeholder_text, use_container_width=True, type="secondary", key="btn_sidebar_logo_placeholder"):
-                st.session_state.open_logo_uploader = True
-                try:
-                    st.switch_page("pages/03_settings.py")
-                except Exception:
-                    pass
+            if can_manage_logo:
+                if st.button("🖼️ " + placeholder_text, use_container_width=True, type="secondary", key="btn_sidebar_logo_placeholder"):
+                    st.session_state.open_logo_uploader = True
+                    try:
+                        st.switch_page("pages/03_settings.py")
+                    except Exception:
+                        pass
 
         st.divider()
 
@@ -142,7 +148,13 @@ def render_sidebar():
                 if selected_site["id"] != current_site_id:
                     st.session_state.site_id = selected_site["id"]
                     st.session_state.site_name = selected_site["name"]
+                    if selected_site.get("company_id"):
+                        st.session_state.company_id = selected_site["company_id"]
+                    if selected_site.get("company_name"):
+                        st.session_state.company_name = selected_site["company_name"]
+                    sync_company_logo_in_session(force=True)
                     st.rerun()
+                st.caption(f"🏢 {st.session_state.get('company_name', 'Global')} | 📍 {st.session_state.get('site_name', 'Site Principal')}")
             else:
                 st.caption(f"🏢 {st.session_state.get('company_name', 'Global')} | 📍 {st.session_state.get('site_name', 'Site Principal')}")
             
@@ -172,3 +184,13 @@ def render_sidebar():
             if st.button("🚪 " + t("nav", "logout", "Cerrar Sesión"), use_container_width=True, type="secondary"):
                 cerrar_sesion()
                 st.rerun()
+
+        try:
+            import os
+            ver_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "VERSION")
+            if os.path.exists(ver_path):
+                with open(ver_path, "r", encoding="utf-8") as vf:
+                    ver_str = vf.read().strip().split("-")[0]
+                    st.caption(f"🔖 Versión: `{ver_str}`")
+        except Exception:
+            pass

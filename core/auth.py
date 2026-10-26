@@ -49,8 +49,20 @@ def iniciar_sesion(email, password):
                 # Si es un usuario global (SuperAdmin/admin), cargamos todos los sitios del sistema
                 if st.session_state.rol_usuario in ["SuperAdmin", "admin"]:
                     try:
-                        sites_resp = supabase.table("sites").select("id, name").execute()
-                        st.session_state.available_sites = sites_resp.data if sites_resp.data else []
+                        try:
+                            sites_resp = supabase.table("sites").select("id, name, company_id, companies(name)").execute()
+                            st.session_state.available_sites = [
+                                {
+                                    "id": s["id"],
+                                    "name": s["name"],
+                                    "company_id": s.get("company_id"),
+                                    "company_name": s["companies"]["name"] if isinstance(s.get("companies"), dict) else None,
+                                }
+                                for s in (sites_resp.data or [])
+                            ]
+                        except Exception:
+                            sites_resp = supabase.table("sites").select("id, name, company_id").execute()
+                            st.session_state.available_sites = sites_resp.data if sites_resp.data else []
                     except Exception as e:
                         st.session_state.available_sites = []
                         print(f"Error loading all sites for SuperAdmin: {e}")
@@ -59,8 +71,16 @@ def iniciar_sesion(email, password):
                 elif st.session_state.rol_usuario == "CompanyAdmin":
                     try:
                         if st.session_state.company_id:
-                            sites_resp = supabase.table("sites").select("id, name").eq("company_id", st.session_state.company_id).execute()
-                            st.session_state.available_sites = sites_resp.data if sites_resp.data else []
+                            sites_resp = supabase.table("sites").select("id, name, company_id").eq("company_id", st.session_state.company_id).execute()
+                            st.session_state.available_sites = [
+                                {
+                                    "id": s["id"],
+                                    "name": s["name"],
+                                    "company_id": s.get("company_id") or st.session_state.company_id,
+                                    "company_name": st.session_state.company_name,
+                                }
+                                for s in (sites_resp.data or [])
+                            ]
                         else:
                             st.session_state.available_sites = []
                     except Exception as e:
@@ -70,10 +90,14 @@ def iniciar_sesion(email, password):
                 # Para roles regulares, cargamos las plantas asignadas en la tabla puente user_sites
                 else:
                     try:
-                        user_sites_resp = supabase.table("user_sites").select("site_id, sites(name)").eq("user_id", st.session_state.user_id).execute()
+                        user_sites_resp = supabase.table("user_sites").select("site_id, sites(name, company_id)").eq("user_id", st.session_state.user_id).execute()
                         if user_sites_resp.data:
                             st.session_state.available_sites = [
-                                {"id": x["site_id"], "name": x["sites"]["name"]} 
+                                {
+                                    "id": x["site_id"],
+                                    "name": x["sites"]["name"],
+                                    "company_id": x["sites"].get("company_id") or st.session_state.company_id,
+                                }
                                 for x in user_sites_resp.data if x.get("sites")
                             ]
                         else:
@@ -91,14 +115,30 @@ def iniciar_sesion(email, password):
                         for s in st.session_state.available_sites:
                             if s["id"] == st.session_state.site_id:
                                 st.session_state.site_name = s["name"]
+                                if s.get("company_id"):
+                                    st.session_state.company_id = s["company_id"]
+                                if s.get("company_name"):
+                                    st.session_state.company_name = s["company_name"]
                                 break
                     else:
                         # Si no coincide o es nulo, forzamos el primero de la lista
-                        st.session_state.site_id = st.session_state.available_sites[0]["id"]
-                        st.session_state.site_name = st.session_state.available_sites[0]["name"]
+                        first_s = st.session_state.available_sites[0]
+                        st.session_state.site_id = first_s["id"]
+                        st.session_state.site_name = first_s["name"]
+                        if first_s.get("company_id"):
+                            st.session_state.company_id = first_s["company_id"]
+                        if first_s.get("company_name"):
+                            st.session_state.company_name = first_s["company_name"]
                 else:
                     st.session_state.site_id = None
                     st.session_state.site_name = "Sin Planta Asignada"
+
+                # Sincronizar logotipo oficial de la empresa asignada al iniciar sesión
+                try:
+                    from core.db import sync_company_logo_in_session
+                    sync_company_logo_in_session(force=True)
+                except Exception as e:
+                    print(f"Error syncing company logo at login: {e}")
                 
                 return True, "success"
             else:

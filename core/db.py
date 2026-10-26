@@ -195,3 +195,279 @@ def get_company_lessons_learned(company_id: str = None):
         pass
     return []
 
+
+# ==========================================
+# GESTIÓN PERSISTENTE DE LOGOTIPO POR EMPRESA
+# ==========================================
+
+def optimize_logo_image(file_bytes: bytes, mime_type: str = "image/png"):
+    """
+    Optimiza y redimensiona la imagen del logotipo preservando transparencia PNG
+    para garantizar persistencia rápida en Supabase y renderizado fluido en el Sidebar.
+    Retorna (optimized_bytes, final_mime, data_uri).
+    """
+    import io
+    import base64
+
+    final_bytes = file_bytes
+    final_mime = mime_type or "image/png"
+
+    try:
+        from PIL import Image
+        img = Image.open(io.BytesIO(file_bytes))
+        if img.mode not in ("RGBA", "RGB"):
+            img = img.convert("RGBA")
+        img.thumbnail((560, 220))
+        buf = io.BytesIO()
+        if img.mode == "RGBA":
+            img.save(buf, format="PNG", optimize=True)
+            final_mime = "image/png"
+        else:
+            img.save(buf, format="JPEG", quality=88, optimize=True)
+            final_mime = "image/jpeg"
+        final_bytes = buf.getvalue()
+    except Exception:
+        pass
+
+    b64_str = base64.b64encode(final_bytes).decode("utf-8")
+    data_uri = f"data:{final_mime};base64,{b64_str}"
+    return final_bytes, final_mime, data_uri
+
+
+def save_company_logo(company_id: str, data_uri: str, file_bytes: bytes = None, mime_type: str = "image/png") -> bool:
+    """
+    Persiste el logotipo oficial de una empresa (company_id) en Supabase:
+    1) Caché de sesión por empresa
+    2) Tabla 'companies' (si cuenta con columna logo_url / logo_base64)
+    3) Bucket Storage 'evidencias_esd'
+    4) Tabla 'app_logs' (page='company_logo_config', level=str(company_id)) como almacén garantizado
+    """
+    if not company_id:
+        company_id = "global"
+    cid_str = str(company_id)
+
+    if "company_logos_map" not in st.session_state:
+        st.session_state["company_logos_map"] = {}
+    st.session_state["company_logos_map"][cid_str] = data_uri
+
+    try:
+        supabase = get_supabase_client()
+    except Exception:
+        supabase = None
+
+    if supabase is None:
+        return True
+
+    # 1. Intentar guardar en la tabla companies si tiene columna de logo
+    if cid_str != "global":
+        for col_name in ["logo_url", "logo_base64", "logo"]:
+            try:
+                supabase.table("companies").update({col_name: data_uri}).eq("id", cid_str).execute()
+                break
+            except Exception:
+                pass
+
+    # 2. Intentar subir copia al bucket público 'evidencias_esd'
+    if file_bytes:
+        try:
+            ext = "png" if "png" in (mime_type or "").lower() else "jpg"
+            path_logo = f"company_logos/company_{cid_str}.{ext}"
+            supabase.storage.from_("evidencias_esd").upload(
+                file=file_bytes,
+                path=path_logo,
+                file_options={"content-type": mime_type or "image/png", "upsert": "true"},
+            )
+        except Exception:
+            pass
+
+    # 3. Persistencia garantizada en app_logs (siempre existe en el esquema Supabase del proyecto)
+    try:
+        supabase.table("app_logs").delete().eq("page", "company_logo_config").eq("level", cid_str).execute()
+    except Exception:
+        pass
+
+    try:
+        supabase.table("app_logs").insert({
+            "page": "company_logo_config",
+            "level": cid_str,
+            "message": "ACTIVE_LOGO",
+            "details": data_uri,
+            "user_id": st.session_state.get("user_id"),
+            "site_id": st.session_state.get("site_id"),
+        }).execute()
+    except Exception as e:
+        print(f"Error saving company logo in app_logs: {e}")
+
+    return True
+
+
+def delete_company_logo(company_id: str) -> bool:
+    """Elimina el logotipo personalizado de la empresa indicada."""
+    if not company_id:
+        company_id = "global"
+    cid_str = str(company_id)
+
+    if "company_logos_map" not in st.session_state:
+        st.session_state["company_logos_map"] = {}
+    st.session_state["company_logos_map"][cid_str] = None
+
+    try:
+        supabase = get_supabase_client()
+    except Exception:
+        supabase = None
+
+    if supabase is not None:
+        if cid_str != "global":
+            for col_name in ["logo_url", "logo_base64", "logo"]:
+                try:
+                    supabase.table("companies").update({col_name: None}).eq("id", cid_str).execute()
+                    break
+                except Exception:
+                    pass
+
+        try:
+            supabase.table("app_logs").delete().eq("page", "company_logo_config").eq("level", cid_str).execute()
+        except Exception:
+            pass
+
+        try:
+            supabase.table("app_logs").insert({
+                "page": "company_logo_config",
+                "level": cid_str,
+                "message": "DELETED_LOGO",
+                "details": "",
+                "user_id": st.session_state.get("user_id"),
+                "site_id": st.session_state.get("site_id"),
+            }).execute()
+        except Exception:
+            pass
+
+    return True
+
+
+def get_company_logo(company_id: str = None, force_refresh: bool = False):
+    """
+    Recupera el logotipo de la empresa activa desde caché de sesión o Supabase.
+    """
+    target_cid = str(company_id or st.session_state.get("company_id") or "global")
+
+    if "company_logos_map" not in st.session_state:
+        st.session_state["company_logos_map"] = {}
+
+    if not force_refresh and target_cid in st.session_state["company_logos_map"]:
+        return st.session_state["company_logos_map"][target_cid]
+
+    try:
+        supabase = get_supabase_client()
+    except Exception:
+        return st.session_state["company_logos_map"].get(target_cid)
+
+    logo_found = None
+
+    # 1. Consultar en app_logs (configuración más reciente por empresa)
+    try:
+        resp_log = (
+            supabase.table("app_logs")
+            .select("message, details")
+            .eq("page", "company_logo_config")
+            .eq("level", target_cid)
+            .order("id", desc=True)
+            .limit(1)
+            .execute()
+        )
+        if resp_log and resp_log.data:
+            rec = resp_log.data[0]
+            if rec.get("message") == "DELETED_LOGO":
+                st.session_state["company_logos_map"][target_cid] = None
+                return None
+            if rec.get("message") == "ACTIVE_LOGO" and rec.get("details"):
+                logo_found = rec["details"]
+    except Exception:
+        pass
+
+    # 2. Si no estuvo en app_logs, verificar columnas en tabla companies
+    if not logo_found and target_cid != "global":
+        try:
+            resp_c = supabase.table("companies").select("*").eq("id", target_cid).limit(1).execute()
+            if resp_c and resp_c.data:
+                c_row = resp_c.data[0]
+                for col_name in ["logo_url", "logo_base64", "logo"]:
+                    if c_row.get(col_name):
+                        logo_found = c_row[col_name]
+                        break
+        except Exception:
+            pass
+
+    st.session_state["company_logos_map"][target_cid] = logo_found
+    return logo_found
+
+
+def resolve_site_company(site_id: str):
+    """
+    Dado un site_id, retorna (company_id, company_name) buscando primero en available_sites
+    y como respaldo en la tabla 'sites' de Supabase.
+    """
+    if not site_id:
+        return st.session_state.get("company_id"), st.session_state.get("company_name", "Global")
+
+    for s in st.session_state.get("available_sites", []):
+        if s.get("id") == site_id and s.get("company_id"):
+            return s.get("company_id"), s.get("company_name") or st.session_state.get("company_name", "Global")
+
+    try:
+        supabase = get_supabase_client()
+        try:
+            r_s = supabase.table("sites").select("company_id, companies(name)").eq("id", site_id).limit(1).execute()
+            if r_s and r_s.data:
+                row = r_s.data[0]
+                cid = row.get("company_id")
+                cname = row["companies"]["name"] if isinstance(row.get("companies"), dict) else None
+                if cid:
+                    return cid, cname or st.session_state.get("company_name", "Global")
+        except Exception:
+            r_s = supabase.table("sites").select("company_id").eq("id", site_id).limit(1).execute()
+            if r_s and r_s.data and r_s.data[0].get("company_id"):
+                cid = r_s.data[0]["company_id"]
+                cname = st.session_state.get("company_name", "Global")
+                try:
+                    r_c = supabase.table("companies").select("name").eq("id", cid).limit(1).execute()
+                    if r_c and r_c.data:
+                        cname = r_c.data[0].get("name", cname)
+                except Exception:
+                    pass
+                return cid, cname
+    except Exception:
+        pass
+
+    return st.session_state.get("company_id"), st.session_state.get("company_name", "Global")
+
+
+def sync_company_logo_in_session(force: bool = False):
+    """
+    Sincroniza el logotipo de la empresa activa en st.session_state.company_logo
+    y st.session_state.site_logo según la empresa a la que pertenece el usuario o planta actual.
+    """
+    if st.session_state.get("modo_lectura", True):
+        return
+
+    current_cid = st.session_state.get("company_id")
+    current_sid = st.session_state.get("site_id")
+
+    # Si no hay company_id o cambió la planta activa, resolver la empresa desde site_id
+    if current_sid and (not current_cid or st.session_state.get("_last_synced_site_id") != current_sid):
+        resolved_cid, resolved_cname = resolve_site_company(current_sid)
+        if resolved_cid:
+            current_cid = resolved_cid
+            st.session_state["company_id"] = resolved_cid
+            if resolved_cname:
+                st.session_state["company_name"] = resolved_cname
+        st.session_state["_last_synced_site_id"] = current_sid
+
+    cid_key = str(current_cid or "global")
+    if force or st.session_state.get("_logo_loaded_for_company") != cid_key:
+        logo_uri = get_company_logo(cid_key, force_refresh=force)
+        st.session_state["company_logo"] = logo_uri
+        st.session_state["site_logo"] = logo_uri
+        st.session_state["_logo_loaded_for_company"] = cid_key
+
+

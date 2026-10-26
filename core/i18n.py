@@ -3,9 +3,9 @@ import json
 import os
 import streamlit as st
 
-def load_locales():
+def load_locales(force: bool = False):
     """Carga los diccionarios JSON de traducción en la memoria caché de Streamlit."""
-    if "locales" not in st.session_state:
+    if force or "locales" not in st.session_state:
         locales = {}
         # Intentar buscar la carpeta locales en el directorio actual o ruta absoluta
         base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
