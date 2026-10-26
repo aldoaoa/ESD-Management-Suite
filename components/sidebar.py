@@ -154,6 +154,7 @@ def render_sidebar():
 
             st.markdown(f'<div class="sidebar-category">{t("nav", "cat_verification", "VERIFICACIÓN Y PISO")}</div>', unsafe_allow_html=True)
             st.page_link("pages/02_audit.py", label=t("nav", "audit", "Auditoría en piso"), icon="🔍")
+            st.page_link("pages/11_findings.py", label=t("nav", "findings", "Seguimiento de hallazgos"), icon="🎯")
             st.page_link("pages/09_schedule.py", label=t("nav", "schedule", "Cronograma de verificación"), icon="📅")
 
             st.markdown(f'<div class="sidebar-category">{t("nav", "cat_assets_training", "ACTIVOS Y CAPACITACIÓN")}</div>', unsafe_allow_html=True)
