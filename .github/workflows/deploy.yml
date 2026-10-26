@@ -27,7 +27,7 @@ jobs:
         run: |
           SSH_OPTS="-i ~/.ssh/oracle_key -o StrictHostKeyChecking=no -o ConnectTimeout=15"
           REMOTE_USER=""
-          for u in ubuntu opc root; do
+          for u in ubuntu ocarun opc root; do
             echo "Trying SSH as $u..."
             if ssh -v $SSH_OPTS $u@$ORACLE_HOST "echo Connected as $u"; then
               REMOTE_USER=$u
