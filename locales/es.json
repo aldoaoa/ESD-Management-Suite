@@ -84,5 +84,11 @@
     "btn_save_logo": "💾 Guardar Nuevo Logotipo",
     "btn_remove_logo": "🗑️ Eliminar Logotipo Personalizado",
     "logo_prompt": "👋 Has accedido desde el enlace del Sidebar. Carga la imagen de tu logotipo aquí."
+  },
+  "nav": {
+    "findings": "Seguimiento de hallazgos"
+  },
+  "findings": {
+    "title": "Seguimiento de Hallazgos EASE, Acciones Correctivas y Lessons Learned"
   }
 }

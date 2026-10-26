@@ -84,5 +84,11 @@
     "btn_save_logo": "💾 Save New Logo",
     "btn_remove_logo": "🗑️ Remove Custom Logo",
     "logo_prompt": "👋 You were redirected from the Sidebar link. Upload your company logo here."
+  },
+  "nav": {
+    "findings": "Findings & Mitigations (EASE)"
+  },
+  "findings": {
+    "title": "EASE Findings Tracking, Corrective Actions & Global Lessons Learned"
   }
 }
